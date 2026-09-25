@@ -1,0 +1,92 @@
+name: Clash IQ Test - Extract, Build and Prepare Render
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "Clash-IQ-Test-Project.zip"
+      - ".github/workflows/deploy-test.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  extract-build-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract project
+        shell: bash
+        run: |
+          rm -rf .ci-extracted
+          mkdir .ci-extracted
+          unzip -q "Clash-IQ-Test-Project.zip" -d .ci-extracted
+
+          if [ -f ".ci-extracted/package.json" ]; then
+            ROOT=".ci-extracted"
+          else
+            ROOT="$(find .ci-extracted -maxdepth 3 -name package.json -type f -print -quit | xargs -r dirname)"
+          fi
+
+          if [ -z "$ROOT" ] || [ ! -f "$ROOT/package.json" ]; then
+            echo "No package.json found in ZIP."
+            exit 1
+          fi
+
+          echo "PROJECT_ROOT=$ROOT" >> "$GITHUB_ENV"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies and build
+        working-directory: ${{ env.PROJECT_ROOT }}
+        shell: bash
+        run: |
+          if [ -f pnpm-lock.yaml ]; then
+            corepack enable
+            pnpm install --frozen-lockfile
+            pnpm run build
+          elif [ -f yarn.lock ]; then
+            corepack enable
+            yarn install --frozen-lockfile
+            yarn build
+          elif [ -f package-lock.json ]; then
+            npm ci
+            npm run build
+          else
+            npm install
+            npm run build
+          fi
+
+      - name: Publish extracted project to repository root
+        shell: bash
+        run: |
+          mkdir -p .ci-publish
+
+          rsync -a --delete             --exclude='.git/'             --exclude='.github/'             --exclude='Clash-IQ-Test-Project.zip'             --exclude='.ci-extracted/'             --exclude='.ci-publish/'             "${{ env.PROJECT_ROOT }}/" .ci-publish/
+
+          rsync -a --delete             --exclude='.git/'             --exclude='.github/'             --exclude='Clash-IQ-Test-Project.zip'             --exclude='.ci-extracted/'             --exclude='.ci-publish/'             .ci-publish/ ./
+
+          rm -rf .ci-extracted .ci-publish
+
+      - name: Commit extracted project
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No extracted project changes to commit."
+            exit 0
+          fi
+
+          git commit -m "chore(test): extract Clash IQ test project"
+          git push
