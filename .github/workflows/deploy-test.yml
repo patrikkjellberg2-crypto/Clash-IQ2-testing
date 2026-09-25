@@ -90,3 +90,5 @@ jobs:
 
           git commit -m "chore(test): extract Clash IQ test project"
           git push
+
+# Trigger fresh TEST extraction run.
