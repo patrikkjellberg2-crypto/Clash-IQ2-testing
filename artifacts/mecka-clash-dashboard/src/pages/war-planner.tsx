@@ -10,7 +10,6 @@ import {
   Clock3,
   Lock,
   LockOpen,
-  Menu,
   RefreshCw,
   Shield,
   ShieldAlert,
@@ -1500,11 +1499,6 @@ export default function WarPlannerPage() {
   ======================================================= */
 
   const [
-    mobileMenuOpen,
-    setMobileMenuOpen,
-  ] = useState(false);
-
-  const [
     selectedMember,
     setSelectedMember,
   ] = useState<
@@ -2764,8 +2758,6 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
         <AppSidebar
           clanName={label(clan.name, 'BHABE DHEMONS')}
           clanTag={label(clan.tag, '#2Q0Q82C9R')}
-          mobileOpen={mobileMenuOpen}
-          onClose={() => setMobileMenuOpen(false)}
         />
 
         {/* MAIN */}
@@ -2774,14 +2766,6 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
 
                           {/* TOP BAR */}
             <header className="mb-5 flex items-center gap-3 rounded-2xl border border-white/10 bg-[#07121d]/90 px-3 py-3 shadow-2xl backdrop-blur-xl sm:px-4">
-              <button
-                type="button"
-                onClick={() => setMobileMenuOpen(true)}
-                className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/5 lg:hidden"
-              >
-                <Menu className="size-5" />
-              </button>
-
               <div className="hidden items-center gap-2 sm:flex">
                 <span className="size-2.5 rounded-full bg-emerald-400 shadow-[0_0_14px_rgba(52,211,153,.9)]" />
                 <span className="text-xs font-black uppercase tracking-[.16em] text-white/70">
