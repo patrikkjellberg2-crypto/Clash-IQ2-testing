@@ -17,7 +17,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
-import { AppSidebar } from '@/components/app-sidebar';
+import { ClashIQPageShell } from '@/components/clashiq-page-shell';
 
 type Dict = Record<string, any>;
 
@@ -367,43 +367,9 @@ export default function PlayerPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-[#07090d] text-white">
-      <div className="flex min-h-screen bg-[radial-gradient(circle_at_top_right,rgba(245,158,11,0.10),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(37,99,235,0.08),transparent_30%)]">
-        <AppSidebar />
-
+    <ClashIQPageShell title="Player Profile" subtitle="Player intelligence, war performance, troops, heroes and historical attacks.">
         <main className="min-w-0 flex-1">
           {/* Header */}
-          <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
-            <div className="mx-auto flex max-w-[1400px] items-center justify-between">
-              <div>
-                <Link
-                  href="/members"
-                  className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300 transition hover:text-amber-200"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Members
-                </Link>
-
-                <div className="mt-2 flex items-center gap-2">
-                  <h1 className="text-2xl font-black tracking-tight">
-                    Player Profile
-                  </h1>
-
-                  <span className="rounded-full border border-amber-400/25 bg-amber-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-300">
-                    Elite
-                  </span>
-                </div>
-              </div>
-
-              <div className="hidden items-center gap-2 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.04] px-4 py-2 sm:flex">
-                <Activity className="h-4 w-4 text-emerald-400" />
-
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-300">
-                  {playerStatus}
-                </span>
-              </div>
-            </div>
-          </header>
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
             {/* Player hero */}
@@ -1126,8 +1092,6 @@ export default function PlayerPage() {
               </Link>
             </div>
           </div>
-        </main>
-      </div>
-    </div>
+    </ClashIQPageShell>
   );
 }
