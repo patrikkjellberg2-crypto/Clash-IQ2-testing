@@ -14,6 +14,7 @@ import {
   db,
   warPlannerAssignmentsTable,
 } from "@workspace/db";
+import { fetchClashOfStatsHistory } from "../lib/clashofstats";
 import {
   getArchivedWar,
   getPlayerWarHistory,
@@ -1120,6 +1121,7 @@ router.get(
       await recoverHistoricalWars(clanTag, req.log, 15);
 
       const archivedHistory = await getPlayerWarHistory(clanTag, tag, 50);
+      const clashOfStatsHistory = await fetchClashOfStatsHistory(tag);
       if (archivedHistory.length > 0) {
         const allAttacks = archivedHistory.flatMap((war) => war.attacks);
         const totalAttacks = allAttacks.length;
@@ -1149,6 +1151,7 @@ router.get(
               attacks: war.attacks,
             })),
           },
+          clashOfStatsHistory,
         });
         return;
       }
@@ -1316,6 +1319,7 @@ router.get(
           recentWars:
             wars.slice(0, 20),
         },
+        clashOfStatsHistory,
       });
     } catch (error) {
       req.log.warn(
