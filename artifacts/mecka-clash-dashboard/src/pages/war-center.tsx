@@ -737,10 +737,37 @@ export default function WarCenterPage() {
                             <td className="px-3 py-3 font-data text-xs font-bold">{destructionAgainstUs}%</td>
                             <td className="px-5 py-3 text-right">
                               <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${starsAgainstUs === 0 ? 'bg-[#2b9f78]/12 text-[#267a5e]' : starsAgainstUs === 1 ? 'bg-[#f4c542]/20 text-[#9c6e00]' : 'bg-[#cf5b4d]/12 text-[#a84439]'}`}>
-                                {starsAgainstUs === 0 ? 'Defended' : `${starsAgainstUs} star${starsAgainstUs === 1 ? '' : 's'}`}
-                              </span>
-                            </td>
-                          </tr>
-                          </ClashIQPageShell>
-  );
+                                 {starsAgainstUs === 0 ? 'Defended' : `${starsAgainstUs} star${starsAgainstUs === 1 ? '' : 's'}`}
+                               </span>
+                             </td>
+                           </tr>
+                         );
+                       })}
+                     </tbody>
+                   </table>
+                 </div>
+               ) : (
+                 <div className="flex min-h-[150px] items-center justify-center px-6 text-center">
+                   <p className="text-xs text-muted-foreground">No defensive attacks recorded yet.</p>
+                 </div>
+               )}
+             </article>
+
+             <footer className="flex flex-col justify-between gap-2 border-t border-border/70 pt-5 text-[11px] text-muted-foreground sm:flex-row">
+               <Link
+                 href="/"
+                 className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline"
+               >
+                 <ArrowLeft className="size-3.5" />
+                 Back to overview
+               </Link>
+               <p className="flex items-center gap-1.5">
+                 <Clock3 className="size-3.5" />
+                 Live data from the Clash of Clans API
+                 <ChevronRight className="ml-1 size-3" />
+               </p>
+             </footer>
+           </div>
+         </ClashIQPageShell>
+   );
 }
