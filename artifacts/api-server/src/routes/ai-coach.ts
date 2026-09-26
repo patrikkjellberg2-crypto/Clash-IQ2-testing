@@ -17,21 +17,85 @@ function normalizeTag(tag: string) {
   return value.startsWith("#") ? value : `#${value}`;
 }
 
+async function parseJsonResponse(response: Response, source: string) {
+  const raw = await response.text();
+
+  try {
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    const detail = error instanceof Error ? error.message : "invalid JSON";
+    throw new Error(`${source} returned invalid JSON: ${detail}`);
+  }
+}
+
+async function fetchClashKingFallback(path: string) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+
+  try {
+    const response = await fetch(`https://api.clashk.ing${path}`, {
+      headers: { Accept: "application/json" },
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      throw new Error(`ClashKing HTTP ${response.status}`);
+    }
+
+    return await parseJsonResponse(response, "ClashKing");
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function clashFetch(path: string, fallback: any = null) {
   const token = process.env.CLASH_API_TOKEN?.trim();
-  if (!token) throw new Error("CLASH_API_TOKEN is not configured.");
 
-  const response = await fetch(`${CLASH_API_BASE_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-  });
+  // Clash IQ already uses ClashKing elsewhere as a resilient public fallback.
+  // Keep AI Coach from failing when the official proxy returns a truncated or
+  // malformed JSON payload (which otherwise surfaces as a raw JSON.parse error).
+  if (token) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
 
-  if (!response.ok) {
-    const text = await response.text();
-    if (fallback !== null) return fallback;
-    throw new Error(`Clash API error ${response.status}: ${text.slice(0, 300)}`);
+    try {
+      const response = await fetch(`${CLASH_API_BASE_URL}${path}`, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+        signal: controller.signal,
+      });
+
+      if (!response.ok) {
+        if (fallback !== null) return fallback;
+        return await fetchClashKingFallback(path);
+      }
+
+      try {
+        return await parseJsonResponse(response, "Clash API");
+      } catch (error) {
+        if (fallback !== null) {
+          try {
+            return await fetchClashKingFallback(path);
+          } catch {
+            return fallback;
+          }
+        }
+        return await fetchClashKingFallback(path);
+      }
+    } catch (error) {
+      if (fallback !== null) {
+        try {
+          return await fetchClashKingFallback(path);
+        } catch {
+          return fallback;
+        }
+      }
+      return await fetchClashKingFallback(path);
+    } finally {
+      clearTimeout(timeout);
+    }
   }
 
-  return response.json();
+  return await fetchClashKingFallback(path);
 }
 
 function number(value: any, fallback = 0) {
