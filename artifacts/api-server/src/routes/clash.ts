@@ -1082,43 +1082,94 @@ router.get("/clash/war-archive/:id", async (req, res): Promise<void> => {
 router.get(
   "/clash/player/:tag",
   async (req, res): Promise<void> => {
-    if (!process.env.CLASH_API_TOKEN) {
-      res.status(503).json({
-        error:
-          "Clash API token is not configured.",
-        code: "CLASH_API_NOT_CONFIGURED",
-      });
-      return;
-    }
-
     const tag = normalizeClanTag(
       decodeURIComponent(req.params.tag),
     );
 
     try {
-      const encodedTag =
-        encodeURIComponent(tag);
+      const clanTag = await getActiveClanTag();
+      const encodedTag = encodeURIComponent(tag);
 
-      const player =
-        await fetchClashResource(
-          `/players/${encodedTag}`,
-          new AbortController().signal,
-        );
+      // The official player endpoint can occasionally hang or return a
+      // transient 404/5xx. Player Intelligence must not become unusable just
+      // because that live source is unavailable: Clash IQ already has the
+      // player's archived war records in PostgreSQL.
+      let player: ClashRecord | null = null;
 
-      if (!player || Array.isArray(player)) {
-        res.status(404).json({
-          error: "Player not found.",
-          code: "PLAYER_NOT_FOUND",
-        });
-        return;
+      if (process.env.CLASH_API_TOKEN) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4_000);
+
+        try {
+          const livePlayer = await fetchClashResource(
+            `/players/${encodedTag}`,
+            controller.signal,
+          );
+
+          if (livePlayer && !Array.isArray(livePlayer)) {
+            player = livePlayer;
+          }
+        } catch (error) {
+          req.log.warn(
+            { error, tag },
+            "Official Clash player endpoint unavailable; using archive fallback",
+          );
+        } finally {
+          clearTimeout(timeout);
+        }
       }
 
-      const clanTag =
-        await getActiveClanTag();
+      // Player history is database-first. Warm the persistent archive only
+      // when needed so a fresh TEST database can still recover history.
+      let archivedWars = await listArchivedWars(clanTag, 60);
+      let archivedPlayer: ClashRecord | null = null;
 
-      // Player history is database-first. Warm the persistent archive before
-      // reading it so a fresh Render instance does not return Historical Wars 0.
-      await recoverHistoricalWars(clanTag, req.log, 15);
+      const findArchivedPlayer = () => {
+        for (const war of archivedWars) {
+          const members = Array.isArray(war.members)
+            ? (war.members as ClashRecord[])
+            : [];
+
+          const member = members.find(
+            (m) =>
+              normalizeAttackerTag(String(m.tag ?? "")) === tag,
+          );
+
+          if (member) return member;
+        }
+
+        return null;
+      };
+
+      archivedPlayer = findArchivedPlayer();
+
+      if (!player && !archivedPlayer) {
+        await recoverHistoricalWars(clanTag, req.log, 15);
+        archivedWars = await listArchivedWars(clanTag, 60);
+        archivedPlayer = findArchivedPlayer();
+      }
+
+      if (!player) {
+        if (!archivedPlayer) {
+          res.status(404).json({
+            error: "Player not found in Clash IQ's live or archived data.",
+            code: "PLAYER_NOT_FOUND",
+          });
+          return;
+        }
+
+        player = {
+          tag,
+          name: archivedPlayer.name ?? tag,
+          townHallLevel: archivedPlayer.townhallLevel ?? null,
+          expLevel: archivedPlayer.expLevel ?? null,
+          role: archivedPlayer.role ?? null,
+          attacks: Array.isArray(archivedPlayer.attacks)
+            ? archivedPlayer.attacks
+            : [],
+          _clashIqSource: "persistent-war-archive",
+        };
+      }
 
       const archivedHistory = await getPlayerWarHistory(clanTag, tag, 50);
       const clashOfStatsHistory = await fetchClashOfStatsHistory(tag);
@@ -1324,12 +1375,12 @@ router.get(
     } catch (error) {
       req.log.warn(
         { error, tag },
-        "Clash player resource unavailable",
+        "Player Intelligence request failed",
       );
 
       res.status(503).json({
         error:
-          "Could not load the player from Clash of Clans API.",
+          "Could not load Player Intelligence from live or archived data.",
         code: "PLAYER_FETCH_FAILED",
       });
     }
