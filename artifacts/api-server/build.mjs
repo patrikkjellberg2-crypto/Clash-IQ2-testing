@@ -121,6 +121,6 @@ globalThis.__dirname = __bannerPath.dirname(globalThis.__filename);
 }
 
 buildAll().catch((err) => {
-  console.error(err);
+  console.error("CLASH_IQ_BUILD_ERROR", JSON.stringify(err, Object.getOwnPropertyNames(err), 2));
   process.exit(1);
 });
