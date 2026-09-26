@@ -98,6 +98,29 @@ const RESOURCES = new Set([
  * Source: Clash Ninja's current max-level table (updated for 2026).
  * We keep the catalog in Clash IQ rather than depending on a live scrape.
  */
+const TH13_MAX: Record<string, number> = {
+  Cannon: 19, 'Archer Tower': 19, Mortar: 13, 'Air Defense': 11, 'Wizard Tower': 13,
+  'Air Sweeper': 7, 'Hidden Tesla': 12, 'Bomb Tower': 8, 'X-Bow': 8, 'Inferno Tower': 7,
+  'Eagle Artillery': 4, Scattershot: 2,
+  Bomb: 9, 'Spring Trap': 8, 'Air Bomb': 8, 'Giant Bomb': 7, 'Seeking Air Mine': 4,
+  'Skeleton Trap': 4, 'Tornado Trap': 3,
+  'Army Camp': 11, Barracks: 15, 'Clan Castle': 9, Laboratory: 11, 'Hero Hall': 7,
+  'Spell Factory': 7, 'Dark Barracks': 10, 'Dark Spell Factory': 6, Blacksmith: 6, Workshop: 5,
+  'Gold Mine': 15, 'Elixir Collector': 15, 'Gold Storage': 14, 'Elixir Storage': 14,
+  'Dark Elixir Drill': 9, 'Dark Elixir Storage': 8, 'Helper Hut': 1, Wall: 15,
+  Barbarian: 9, Archer: 9, Giant: 10, Goblin: 8, 'Wall Breaker': 9, Balloon: 9,
+  Wizard: 10, Healer: 6, Dragon: 8, 'P.E.K.K.A': 9, 'Baby Dragon': 7, Miner: 7,
+  'Electro Dragon': 4, Yeti: 2, 'Dragon Rider': 2,
+  Minion: 9, 'Hog Rider': 10, Valkyrie: 8, Golem: 10, Witch: 5, 'Lava Hound': 6,
+  Bowler: 5, 'Ice Golem': 5, Headhunter: 3, 'Apprentice Warden': 3, Druid: 2,
+  'Lightning Spell': 9, 'Healing Spell': 8, 'Rage Spell': 6, 'Poison Spell': 7,
+  'Earthquake Spell': 5, 'Jump Spell': 4, 'Freeze Spell': 7, 'Haste Spell': 5,
+  'Skeleton Spell': 7, 'Clone Spell': 6, 'Bat Spell': 5, 'Invisibility Spell': 4,
+  'Overgrowth Spell': 2, 'Recall Spell': 2,
+  'Wall Wrecker': 4, 'Battle Blimp': 4, 'Stone Slammer': 4, 'Siege Barracks': 4, 'Log Launcher': 4,
+  'Barbarian King': 75, 'Archer Queen': 75, 'Grand Warden': 50,
+};
+
 const TH18_MAX: Record<string, number> = {
   'Cannon': 21, 'Archer Tower': 21, 'Mortar': 18, 'Air Defense': 16,
   'Wizard Tower': 17, 'Air Sweeper': 7, 'Hidden Tesla': 17, 'Bomb Tower': 13,
@@ -218,6 +241,12 @@ function formatDuration(seconds: number): string {
   if (days > 0) return `${days}d ${hours}h`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
+}
+
+function maxLevelFor(thLevel: number, name: string): number | undefined {
+  if (thLevel === 13) return TH13_MAX[name];
+  if (thLevel === 18) return TH18_MAX[name];
+  return undefined;
 }
 
 function progressForRow(row: Row, maxLevel: number | undefined) {
@@ -343,7 +372,12 @@ function Section({
 
       <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
         {rows.map(row => (
-          <RowItem key={row.id} row={row} showCount={showCount} />
+          <RowItem
+            key={row.id}
+            row={row}
+            showCount={showCount}
+            maxLevel={maxLevelFor(thLevel, row.name)}
+          />
         ))}
       </div>
     </section>
@@ -441,7 +475,7 @@ export default function VillagePage() {
 
     const progressRows = [...buildings, ...traps, ...heroes, ...pets, ...troops, ...spells, ...walls];
     const progress = progressRows
-      .map(row => ({ row, stats: progressForRow(row, thLevel === 18 ? TH18_MAX[row.name] : undefined) }))
+      .map(row => ({ row, stats: progressForRow(row, maxLevelFor(thLevel, row.name)) }))
       .filter((x): x is { row: Row; stats: NonNullable<ReturnType<typeof progressForRow>> } => Boolean(x.stats));
 
     const totalPossible = progress.reduce((t, x) => t + x.stats.maxLevel * x.row.count, 0);
@@ -634,7 +668,7 @@ export default function VillagePage() {
                       </p>
                       <h2 className="mt-1 text-lg font-black">How close are you to max?</h2>
                       <p className="mt-1 text-xs text-slate-500">
-                        Calculated from your imported levels and the current TH18 max-level catalog.
+                        Calculated from your imported levels and the current max-level catalog for the detected Town Hall.
                       </p>
                     </div>
                     <div className="rounded-xl border border-amber-300/20 bg-black/20 px-4 py-2 text-right">
@@ -715,16 +749,16 @@ export default function VillagePage() {
                   </section>
                 )}
 
-                <Section title="Defenses" eyebrow="Home village" icon={<Shield className="h-5 w-5" thLevel={view.thLevel} />} rows={view.defenses} />
-                <Section title="Traps" eyebrow="Home village" icon={<Zap className="h-5 w-5" thLevel={view.thLevel} />} rows={view.traps} />
-                <Section title="Army buildings" eyebrow="Home village" icon={<Swords className="h-5 w-5" thLevel={view.thLevel} />} rows={view.army} />
-                <Section title="Resources" eyebrow="Home village" icon={<Hammer className="h-5 w-5" thLevel={view.thLevel} />} rows={view.resources} />
-                <Section title="Other buildings" eyebrow="Home village" icon={<Castle className="h-5 w-5" thLevel={view.thLevel} />} rows={view.other} />
-                <Section title="Walls" eyebrow="Home village" icon={<Castle className="h-5 w-5" thLevel={view.thLevel} />} rows={view.walls} showCount={false} />
-                <Section title="Heroes" eyebrow="Units" icon={<Crown className="h-5 w-5" thLevel={view.thLevel} />} rows={view.heroes} />
-                <Section title="Pets" eyebrow="Units" icon={<Sparkles className="h-5 w-5" thLevel={view.thLevel} />} rows={view.pets} />
-                <Section title="Troops & siege machines" eyebrow="Units" icon={<Swords className="h-5 w-5" thLevel={view.thLevel} />} rows={view.troops} />
-                <Section title="Spells" eyebrow="Units" icon={<Sparkles className="h-5 w-5" thLevel={view.thLevel} />} rows={view.spells} />
+                <Section title="Defenses" eyebrow="Home village" icon={<Shield className="h-5 w-5" />} rows={view.defenses} thLevel={view.thLevel} />
+                <Section title="Traps" eyebrow="Home village" icon={<Zap className="h-5 w-5" />} rows={view.traps} thLevel={view.thLevel} />
+                <Section title="Army buildings" eyebrow="Home village" icon={<Swords className="h-5 w-5" />} rows={view.army} thLevel={view.thLevel} />
+                <Section title="Resources" eyebrow="Home village" icon={<Hammer className="h-5 w-5" />} rows={view.resources} thLevel={view.thLevel} />
+                <Section title="Other buildings" eyebrow="Home village" icon={<Castle className="h-5 w-5" />} rows={view.other} thLevel={view.thLevel} />
+                <Section title="Walls" eyebrow="Home village" icon={<Castle className="h-5 w-5" />} rows={view.walls} showCount={false} thLevel={view.thLevel} />
+                <Section title="Heroes" eyebrow="Units" icon={<Crown className="h-5 w-5" />} rows={view.heroes} thLevel={view.thLevel} />
+                <Section title="Pets" eyebrow="Units" icon={<Sparkles className="h-5 w-5" />} rows={view.pets} thLevel={view.thLevel} />
+                <Section title="Troops & siege machines" eyebrow="Units" icon={<Swords className="h-5 w-5" />} rows={view.troops} thLevel={view.thLevel} />
+                <Section title="Spells" eyebrow="Units" icon={<Sparkles className="h-5 w-5" />} rows={view.spells} thLevel={view.thLevel} />
               </>
             )}
           </div>
