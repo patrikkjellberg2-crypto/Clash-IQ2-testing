@@ -24,7 +24,7 @@ export function ClashIQPageBanner({ children }: { children: ReactNode }) {
             url(${BANNER_SRC});
           background-repeat: no-repeat;
           background-position: center 28px;
-          background-size: min(1400px, calc(100% - 56px)) 360px;
+          background-size: min(1155px, calc(100% - 32px)) 360px;
           color: #fff !important;
         }
 
