@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
-import { ClashIQPageShell } from '@/components/clashiq-page-shell';
+import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
 import {
   ArrowRight,
   BrainCircuit,
+  Menu,
   RefreshCw,
   Shield,
   Sparkles,
@@ -39,6 +40,9 @@ export default function AICoachPage() {
   const war = d(dashboard?.currentWar);
   const opponent = d(war.opponent);
   const clanTag = s(dashboard?.clanTag, '');
+
+  const [mobileOpen, setMobileOpen] =
+    useState(false);
 
   const [mode, setMode] =
     useState<Mode>('clan');
@@ -186,8 +190,69 @@ export default function AICoachPage() {
   );
 
   return (
-    <ClashIQPageShell clanName={clanName} clanTag={clanTag} title="AI Coach" subtitle="Tactical intelligence for your clan, wars and opponents." onRefresh={() => void refetch()}>
+    <div className="min-h-[100dvh] bg-[#02070d] text-white">
+      <div className="flex min-h-[100dvh]">
+        <AppSidebar
+          clanName={clanName}
+          clanTag={clanTag}
+          mobileOpen={mobileOpen}
+          onClose={() =>
+            setMobileOpen(false)
+          }
+        />
 
+        <main className="min-w-0 flex-1">
+          <header className="sticky top-0 z-20 border-b border-white/[.06] bg-[#030a12]/90 px-4 py-4 backdrop-blur-xl md:px-8">
+            <div className="mx-auto flex max-w-[1400px] items-center gap-3">
+              <button
+                type="button"
+                onClick={() =>
+                  setMobileOpen(true)
+                }
+                className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[.04] lg:hidden"
+                aria-label="Open navigation"
+              >
+                <Menu className="size-4" />
+              </button>
+
+              <div>
+                <p className="text-[8px] font-black uppercase tracking-[.22em] text-[#f4c542]">
+                  Elite Mode / Intelligence
+                </p>
+
+                <h1 className="mt-1 font-display text-xl font-black tracking-[-.04em] md:text-2xl">
+                  AI Coach
+                </h1>
+              </div>
+
+              <div className="ml-auto flex items-center gap-3">
+                <span className="hidden items-center gap-2 text-[8px] font-black uppercase tracking-[.18em] text-[#36d399] sm:flex">
+                  <span className="size-1.5 rounded-full bg-[#36d399] shadow-[0_0_8px_rgba(54,211,153,.8)]" />
+
+                  Live Intelligence
+                </span>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    void refetch()
+                  }
+                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[.04]"
+                  aria-label="Refresh clan data"
+                >
+                  <RefreshCw
+                    className={
+                      isFetching
+                        ? 'size-4 animate-spin'
+                        : 'size-4'
+                    }
+                  />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-8">
             <section className="relative overflow-hidden rounded-3xl border border-[#f4c542]/20 bg-[#030a12] p-6 shadow-[0_20px_80px_rgba(0,0,0,.35)] md:p-8">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_15%,rgba(244,197,66,.14),transparent_32%),radial-gradient(circle_at_10%_90%,rgba(45,140,255,.10),transparent_35%)]" />
 
@@ -510,7 +575,9 @@ export default function AICoachPage() {
             <footer className="border-t border-white/[.06] pt-5 text-[10px] text-white/35">
               CLASHIQ · Elite War Intelligence
             </footer>
-
-    </ClashIQPageShell>
+          </div>
+        </main>
+      </div>
+    </div>
   );
 }
