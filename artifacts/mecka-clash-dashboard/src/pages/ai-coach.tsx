@@ -512,8 +512,6 @@ export default function AICoachPage() {
               CLASHIQ · Elite War Intelligence
             </footer>
 
-        </main>
-  </div>
+    </ClashIQPageShell>
   );
 }
-    </ClashIQPageShell>
