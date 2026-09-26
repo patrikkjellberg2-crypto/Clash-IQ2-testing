@@ -7,7 +7,7 @@
     "build": "corepack pnpm install --frozen-lockfile && corepack pnpm --filter @workspace/mecka-clash-dashboard run build && corepack pnpm --filter @workspace/api-server exec node ./build.mjs",
     "typecheck:libs": "corepack pnpm run typecheck:libs && corepack pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
     "typecheck": "corepack pnpm run typecheck:libs && corepack pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
-    "start": "corepack pnpm --filter @workspace/db push && corepack pnpm --filter @workspace/api-server start"
+    "start": "corepack pnpm --filter @workspace/api-server start"
   },
   "private": true,
   "packageManager": "pnpm@10.34.5",
