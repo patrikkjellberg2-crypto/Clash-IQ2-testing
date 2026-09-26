@@ -14,7 +14,8 @@ import {
   Upload,
   Zap,
 } from 'lucide-react';
-import { ClashIQPageShell } from '@/components/clashiq-page-shell';
+import { AppSidebar } from '@/components/app-sidebar';
+import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import { getUpgradeCost, type UpgradeCost } from '@/lib/upgrade-catalog';
 
 type Dict = Record<string, any>;
@@ -630,8 +631,14 @@ export default function VillagePage() {
     : null;
 
   return (
-    <ClashIQPageShell clanName="CLASHIQ" clanTag={String(village?.tag || '')} title="Village" subtitle="Buildings, defenses, traps, heroes, troops and upgrade progress.">
-          <div className="space-y-6">
+    <div className="min-h-[100dvh] bg-[#07090d] text-white">
+      <div className="flex min-h-screen bg-[#07090d]">
+        <AppSidebar clanName="CLASHIQ" clanTag={String(village?.tag || '')} />
+
+        <main className="min-w-0 flex-1">
+          <ClashIQInlineBanner />
+
+          <div className="mx-auto max-w-[1400px] space-y-6 px-4 pb-16 pt-2 md:px-7">
             <div>
               <Link
                 href="/"
@@ -870,6 +877,8 @@ export default function VillagePage() {
               </>
             )}
           </div>
-    </ClashIQPageShell>
+        </main>
+      </div>
+    </div>
   );
 }
