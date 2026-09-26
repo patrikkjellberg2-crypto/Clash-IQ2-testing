@@ -917,7 +917,6 @@ function PlannerRow({
   const recentAvgStars = num(performance?.recentAvgStars);
   const recentAvgDestruction = num(performance?.recentAvgDestruction);
   const threeStarRate = num(performance?.threeStarRate);
-  const performanceWars = num(performance?.recentWars);
   const formLabel =
     performanceTrend === 'improving'
       ? 'ON FIRE'
