@@ -3,6 +3,8 @@ import { Link } from 'wouter';
 import {
   ArrowLeft,
   Castle,
+  Clock3,
+  Coins,
   Crown,
   Hammer,
   Shield,
@@ -91,6 +93,51 @@ const RESOURCES = new Set([
   'Dark Elixir Drill', 'Dark Elixir Storage',
 ]);
 
+/*
+ * Current TH18 max-level catalog.
+ * Source: Clash Ninja's current max-level table (updated for 2026).
+ * We keep the catalog in Clash IQ rather than depending on a live scrape.
+ */
+const TH18_MAX: Record<string, number> = {
+  'Cannon': 21, 'Archer Tower': 21, 'Mortar': 18, 'Air Defense': 16,
+  'Wizard Tower': 17, 'Air Sweeper': 7, 'Hidden Tesla': 17, 'Bomb Tower': 13,
+  'X-Bow': 13, 'Inferno Tower': 12, 'Scattershot': 7, 'Builder Hut': 8,
+  'Monolith': 5, 'Spell Tower': 4, 'Multi-Archer Tower': 4,
+  'Ricochet Cannon': 4, 'Firespitter': 3, 'Multi-Gear Tower': 3,
+  'Revenge Tower': 2, 'Super Wizard Tower': 2,
+  'Bomb': 14, 'Spring Trap': 13, 'Air Bomb': 13, 'Giant Bomb': 12,
+  'Seeking Air Mine': 8, 'Skeleton Trap': 5, 'Tornado Trap': 3, 'Giga Bomb': 4,
+  'Army Camp': 14, 'Barracks': 19, 'Clan Castle': 14, 'Laboratory': 16,
+  'Hero Hall': 12, 'Spell Factory': 9, 'Dark Barracks': 13,
+  'Dark Spell Factory': 8, 'Blacksmith': 10, 'Workshop': 9, 'Pet House': 12,
+  'Gold Mine': 17, 'Elixir Collector': 17, 'Gold Storage': 19,
+  'Elixir Storage': 19, 'Dark Elixir Drill': 11, 'Dark Elixir Storage': 13,
+  'Helper Hut': 1, 'Wall': 19,
+  'Barbarian': 13, 'Archer': 14, 'Giant': 14, 'Goblin': 10,
+  'Wall Breaker': 14, 'Balloon': 13, 'Wizard': 14, 'Healer': 11,
+  'Dragon': 13, 'P.E.K.K.A': 13, 'Baby Dragon': 12, 'Miner': 12,
+  'Electro Dragon': 9, 'Yeti': 8, 'Dragon Rider': 6, 'Electro Titan': 5,
+  'Root Rider': 4, 'Thrower': 4, 'Meteor Golem': 3,
+  'Minion': 14, 'Hog Rider': 15, 'Valkyrie': 12, 'Golem': 15,
+  'Witch': 8, 'Lava Hound': 8, 'Bowler': 10, 'Ice Golem': 9,
+  'Headhunter': 4, 'Apprentice Warden': 4, 'Druid': 6, 'Furnace': 4,
+  'Ruin Witch': 4,
+  'Lightning Spell': 13, 'Healing Spell': 12, 'Rage Spell': 7,
+  'Poison Spell': 12, 'Earthquake Spell': 8, 'Jump Spell': 5,
+  'Freeze Spell': 8, 'Haste Spell': 7, 'Skeleton Spell': 8,
+  'Clone Spell': 9, 'Bat Spell': 8, 'Invisibility Spell': 4,
+  'Overgrowth Spell': 5, 'Recall Spell': 7, 'Ice Block Spell': 6,
+  'Revive Spell': 5, 'Angry Spell': 4, 'Totem Spell': 4,
+  'Wall Wrecker': 6, 'Battle Blimp': 6, 'Stone Slammer': 6,
+  'Siege Barracks': 6, 'Log Launcher': 6, 'Flame Flinger': 5,
+  'Battle Drill': 6, 'Troop Launcher': 4, 'Sky Wagon': 4,
+  'Barbarian King': 110, 'Archer Queen': 110, 'Minion Prince': 95,
+  'Grand Warden': 85, 'Royal Champion': 55, 'Dragon Duke': 25,
+  'L.A.S.S.I': 15, 'Electro Owl': 15, 'Mighty Yak': 15, 'Unicorn': 15,
+  'Frosty': 15, 'Diggy': 15, 'Poison Lizard': 15, 'Phoenix': 10,
+  'Spirit Fox': 10, 'Angry Jelly': 10, 'Sneezy': 10, 'Greedy Raven': 10,
+};
+
 /* ------------------------------------------------------------------ */
 
 type Row = {
@@ -161,6 +208,34 @@ function loadSaved(): Dict | null {
 
 function levelsSorted(row: Row) {
   return Array.from(row.levels.entries()).sort((a, b) => b[0] - a[0]);
+}
+
+function formatDuration(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  const days = Math.floor(total / 86400);
+  const hours = Math.floor((total % 86400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function progressForRow(row: Row, maxLevel: number | undefined) {
+  if (!maxLevel) return null;
+  let current = 0;
+  let remaining = 0;
+  let possible = 0;
+  for (const [level, count] of row.levels) {
+    current += level * count;
+    remaining += Math.max(0, maxLevel - level) * count;
+    possible += maxLevel * count;
+  }
+  return {
+    maxLevel,
+    current,
+    remaining,
+    percent: possible > 0 ? Math.min(100, Math.round((current / possible) * 100)) : 0,
+  };
 }
 
 /* ------------------------------------------------------------------ */
@@ -330,6 +405,50 @@ export default function VillagePage() {
     }
     defenseInstances.sort((a, b) => a.level - b.level);
 
+    const progressRows = [...buildings, ...traps, ...heroes, ...pets, ...troops, ...spells, ...walls];
+    const progress = progressRows
+      .map(row => ({ row, stats: progressForRow(row, thLevel === 18 ? TH18_MAX[row.name] : undefined) }))
+      .filter((x): x is { row: Row; stats: NonNullable<ReturnType<typeof progressForRow>> } => Boolean(x.stats));
+
+    const totalPossible = progress.reduce((t, x) => t + x.stats.maxLevel * x.row.count, 0);
+    const totalCurrent = progress.reduce((t, x) => t + x.stats.current, 0);
+    const totalRemainingLevels = progress.reduce((t, x) => t + x.stats.remaining, 0);
+    const completionPercent = totalPossible > 0
+      ? Math.min(100, Math.round((totalCurrent / totalPossible) * 100))
+      : 0;
+
+    const rawSources = [
+      ['Buildings', village.buildings],
+      ['Traps', village.traps],
+      ['Troops', village.units],
+      ['Siege', village.siege_machines],
+      ['Heroes', village.heroes],
+      ['Pets', village.pets],
+      ['Spells', village.spells],
+    ] as const;
+
+    const exportTimestamp = toNum(village.timestamp, Math.floor(Date.now() / 1000));
+    const now = Date.now() / 1000;
+    const activeUpgrades: { name: string; level: number; seconds: number; kind: string }[] = [];
+    for (const [kind, source] of rawSources) {
+      if (!Array.isArray(source)) continue;
+      for (const item of source) {
+        if (!item || typeof item !== 'object') continue;
+        const timer = Number((item as Dict).timer);
+        if (!Number.isFinite(timer) || timer <= 0) continue;
+        const remainingSeconds = Math.max(0, timer - (now - exportTimestamp));
+        if (remainingSeconds <= 0) continue;
+        const id = String((item as Dict).data ?? '');
+        activeUpgrades.push({
+          name: NAMES[id] || `Item #${id}`,
+          level: toNum((item as Dict).lvl, 0),
+          seconds: remainingSeconds,
+          kind,
+        });
+      }
+    }
+    activeUpgrades.sort((a, b) => a.seconds - b.seconds);
+
     const heroLevels = heroes.reduce(
       (t, r) => t + Array.from(r.levels.keys()).reduce((s, l) => s + l, 0),
       0,
@@ -352,6 +471,10 @@ export default function VillagePage() {
       buildingCount,
       weakest: defenseInstances.slice(0, 8),
       heroLevels,
+      progress,
+      totalRemainingLevels,
+      completionPercent,
+      activeUpgrades,
     };
   }, [village]);
 
@@ -381,9 +504,9 @@ export default function VillagePage() {
                 Village Import
               </h1>
               <p className="mt-1 max-w-2xl text-sm text-slate-500">
-                Buildings, defenses, traps and walls are not available from the
-                official Clash API. Import your in-game Data Export to see them here.
-                Your data is read in this app and stays on this device.
+                Buildings, defenses, traps, walls and active upgrade timers are not available
+                from the official Clash API. Import your in-game Data Export to see them here.
+                Clash IQ calculates the progress locally and does not need a live Clash Ninja connection.
               </p>
             </div>
 
@@ -468,64 +591,72 @@ export default function VillagePage() {
                   />
                 </div>
 
-                {/* Byns Totala Framsteg & Mätare */}
-                <div className="rounded-2xl border border-[#3a3a4f] bg-[#1a1a24] p-5 shadow-xl">
-                  <h2 className="text-[#ffcc00] font-black text-base mb-4 flex items-center gap-2">
-                    🏰 Byns Totala Framsteg
-                  </h2>
-                  
-                  <div className="mb-5">
-                    <div className="flex justify-between font-bold text-sm mb-2">
-                      <span>Sammanlagd Nivå (Alla Byggnader & Hjältar)</span>
-                      <span className="text-[#f1c40f]">68%</span>
+                {/* Dynamic village progress */}
+                <section className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-5 shadow-xl">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">
+                        Village intelligence
+                      </p>
+                      <h2 className="mt-1 text-lg font-black">How close are you to max?</h2>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Calculated from your imported levels and the current TH18 max-level catalog.
+                      </p>
                     </div>
-                    <div className="bg-[#2a2a3d] h-4 rounded-lg overflow-hidden border border-[#3a3a50]">
-                      <div className="bg-gradient-to-r from-[#f39c12] to-[#f1c40f] h-full rounded-lg" style={{ width: '68%' }}></div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="bg-[#222232] p-3.5 rounded-lg border border-[#2f2f45]">
-                      <div className="flex justify-between text-xs font-medium text-[#ddddf0] mb-2">
-                        <span>🛡️ Försvar</span>
-                        <span>45 / 60 (75%)</span>
-                      </div>
-                      <div className="bg-[#15151f] h-2.5 rounded-full overflow-hidden border border-[#252535]">
-                        <div className="bg-[#3498db] h-full rounded-full" style={{ width: '75%' }}></div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#222232] p-3.5 rounded-lg border border-[#2f2f45]">
-                      <div className="flex justify-between text-xs font-medium text-[#ddddf0] mb-2">
-                        <span>👑 Hjältar</span>
-                        <span>32 / 35 (91%)</span>
-                      </div>
-                      <div className="bg-[#15151f] h-2.5 rounded-full overflow-hidden border border-[#252535]">
-                        <div className="bg-[#9b59b6] h-full rounded-full" style={{ width: '91%' }}></div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#222232] p-3.5 rounded-lg border border-[#2f2f45]">
-                      <div className="flex justify-between text-xs font-medium text-[#ddddf0] mb-2">
-                        <span>⚔️ Armé & Lab</span>
-                        <span>18 / 25 (72%)</span>
-                      </div>
-                      <div className="bg-[#15151f] h-2.5 rounded-full overflow-hidden border border-[#252535]">
-                        <div className="bg-[#2ecc71] h-full rounded-full" style={{ width: '72%' }}></div>
-                      </div>
-                    </div>
-
-                    <div className="bg-[#222232] p-3.5 rounded-lg border border-[#2f2f45]">
-                      <div className="flex justify-between text-xs font-medium text-[#ddddf0] mb-2">
-                        <span>🧱 Murar</span>
-                        <span>220 / 325 (67%)</span>
-                      </div>
-                      <div className="bg-[#15151f] h-2.5 rounded-full overflow-hidden border border-[#252535]">
-                        <div className="bg-[#e67e22] h-full rounded-full" style={{ width: '67%' }}></div>
-                      </div>
+                    <div className="rounded-xl border border-amber-300/20 bg-black/20 px-4 py-2 text-right">
+                      <p className="text-2xl font-black text-amber-200">{view.completionPercent}%</p>
+                      <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-slate-500">max progress</p>
                     </div>
                   </div>
-                </div>
+
+                  <div className="mt-5 h-4 overflow-hidden rounded-lg border border-white/10 bg-black/30">
+                    <div
+                      className="h-full rounded-lg bg-gradient-to-r from-amber-500 to-yellow-300 transition-all"
+                      style={{ width: `${view.completionPercent}%` }}
+                    />
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    <Stat label="Levels left" value={view.totalRemainingLevels.toLocaleString()} sub="recognized upgrade levels" />
+                    <Stat label="Tracked items" value={String(view.progress.length)} sub="with current max data" />
+                    <Stat
+                      label="Active upgrades"
+                      value={String(view.activeUpgrades.length)}
+                      sub={view.activeUpgrades[0] ? `Next: ${formatDuration(view.activeUpgrades[0].seconds)}` : 'No active timers in export'}
+                    />
+                  </div>
+
+                  {view.activeUpgrades.length > 0 && (
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                      {view.activeUpgrades.map((upgrade, index) => (
+                        <div key={`${upgrade.name}-${index}`} className="rounded-xl border border-sky-300/15 bg-sky-300/[0.04] p-3">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold">{upgrade.name}</p>
+                              <p className="text-[10px] font-black uppercase tracking-[0.15em] text-slate-500">
+                                {upgrade.kind} · Lv {upgrade.level}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-1.5 text-xs font-black text-sky-200">
+                              <Clock3 className="h-3.5 w-3.5" />
+                              {formatDuration(upgrade.seconds)}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-4 rounded-xl border border-white/5 bg-black/20 p-3 text-xs text-slate-400">
+                    <div className="flex items-center gap-2 font-bold text-slate-200">
+                      <Coins className="h-4 w-4 text-amber-300" />
+                      Upgrade costs
+                    </div>
+                    <p className="mt-1">
+                      Nästa steg är att koppla in den fullständiga kostnads-/tidskatalogen, så Clash IQ kan visa exakt guld, elixir, dark elixir och total byggtid kvar — inte bara nivåerna och aktiva timers.
+                    </p>
+                  </div>
+                </section>
 
                 {view.weakest.length > 0 && (
                   <section className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] p-5">
