@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 import { ArrowLeft, BarChart3, Swords, Target, Trophy, TrendingUp } from 'lucide-react';
+import { Link } from 'wouter';
 import { useGetClashDashboard } from '@workspace/api-client-react';
-import { ClashIQPageShell } from '@/components/clashiq-page-shell';
+import { AppSidebar } from '@/components/app-sidebar';
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => v && typeof v === 'object' ? (v as Dict) : {};
@@ -66,14 +67,10 @@ export default function StatisticsPage() {
   if(isLoading) return <div className="grid min-h-[100dvh] place-items-center bg-[#07090d] text-white"><p className="text-xs font-black uppercase tracking-[.2em] text-amber-300">Loading statistics...</p></div>;
   if(isError) return <div className="grid min-h-[100dvh] place-items-center bg-[#07090d] p-6 text-white"><div className="rounded-3xl border border-white/10 bg-[#0b1119] p-8 text-center"><BarChart3 className="mx-auto size-8 text-amber-300"/><h1 className="mt-4 text-2xl font-black">Statistics Offline</h1><p className="mt-2 text-sm text-slate-500">CLASHIQ could not load the clan statistics.</p></div></div>;
 
-  return (
-    <ClashIQPageShell
-      clanName={s(clan.name, 'BHABE DHEMONS')}
-      clanTag={clanTag || '#2Q0Q82C9R'}
-      title="Statistics"
-      subtitle="A clear summary of the verified war data available to Clash IQ."
-    >
-      <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+  return <div className="min-h-[100dvh] bg-[#07090d] text-white"><div className="flex min-h-[100dvh]"><AppSidebar clanName={s(clan.name,'BHABE DHEMONS')} clanTag={clanTag||'#2Q0Q82C9R'}/><main className="min-w-0 flex-1"><div className="mx-auto max-w-[1400px] px-5 pb-10 pt-3 md:px-8 md:pt-4">
+    <Link href="/" className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[.2em] text-amber-300 hover:text-amber-200"><ArrowLeft className="size-4"/>Command Center</Link>
+    <header className="mt-4 border-b border-white/[.06] pb-5"><p className="text-[9px] font-black uppercase tracking-[.22em] text-slate-500">CLASHIQ / Intelligence</p><h1 className="mt-1 text-3xl font-black tracking-[-.04em]">Statistics</h1><p className="mt-1 max-w-2xl text-sm text-slate-500">A clear summary of the verified war data available to Clash IQ.</p></header>
+    <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard icon={Trophy} label="Win Rate" value={`${stats.winRate}%`} detail={`${stats.wins} wins · ${stats.losses} losses · ${stats.draws} draws`}/>
       <StatCard icon={Swords} label="Completed Wars" value={String(stats.completed)} detail="Wars in the available log"/>
       <StatCard icon={Target} label="Three-Star Rate" value={stats.threeStarRate==null?'—':`${stats.threeStarRate}%`} detail={stats.attacks?`${stats.threeStars} of ${stats.attacks} verified attacks were 3★`:'Attack-level data is not available in the war log'}/>
@@ -84,51 +81,3 @@ export default function StatisticsPage() {
     </section>
   </div></main></div></div>;
 }
-    </ClashIQPageShell>
-  );rt { useMemo } from 'react';
-import { ArrowLeft, BarChart3, Swords, Target, Trophy, TrendingUp } from 'lucide-react';
-import { useGetClashDashboard } from '@workspace/api-client-react';
-import { ClashIQPageShell } from '@/components/clashiq-page-shell';
-
-type Dict = Record<string, unknown>;
-const d = (v: unknown): Dict => v && typeof v === 'object' ? (v as Dict) : {};
-const arr = (v: unknown): Dict[] => Array.isArray(v) ? v.map(d) : [];
-const s = (v: unknown, fallback = '') => typeof v === 'string' ? v : fallback;
-const n = (v: unknown, fallback = 0) => {
-  if (typeof v === 'number' && Number.isFinite(v)) return v;
-  if (typeof v === 'string' && v.trim()) { const value = Number(v.replace(/,/g, '')); if (Number.isFinite(value)) return value; }
-  return fallback;
-};
-const warTime = (war: Dict) => {
-  for (const value of [war.endTime, war.warEndTime, war.startTime, war.warStartTime, war.prepStartTime]) {
-    if (typeof value !== 'string' || !value.trim()) continue;
-    const clash = value.trim().match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-    if (clash) return Date.UTC(+clash[1], +clash[2] - 1, +clash[3], +clash[4], +clash[5], +clash[6]);
-    const parsed = Date.parse(value); if (!Number.isNaN(parsed)) return parsed;
-  }
-  return 0;
-};
-const ownSideOf = (war: Dict, clanTag: string) => {
-  const clan = d(war.clan), opponent = d(war.opponent), tag = clanTag.toUpperCase();
-  return s(clan.tag).toUpperCase() === tag ? clan : s(opponent.tag).toUpperCase() === tag ? opponent : clan;
-};
-const resultOf = (war: Dict, clanTag: string) => {
-  const state = s(war.state).toLowerCase();
-  if (['won','win','victory'].includes(state)) return 'WIN';
-  if (['lost','loss','lose','defeat'].includes(state)) return 'LOSS';
-  if (['draw','tied'].includes(state)) return 'DRAW';
-  const own = ownSideOf(war, clanTag), enemy = own === d(war.clan) ? d(war.opponent) : d(war.clan);
-  if (n(own.stars) !== n(enemy.stars)) return n(own.stars) > n(enemy.stars) ? 'WIN' : 'LOSS';
-  if (n(own.destructionPercentage) !== n(enemy.destructionPercentage)) return n(own.destructionPercentage) > n(enemy.destructionPercentage) ? 'WIN' : 'LOSS';
-  return 'DRAW';
-};
-
-function StatCard({ icon: Icon, label, value, detail }: { icon: typeof Trophy; label: string; value: string; detail: string }) {
-  return <article className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5 shadow-[0_16px_50px_rgba(0,0,0,.18)]">
-    <div className="grid size-10 place-items-center rounded-xl border border-amber-400/20 bg-amber-400/[.06] text-amber-300"><Icon className="size-5" /></div>
-    <p className="mt-4 text-[9px] font-black uppercase tracking-[.2em] text-slate-500">{label}</p>
-    <p className="mt-1 text-3xl font-black tracking-tight text-white">{value}</p>
-    <p className="mt-1 text-xs text-slate-500">{detail}</p>
-  </article>;
-}
-
