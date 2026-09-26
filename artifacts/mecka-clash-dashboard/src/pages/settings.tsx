@@ -22,7 +22,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 
 function Toggle({ enabled, onClick }: { enabled: boolean; onClick: () => void }) {
   return (
@@ -149,8 +148,6 @@ export default function SettingsPage() {
       <div className="flex min-h-screen bg-[#07090d]">
         <AppSidebar />
         <main className="min-w-0 flex-1">
-          <ClashIQInlineBanner />
-
           <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="min-w-0">
