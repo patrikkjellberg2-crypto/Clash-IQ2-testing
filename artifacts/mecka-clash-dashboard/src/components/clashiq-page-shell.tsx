@@ -25,7 +25,7 @@ export function ClashIQPageShell({
       <AppSidebar clanName={clanName} clanTag={clanTag} />
       <main className="min-w-0 flex-1 !ml-0 !pl-0 w-full">
         <header className="clashiq-header border-b border-white/[0.06] bg-[#07090d]/90 px-5 py-4 text-white backdrop-blur-xl">
-          <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4">
+          <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
             <div className="min-w-0">
               <Link
                 href="/"
@@ -53,7 +53,7 @@ export function ClashIQPageShell({
             ) : null}
           </div>
         </header>
-        <div className="clashiq-content mx-auto w-full max-w-[1200px] space-y-5 px-4 py-5 sm:px-5 md:px-8 md:py-8">
+        <div className="clashiq-content mx-auto w-full max-w-[1200px] space-y-6 px-5 py-6 md:px-8 md:py-8">
           {children}
         </div>
       </main>
