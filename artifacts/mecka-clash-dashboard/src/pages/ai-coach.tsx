@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
-import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
 import {
@@ -501,7 +500,7 @@ export default function AICoachPage() {
             </section>
 
             <section className="grid gap-4 md:grid-cols-3">
-              <Link
+              <a
                 href="/war-planner"
                 className="group rounded-2xl border border-white/[.07] bg-[#06111b]/80 p-5 transition hover:border-[#f4c542]/20"
               >
@@ -516,9 +515,9 @@ export default function AICoachPage() {
                 </p>
 
                 <ArrowRight className="mt-4 size-4 text-white/30 transition group-hover:translate-x-1" />
-              </Link>
+              </a>
 
-              <Link
+              <a
                 href="/war-center"
                 className="group rounded-2xl border border-white/[.07] bg-[#06111b]/80 p-5 transition hover:border-[#2d8cff]/20"
               >
@@ -533,9 +532,9 @@ export default function AICoachPage() {
                 </p>
 
                 <ArrowRight className="mt-4 size-4 text-white/30 transition group-hover:translate-x-1" />
-              </Link>
+              </a>
 
-              <Link
+              <a
                 href="/"
                 className="group rounded-2xl border border-white/[.07] bg-[#06111b]/80 p-5 transition hover:border-white/15"
               >
@@ -550,7 +549,7 @@ export default function AICoachPage() {
                 </p>
 
                 <ArrowRight className="mt-4 size-4 text-white/30 transition group-hover:translate-x-1" />
-              </Link>
+              </a>
             </section>
 
             <footer className="border-t border-white/[.06] pt-5 text-[10px] text-white/35">
