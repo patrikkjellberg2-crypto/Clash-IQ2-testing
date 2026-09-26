@@ -771,9 +771,9 @@ router.get(
       if (!endTime) continue;
 
       const leagueRaw =
-        officialClanRaw?.capitalLeague ??
-        basicClanRaw?.capitalLeague ??
-        clashKingClanRaw?.capitalLeague;
+        (officialClanResult.data && !Array.isArray(officialClanResult.data) ? officialClanResult.data.capitalLeague : undefined) ??
+        (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.capitalLeague : undefined) ??
+        (clanResult.data && !Array.isArray(clanResult.data) ? clanResult.data.capitalLeague : undefined);
       const leagueName =
         leagueRaw && typeof leagueRaw === "object"
           ? String((leagueRaw as ClashRecord).name ?? "")
@@ -790,7 +790,13 @@ router.get(
           .values({
             id: `${normalizeClanTag(clanTag)}__${endTime}`,
             clanTag: normalizeClanTag(clanTag),
-            clanName: String((clan?.name ?? seasonClan?.name ?? "") || "") || null,
+            clanName: String((
+              (officialClanResult.data && !Array.isArray(officialClanResult.data) ? officialClanResult.data.name : undefined) ??
+              (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.name : undefined) ??
+              (clanResult.data && !Array.isArray(clanResult.data) ? clanResult.data.name : undefined) ??
+              seasonClan?.name ??
+              ""
+            ) || "") || null,
             leagueName: leagueName || null,
             startTime: startTime || null,
             endTime,
@@ -805,7 +811,13 @@ router.get(
           .onConflictDoUpdate({
             target: capitalRaidArchiveTable.id,
             set: {
-              clanName: String((clan?.name ?? seasonClan?.name ?? "") || "") || null,
+              clanName: String((
+                (officialClanResult.data && !Array.isArray(officialClanResult.data) ? officialClanResult.data.name : undefined) ??
+                (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.name : undefined) ??
+                (clanResult.data && !Array.isArray(clanResult.data) ? clanResult.data.name : undefined) ??
+                seasonClan?.name ??
+                ""
+              ) || "") || null,
               leagueName: leagueName || null,
               startTime: startTime || null,
               state: String(season.state ?? "") || null,
