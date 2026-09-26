@@ -343,16 +343,6 @@ export default function SettingsPage() {
                 <SettingRow icon={Swords} title="War alerts" description="Highlight important active-war and attack activity.">
                   <Toggle enabled={warAlerts} onClick={() => updateAndSave('warAlerts', !warAlerts)} />
                 </SettingRow>
-                <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                  <Link href="/war-center" className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.025] p-3 transition hover:bg-white/[0.05]">
-                    <span className="text-xs font-bold text-slate-300">War Center</span>
-                    <ChevronRight className="h-4 w-4 text-slate-600" />
-                  </Link>
-                  <Link href="/war-planner" className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.025] p-3 transition hover:bg-white/[0.05]">
-                    <span className="text-xs font-bold text-slate-300">War Planner</span>
-                    <ChevronRight className="h-4 w-4 text-slate-600" />
-                  </Link>
-                </div>
               </Section>
 
               <Section icon={Shield} eyebrow="04 • Privacy" title="Security">
