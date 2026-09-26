@@ -717,22 +717,11 @@ export default function DashboardPage() {
         <AppSidebar
           clanName={clanName}
           clanTag={dash.clanTag}
-          mobileOpen={mobile}
-          onClose={() => setMobile(false)}
         />
 
         <main className="min-w-0 flex-1">
           <header className="sticky top-0 z-20 border-b border-white/10 bg-[#06111f]/90 px-4 py-3 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setMobile(true)}
-                className="rounded-xl border border-white/10 bg-white/5 p-2 lg:hidden"
-              >
-                <Menu className="size-5" />
-              </button>
-
-
               <div className="ml-auto flex items-center gap-3">
                 <div className="hidden sm:block">
                   <p className="text-xs font-bold">
