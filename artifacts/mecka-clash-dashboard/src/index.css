@@ -252,3 +252,37 @@ body { background: #06101c; }
 .premium-card{background:linear-gradient(145deg,rgba(12,31,50,.98),rgba(5,18,31,.98));border:1px solid rgba(61,125,171,.35);box-shadow:0 12px 35px rgba(0,0,0,.2),inset 0 1px 0 rgba(255,255,255,.03);}
 .hero-banner{background:radial-gradient(circle at 78% 35%,rgba(245,166,43,.28),transparent 25%),linear-gradient(115deg,#07182a 0%,#0c2841 42%,#3a281d 100%);position:relative;overflow:hidden}.hero-banner:after{content:'';position:absolute;inset:auto -10% 0 25%;height:90%;background:radial-gradient(ellipse at 55% 75%,rgba(240,164,50,.28),transparent 45%),linear-gradient(180deg,transparent,rgba(0,0,0,.3));opacity:.9}.hero-glow{position:absolute;right:-90px;top:-120px;width:430px;height:430px;border-radius:50%;border:60px solid rgba(245,194,63,.07)}
 .stat-glow{box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 10px 30px rgba(0,0,0,.18)}
+
+
+/* Functional Settings controls */
+html.clashiq-compact .mx-auto.max-w-\[1400px\].space-y-6 {
+  gap: 1rem !important;
+}
+html.clashiq-compact .mx-auto.max-w-\[1400px\] {
+  padding-top: 1.25rem !important;
+  padding-bottom: 1.25rem !important;
+}
+html.clashiq-compact .rounded-3xl {
+  border-radius: 1rem !important;
+}
+html.clashiq-compact .rounded-2xl {
+  border-radius: 0.75rem !important;
+}
+html.clashiq-compact .premium-card {
+  padding: 1rem !important;
+}
+html.clashiq-compact .clashiq-overview .premium-card {
+  padding: 0.9rem !important;
+}
+html.clashiq-compact .clashiq-overview .stat-glow {
+  padding: 0.75rem !important;
+}
+html.clashiq-compact .sidebar-link {
+  min-height: 42px !important;
+  padding-left: 10px !important;
+  padding-right: 10px !important;
+}
+html.clashiq-compact .sidebar-nav {
+  gap: 3px !important;
+  padding-top: 10px !important;
+}
