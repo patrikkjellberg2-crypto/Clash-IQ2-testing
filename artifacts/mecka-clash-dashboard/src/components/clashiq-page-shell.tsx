@@ -21,10 +21,10 @@ export function ClashIQPageShell({
   onRefresh,
 }: ClashIQPageShellProps) {
   return (
-    <div className="min-h-[100dvh] bg-[#07090d] text-white lg:flex">
+    <div className="clashiq-shell min-h-[100dvh] bg-[#07090d] text-white lg:flex">
       <AppSidebar clanName={clanName} clanTag={clanTag} />
       <main className="min-w-0 flex-1 !ml-0 !pl-0 w-full">
-        <header className="border-b border-white/[0.06] bg-[#07090d]/90 px-5 py-4 text-white backdrop-blur-xl">
+        <header className="clashiq-header border-b border-white/[0.06] bg-[#07090d]/90 px-5 py-4 text-white backdrop-blur-xl">
           <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4">
             <div className="min-w-0">
               <Link
@@ -34,7 +34,7 @@ export function ClashIQPageShell({
                 <ArrowLeft className="size-3.5" />
                 Overview
               </Link>
-              <h1 className="mt-2 truncate font-display text-2xl font-black tracking-[-0.05em]">
+              <h1 className="mt-2 truncate font-display text-2xl font-black tracking-[-0.05em] drop-shadow-[0_0_22px_rgba(245,190,60,0.08)]">
                 {title}
               </h1>
               {subtitle ? (
@@ -53,7 +53,7 @@ export function ClashIQPageShell({
             ) : null}
           </div>
         </header>
-        <div className="mx-auto w-full max-w-[1200px] space-y-5 px-4 py-5 sm:px-5 md:px-8 md:py-8">
+        <div className="clashiq-content mx-auto w-full max-w-[1200px] space-y-5 px-4 py-5 sm:px-5 md:px-8 md:py-8">
           {children}
         </div>
       </main>
