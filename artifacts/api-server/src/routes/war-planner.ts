@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import { listPlayerPerformance } from "../lib/war-archive";
 
 const router = express.Router();
 
@@ -10,12 +11,9 @@ const CLASHKING_API_BASE =
   process.env.CLASHKING_API_BASE_URL ||
   "https://api.clashk.ing";
 
-const OPENAI_URL =
-  "https://api.openai.com/v1/responses";
-
-const OPENAI_MODEL =
-  process.env.OPENAI_WAR_MODEL ||
-  "gpt-5.6-luna";
+const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
 
 const MAX_INPUT_CHARS = 14000;
 const MAX_OUTPUT_TOKENS = 1800;
@@ -202,64 +200,38 @@ async function getWarForPlanner(clanTag: string): Promise<AnyObject> {
   );
 }
 
-async function callOpenAI(
-  instructions: string,
-  input: string,
-): Promise<string> {
-  const apiKey = process.env.OPENAI_API_KEY;
-
-  if (!apiKey) {
-    throw new Error("OPENAI_API_KEY saknas i Render.");
-  }
-
-  const response = await fetch(OPENAI_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: OPENAI_MODEL,
-      instructions,
-      input,
-      max_output_tokens: MAX_OUTPUT_TOKENS,
-    }),
+async function callGeminiModel(model: string, prompt: string): Promise<string> {
+  const apiKey = process.env.GEMINI_API_KEY?.trim();
+  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured.");
+  const response = await fetch(`${GEMINI_BASE_URL}/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
+      systemInstruction: { parts: [{ text: "You are CLASHIQ AI War Coach. Use only supplied verified Clash data. Always finish the requested JSON. Never invent missing facts." }] },
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: 0.15, thinkingConfig: { thinkingLevel: "low" } },
+    })
   });
-
   const data = await response.json();
-
-  if (!response.ok) {
-    throw new Error(
-      data?.error?.message || `OpenAI API error ${response.status}`,
-    );
-  }
-
-  const output = Array.isArray(data?.output) ? data.output : [];
-  const textParts: string[] = [];
-
-  for (const item of output) {
-    if (item?.type !== "message") continue;
-
-    const content = Array.isArray(item?.content) ? item.content : [];
-    for (const part of content) {
-      if (
-        part?.type === "output_text" &&
-        typeof part?.text === "string"
-      ) {
-        textParts.push(part.text);
-      }
+  if (!response.ok) { const error: any = new Error(`Gemini ${model} HTTP ${response.status}: ${String(data?.error?.message || data?.error?.status || "Gemini API error")}`); error.httpStatus = response.status; throw error; }
+  const answer = data?.candidates?.[0]?.content?.parts?.map((part: any) => typeof part?.text === "string" && !part?.thought ? part.text : "").join("").trim() || "";
+  if (!answer) throw new Error(`Gemini ${model} returned an empty response`);
+  return answer;
+}
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+function isBusyError(error: any) {
+  const status = Number(error?.httpStatus || 0); const message = String(error?.message || error).toLowerCase();
+  return [429, 500, 502, 503, 504].includes(status) || message.includes("overload") || message.includes("unavailable") || message.includes("high demand") || message.includes("quota") || message.includes("rate limit") || message.includes("fetch failed") || message.includes("empty response");
+}
+async function callGemini(prompt: string): Promise<string> {
+  const models = Array.from(new Set([GEMINI_MODEL, "gemini-3.7-flash", "gemini-3.6-flash", GEMINI_FALLBACK_MODEL]));
+  let lastError: any = null;
+  for (const model of models) {
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try { return await callGeminiModel(model, prompt); }
+      catch (error: any) { lastError = error; const status = Number(error?.httpStatus || 0); if (status === 404) break; if (!isBusyError(error)) throw error; if (attempt < 3) await sleep(1000 * attempt); }
     }
   }
-
-  const result = textParts.join("\n").trim();
-
-  if (!result) {
-    throw new Error("OpenAI returnerade inget text-svar.");
-  }
-
-  return result;
+  throw lastError || new Error("Gemini is unavailable");
 }
-
 const SYSTEM_PROMPT = `
 You are CLASHIQ AI WAR COACH for Clash of Clans.
 
@@ -272,6 +244,9 @@ Rules:
 - Never assign the same target twice.
 - Do not recommend a player who has already used all attacks.
 - Prefer realistic Town Hall matchups.
+- Use PLAYER FORM INTELLIGENCE when selecting attackers. Favor improving form for difficult 3-star attempts when the matchup supports it.
+- Treat declining form as a planning risk, not proof of poor skill. Use stable/improving players for higher-confidence assignments when the matchup is otherwise similar.
+- Include recent average stars, destruction or 3-star rate in the reason when those metrics materially affect the recommendation.
 - Prioritize strong 3-star opportunities.
 - Use safe 2-star attacks when appropriate.
 - Use cleanup when an enemy base has already been attacked but not cleared.
@@ -312,9 +287,9 @@ Maximum 5 notes.
 
 router.post("/ai/war-planner", async (req: Request, res: Response) => {
   try {
-    if (!process.env.OPENAI_API_KEY) {
+    if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({
-        error: "OPENAI_API_KEY saknas i Render.",
+        error: "GEMINI_API_KEY saknas i Render.",
       });
     }
 
@@ -341,17 +316,24 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
     }
 
     const compact = compactWar(war);
+    const performance = await listPlayerPerformance(clanTag).catch(() => []);
+    const performanceByTag = new Map(performance.map((row: any) => [String(row.playerTag || "").toUpperCase(), row]));
+    const performanceData = compact.clan.members.map((member: AnyObject) => {
+      const row = performanceByTag.get(String(member.tag || "").toUpperCase());
+      if (!row) return null;
+      return { tag: row.playerTag, name: row.playerName, form: row.trend, recentWars: num(row.recentWars), recentAvgStars: num(row.recentAvgStars), recentAvgDestruction: num(row.recentAvgDestruction), threeStarRate: num(row.threeStarRate), attacksUsed: num(row.attacksUsed), missedAttacks: num(row.missedAttacks) };
+    }).filter(Boolean);
     const warData = JSON.stringify(compact);
+    const intelligenceData = JSON.stringify(performanceData);
 
-    if (warData.length > MAX_INPUT_CHARS) {
+    if ((warData.length + intelligenceData.length) > MAX_INPUT_CHARS) {
       return res.status(413).json({
         error: `War-data är fortfarande för stor efter komprimering (${warData.length} tecken).`,
       });
     }
 
-    const output = await callOpenAI(
-      SYSTEM_PROMPT,
-      `CURRENT WAR DATA:\n${warData}`,
+    const output = await callGemini(
+      `${SYSTEM_PROMPT}\n\nCURRENT WAR DATA:\n${warData}\n\nPLAYER FORM INTELLIGENCE (use this when choosing attackers):\n${intelligenceData}`,
     );
 
     let plan: AnyObject;
