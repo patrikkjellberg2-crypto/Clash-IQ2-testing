@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
-import { AppSidebar } from '@/components/app-sidebar';
+import { ClashIQPageShell } from '@/components/clashiq-page-shell';
 import WarTimer from '@/components/WarTimer';
 import {
   ArrowLeft,
@@ -13,7 +13,6 @@ import {
   Clock3,
   Crown,
   Flag,
-  Menu,
   MapPinned,
   RefreshCw,
   Shield,
@@ -370,58 +369,8 @@ export default function WarCenterPage() {
   const destruction = Math.round(num(clan.destructionPercentage));
 
   return (
-    <div className="min-h-[100dvh] bg-background dashboard-grid">
-      <div className="flex min-h-[100dvh]">
-        <AppSidebar clanName={label(asDict(dashboard.clan).name, 'Mecka Clash')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+    <ClashIQPageShell clanName={label(asDict(dashboard.clan).name, 'BHABE DHEMONS')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} title="War Center" subtitle="Live war status, attacks, targets and defensive intelligence." onRefresh={() => void refetch()}>
 
-        <main className="min-w-0 flex-1">
-          <header className="border-b border-border/80 bg-background/80 px-5 py-4 backdrop-blur-md md:px-8">
-            <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="rounded-xl border border-border bg-card p-2 lg:hidden"
-                  aria-label="Open navigation"
-                >
-                  <Menu className="size-4" />
-                </button>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">
-                    Live krig / {label(currentWar.state, 'status')}
-                  </p>
-                  <h1 className="mt-1 font-display text-xl font-bold tracking-[-.05em] md:text-2xl">
-                    War Center
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="hidden items-center gap-2 text-right sm:flex">
-                  <span className="size-2 rounded-full bg-[#2b9f78]" />
-                  <div>
-                    <p className="text-xs font-bold">Live feed</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Official data
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void refetch()}
-                  className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label="Uppdatera kriget"
-                  data-testid="button-refresh-war-center"
-                >
-                  <RefreshCw className="size-4" />
-                </button>
-                <div className="grid size-9 place-items-center rounded-xl bg-primary text-xs font-bold text-primary-foreground">
-                  MC
-                </div>
-              </div>
-            </div>
-          </header>
-
-          <div className="mx-auto max-w-[1400px] space-y-5 px-5 py-6 md:px-8 md:py-8">
             <section
               className="relative overflow-hidden rounded-3xl bg-sidebar p-6 text-sidebar-foreground shadow-lg md:p-8"
               data-testid="card-war-hero"
@@ -818,9 +767,7 @@ export default function WarCenterPage() {
                 <ChevronRight className="ml-1 size-3" />
               </p>
             </footer>
-          </div>
-        </main>
-      </div>
-    </div>
+       </main>
+  /div>
   );
-}
+}    </ClashIQPageShell>
