@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowLeft, RefreshCw, Trophy, WifiOff } from 'lucide-react';
-import { ClashIQPageShell } from '@/components/clashiq-page-shell';
+import { AppSidebar } from '@/components/app-sidebar';
+import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import {
   WARS_EVENT,
   readWars,
@@ -300,8 +301,14 @@ export default function WarArchivePage() {
   );
 
   return (
-    <ClashIQPageShell title="War Archive" subtitle="Persistent war history, results and player performance.">
-          <div className="space-y-6">
+    <div className="min-h-[100dvh] bg-[#07090d] text-white">
+      <div className="flex min-h-screen bg-[#07090d]">
+        <AppSidebar clanName="CLASHIQ" clanTag="" />
+
+        <main className="min-w-0 flex-1">
+          <ClashIQInlineBanner />
+
+          <div className="mx-auto max-w-[1400px] space-y-6 px-4 pb-16 pt-2 md:px-7">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <Link
@@ -422,6 +429,8 @@ export default function WarArchivePage() {
               )}
             </section>
           </div>
-    </ClashIQPageShell>
+        </main>
+      </div>
+    </div>
   );
 }
