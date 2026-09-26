@@ -741,33 +741,6 @@ export default function WarCenterPage() {
                               </span>
                             </td>
                           </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              ) : (
-                <div className="flex min-h-[150px] items-center justify-center px-6 text-center">
-                  <p className="text-xs text-muted-foreground">No defensive attacks recorded yet.</p>
-                </div>
-              )}
-            </article>
-
-            <footer className="flex flex-col justify-between gap-2 border-t border-border/70 pt-5 text-[11px] text-muted-foreground sm:flex-row">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline"
-              >
-                <ArrowLeft className="size-3.5" />
-                Back to overview
-              </Link>
-              <p className="flex items-center gap-1.5">
-                <Clock3 className="size-3.5" />
-                Live data from the Clash of Clans API
-                <ChevronRight className="ml-1 size-3" />
-              </p>
-            </footer>
-       </main>
-  /div>
+                          </ClashIQPageShell>
   );
-}    </ClashIQPageShell>
+}
