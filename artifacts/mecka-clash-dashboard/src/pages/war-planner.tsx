@@ -2775,7 +2775,8 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
           <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
 
                           {/* TOP BAR */}
-            <header className="border-b border-white/5 bg-[#07090d]/85 px-0 py-4 backdrop-blur-xl">\n              <div className="flex items-center justify-between gap-4">
+            <header className="border-b border-white/5 bg-[#07090d]/85 px-0 py-4 backdrop-blur-xl">
+              <div className="flex items-center justify-between gap-4">
               <button
                 type="button"
                 onClick={() => setMobileMenuOpen(true)}
