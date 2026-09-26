@@ -14,6 +14,7 @@ import {
   RefreshCw,
   Save,
   Settings as SettingsIcon,
+  Sparkles,
   Shield,
   Swords,
   Volume2,
