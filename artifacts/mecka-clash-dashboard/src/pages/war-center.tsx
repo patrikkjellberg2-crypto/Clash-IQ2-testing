@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
@@ -13,7 +13,6 @@ import {
   Clock3,
   Crown,
   Flag,
-  Menu,
   MapPinned,
   RefreshCw,
   Shield,
@@ -225,7 +224,6 @@ function StatTile({
 
 export default function WarCenterPage() {
   const { data, isLoading, isError, refetch } = useGetClashDashboard();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dashboard = data as unknown as DashboardShape | undefined;
   const currentWar = asDict(dashboard?.currentWar);
   const clan = asDict(currentWar.clan);
@@ -372,20 +370,12 @@ export default function WarCenterPage() {
   return (
     <div className="min-h-[100dvh] bg-background dashboard-grid">
       <div className="flex min-h-[100dvh]">
-        <AppSidebar clanName={label(asDict(dashboard.clan).name, 'Mecka Clash')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+        <AppSidebar clanName={label(asDict(dashboard.clan).name, 'Mecka Clash')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} />
 
         <main className="min-w-0 flex-1">
           <header className="border-b border-border/80 bg-background/80 px-5 py-4 backdrop-blur-md md:px-8">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(true)}
-                  className="rounded-xl border border-border bg-card p-2 lg:hidden"
-                  aria-label="Open navigation"
-                >
-                  <Menu className="size-4" />
-                </button>
                 <div>
                   <p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">
                     Live krig / {label(currentWar.state, 'status')}
