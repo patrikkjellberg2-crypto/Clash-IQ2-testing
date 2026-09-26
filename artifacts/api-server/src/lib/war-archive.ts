@@ -368,3 +368,57 @@ export async function listPlayerWarStats(clanTag: string) {
     .where(eq(playerWarStatsTable.clanTag, tag))
     .orderBy(desc(sql`${playerWarStatsTable.starsTotal}::float / GREATEST(${playerWarStatsTable.attacksUsed}, 1)`));
 }
+
+export async function getPlayerWarHistory(clanTag: string, playerTag: string, limit = 25) {
+  const tag = normalizeTag(clanTag);
+  const player = normalizeTag(playerTag);
+
+  const wars = await db
+    .select()
+    .from(warArchiveTable)
+    .where(and(eq(warArchiveTable.clanTag, tag), eq(warArchiveTable.source, "live")))
+    .orderBy(desc(warArchiveTable.endTime))
+    .limit(300);
+
+  const entries: PlayerWarHistoryEntry[] = [];
+
+  for (const war of wars) {
+    const members = Array.isArray(war.members) ? (war.members as Dict[]) : [];
+    const mine = members.find((m) => normalizeTag(str(m?.tag)) === player);
+    if (!mine) continue;
+
+    const defenses: PlayerWarHistoryEntry["defenses"] = [];
+    for (const m of members) {
+      for (const a of Array.isArray(m?.attacks) ? m.attacks : []) {
+        if (normalizeTag(str(a?.defenderTag)) === player) {
+          defenses.push({
+            stars: num(a?.stars),
+            destructionPercentage: num(a?.destructionPercentage),
+            attackerTag: str(a?.attackerTag),
+          });
+        }
+      }
+    }
+
+    entries.push({
+      warId: war.id,
+      opponentName: war.opponentName,
+      endTime: war.endTime,
+      won: outcomeOf(war),
+      teamSize: war.teamSize,
+      townhallLevel: num(mine.townhallLevel),
+      mapPosition: num(mine.mapPosition),
+      attacks: (Array.isArray(mine.attacks) ? mine.attacks : []).map((a: Dict) => ({
+        stars: num(a?.stars),
+        destructionPercentage: num(a?.destructionPercentage),
+        defenderTag: str(a?.defenderTag),
+        order: num(a?.order),
+      })),
+      defenses,
+    });
+
+    if (entries.length >= limit) break;
+  }
+
+  return entries;
+}
