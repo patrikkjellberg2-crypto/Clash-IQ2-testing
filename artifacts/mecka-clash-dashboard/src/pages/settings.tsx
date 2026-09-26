@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { ClashIQPageShell } from '@/components/clashiq-page-shell';
+import { Link } from 'wouter';
+import { AppSidebar } from '@/components/app-sidebar';
 import {
   Activity,
   ArrowLeft,
@@ -120,8 +121,10 @@ export default function SettingsPage() {
   }
 
   return (
-    <ClashIQPageShell title="Settings" subtitle="Configure Clash IQ, data sources and command preferences.">
-<div className="mx-auto w-full max-w-[1400px] px-4 py-5 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen bg-[#07090d] text-white">
+      <AppSidebar />
+      <main className="min-w-0 flex-1 !ml-0 !pl-0" style={{ width: "calc(100% - 260px)", maxWidth: "calc(100% - 260px)" }}>
+        <div className="mx-auto w-full max-w-[1400px] px-4 py-5 sm:px-6 lg:px-8">
           {/* Top bar */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -491,6 +494,8 @@ export default function SettingsPage() {
               CLASHIQ • Elite War Command Center
             </p>
           </div>
-    </ClashIQPageShell>
+        </div>
+      </main>
+    </div>
   );
 }
