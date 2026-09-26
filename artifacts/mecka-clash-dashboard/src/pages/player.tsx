@@ -612,6 +612,169 @@ export default function PlayerPage() {
               </section>
             )}
 
+            {/* Historical wars */}
+            <section className="rounded-2xl border border-red-400/15 bg-[#11151c]/90 p-5 shadow-xl">
+              <div className="mb-5 flex items-center gap-3">
+                <div className="rounded-xl border border-red-400/20 bg-red-400/10 p-2.5">
+                  <Swords className="h-5 w-5 text-red-300" />
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-300">
+                    Combat history
+                  </p>
+
+                  <h2 className="text-lg font-black">
+                    Historical Wars & Attacks
+                  </h2>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Stat
+                  icon={Swords}
+                  label="Historical Wars"
+                  value={num(
+                    historical.wars,
+                  )}
+                  sub="From Persistent War Archive"
+                />
+
+                <Stat
+                  icon={Swords}
+                  label="Attacks"
+                  value={histAttacks}
+                  sub={`Missed wars ${histMissed}`}
+                />
+
+                <Stat
+                  icon={Star}
+                  label="Stars"
+                  value={histStars}
+                  sub={`3★ attacks ${histThreeStars}`}
+                />
+
+                <Stat
+                  icon={Zap}
+                  label="Avg. Destruction"
+                  value={pct(
+                    histAvgDestruction,
+                  )}
+                  sub={`Best ${pct(
+                    num(
+                      historical.maxDestruction,
+                    ),
+                  )}`}
+                />
+              </div>
+
+              {historicalWars.length ? (
+                <div className="mt-5 space-y-2">
+                  {historicalWars
+                    .slice(0, 10)
+                    .map((warItem, index) => {
+                      const warAttacks =
+                        asArray(
+                          warItem.attacks,
+                        );
+
+                      const warStars =
+                        warAttacks.reduce(
+                          (sum, attack) =>
+                            sum +
+                            num(
+                              attack.stars,
+                            ),
+                          0,
+                        );
+
+                      const warDestruction =
+                        warAttacks.length
+                          ? warAttacks.reduce(
+                              (
+                                sum,
+                                attack,
+                              ) =>
+                                sum +
+                                num(
+                                  attack.destructionPercentage,
+                                ),
+                              0,
+                            ) /
+                            warAttacks.length
+                          : 0;
+
+                      const hasThreeStar =
+                        warAttacks.some(
+                          (attack) =>
+                            num(
+                              attack.stars,
+                            ) >= 3,
+                        );
+
+                      return (
+                        <div
+                          key={index}
+                          className="flex flex-col gap-3 rounded-xl border border-white/5 bg-white/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between"
+                        >
+                          <div>
+                            <p className="text-sm font-bold text-white">
+                              {str(
+                                warItem.opponentName,
+                                'Opponent',
+                              )}
+                            </p>
+
+                            <p className="mt-1 text-[10px] text-slate-600">
+                              {formatDate(
+                                warItem.endTime,
+                              )}{' '}
+                              ·{' '}
+                              {
+                                warAttacks.length
+                              }{' '}
+                              attacks
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="font-data text-sm font-black text-white">
+                                {warStars} ★
+                              </p>
+                              <p className="text-[9px] uppercase tracking-wider text-slate-600">
+                                {pct(warDestruction)}
+                              </p>
+                            </div>
+
+                            <span
+                              className={`rounded-lg border px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${
+                                hasThreeStar
+                                  ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
+                                  : warStars > 0
+                                    ? 'border-amber-400/20 bg-amber-400/10 text-amber-300'
+                                    : 'border-white/10 bg-white/[0.03] text-slate-600'
+                              }`}
+                            >
+                              {hasThreeStar
+                                ? '3 STAR'
+                                : warStars > 0
+                                  ? 'ACTIVE'
+                                  : 'NO STARS'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              ) : (
+                <p className="mt-5 rounded-xl border border-white/5 bg-white/[0.02] p-5 text-sm text-slate-600">
+                  No historical war records are available for this player.
+                </p>
+              )}
+            </section>
+
+
             {/* Troops + Heroes */}
             <section className="grid gap-6 xl:grid-cols-2">
               <article className="rounded-2xl border border-white/10 bg-[#11151c]/90 p-5 shadow-xl">
@@ -782,168 +945,6 @@ export default function PlayerPage() {
               ) : (
                 <p className="rounded-xl border border-white/5 bg-white/[0.02] p-5 text-sm text-slate-600">
                   No spell data available.
-                </p>
-              )}
-            </section>
-
-            {/* Historical wars */}
-            <section className="rounded-2xl border border-red-400/15 bg-[#11151c]/90 p-5 shadow-xl">
-              <div className="mb-5 flex items-center gap-3">
-                <div className="rounded-xl border border-red-400/20 bg-red-400/10 p-2.5">
-                  <Swords className="h-5 w-5 text-red-300" />
-                </div>
-
-                <div>
-                  <p className="text-[10px] font-black uppercase tracking-[0.2em] text-red-300">
-                    Combat history
-                  </p>
-
-                  <h2 className="text-lg font-black">
-                    Historical Wars & Attacks
-                  </h2>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                <Stat
-                  icon={Swords}
-                  label="Historical Wars"
-                  value={num(
-                    historical.wars,
-                  )}
-                  sub="From Persistent War Archive"
-                />
-
-                <Stat
-                  icon={Swords}
-                  label="Attacks"
-                  value={histAttacks}
-                  sub={`Missed wars ${histMissed}`}
-                />
-
-                <Stat
-                  icon={Star}
-                  label="Stars"
-                  value={histStars}
-                  sub={`3★ attacks ${histThreeStars}`}
-                />
-
-                <Stat
-                  icon={Zap}
-                  label="Avg. Destruction"
-                  value={pct(
-                    histAvgDestruction,
-                  )}
-                  sub={`Best ${pct(
-                    num(
-                      historical.maxDestruction,
-                    ),
-                  )}`}
-                />
-              </div>
-
-              {historicalWars.length ? (
-                <div className="mt-5 space-y-2">
-                  {historicalWars
-                    .slice(0, 10)
-                    .map((warItem, index) => {
-                      const warAttacks =
-                        asArray(
-                          warItem.attacks,
-                        );
-
-                      const warStars =
-                        warAttacks.reduce(
-                          (sum, attack) =>
-                            sum +
-                            num(
-                              attack.stars,
-                            ),
-                          0,
-                        );
-
-                      const warDestruction =
-                        warAttacks.length
-                          ? warAttacks.reduce(
-                              (
-                                sum,
-                                attack,
-                              ) =>
-                                sum +
-                                num(
-                                  attack.destructionPercentage,
-                                ),
-                              0,
-                            ) /
-                            warAttacks.length
-                          : 0;
-
-                      const hasThreeStar =
-                        warAttacks.some(
-                          (attack) =>
-                            num(
-                              attack.stars,
-                            ) >= 3,
-                        );
-
-                      return (
-                        <div
-                          key={index}
-                          className="flex flex-col gap-3 rounded-xl border border-white/5 bg-white/[0.025] p-4 sm:flex-row sm:items-center sm:justify-between"
-                        >
-                          <div>
-                            <p className="text-sm font-bold text-white">
-                              {str(
-                                warItem.opponentName,
-                                'Opponent',
-                              )}
-                            </p>
-
-                            <p className="mt-1 text-[10px] text-slate-600">
-                              {formatDate(
-                                warItem.endTime,
-                              )}{' '}
-                              ·{' '}
-                              {
-                                warAttacks.length
-                              }{' '}
-                              attacks
-                            </p>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <div className="text-right">
-                              <p className="font-data text-sm font-black text-white">
-                                {warStars} ★
-                              </p>
-                              <p className="text-[9px] uppercase tracking-wider text-slate-600">
-                                {pct(warDestruction)}
-                              </p>
-                            </div>
-
-                            <span
-                              className={`rounded-lg border px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${
-                                hasThreeStar
-                                  ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
-                                  : warStars > 0
-                                    ? 'border-amber-400/20 bg-amber-400/10 text-amber-300'
-                                    : 'border-white/10 bg-white/[0.03] text-slate-600'
-                              }`}
-                            >
-                              {hasThreeStar
-                                ? '3 STAR'
-                                : warStars > 0
-                                  ? 'ACTIVE'
-                                  : 'NO STARS'}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              ) : (
-                <p className="mt-5 rounded-xl border border-white/5 bg-white/[0.02] p-5 text-sm text-slate-600">
-                  No historical war records are available for this player.
                 </p>
               )}
             </section>
