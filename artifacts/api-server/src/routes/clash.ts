@@ -1021,10 +1021,21 @@ router.get("/clash/war-archive", async (req, res): Promise<void> => {
     );
     const limit = Number(req.query.limit);
 
-    const [wars, players] = await Promise.all([
+    let [wars, players] = await Promise.all([
       listArchivedWars(clanTag, Number.isFinite(limit) ? limit : 60),
       listPlayerWarStats(clanTag),
     ]);
+
+    // A fresh TEST database has no player stats yet. Recover recent completed
+    // wars with full member/attack detail before returning the archive so
+    // "Players tracked" and player history are populated on the first visit.
+    if (players.length === 0) {
+      await recoverHistoricalWars(clanTag, req.log, 15);
+      [wars, players] = await Promise.all([
+        listArchivedWars(clanTag, Number.isFinite(limit) ? limit : 60),
+        listPlayerWarStats(clanTag),
+      ]);
+    }
 
     res.json({ clanTag, wars, players });
   } catch (error) {
