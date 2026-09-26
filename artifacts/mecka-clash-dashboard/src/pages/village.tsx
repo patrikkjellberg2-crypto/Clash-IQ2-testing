@@ -256,18 +256,50 @@ function Chip({ level, count, low }: { level: number; count: number; low?: boole
   );
 }
 
-function RowItem({ row, showCount = true }: { row: Row; showCount?: boolean }) {
+function RowItem({
+  row,
+  showCount = true,
+  maxLevel,
+}: {
+  row: Row;
+  showCount?: boolean;
+  maxLevel?: number;
+}) {
   const levels = levelsSorted(row);
   const lowest = levels.length > 1 ? levels[levels.length - 1][0] : null;
+  const progress = progressForRow(row, maxLevel);
 
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-sm font-bold">{row.name}</p>
-        {showCount && row.count > 1 && (
-          <span className="text-xs font-semibold text-slate-400">×{row.count}</span>
-        )}
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold">{row.name}</p>
+          {progress && (
+            <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
+              {progress.remaining === 0 ? 'MAXAD' : `${progress.remaining} nivåer kvar`}
+            </p>
+          )}
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {progress && (
+            <span className="text-xs font-black text-amber-200">
+              {Math.max(...levels.map(([level]) => level))}/{progress.maxLevel}
+            </span>
+          )}
+          {showCount && row.count > 1 && (
+            <span className="text-xs font-semibold text-slate-400">×{row.count}</span>
+          )}
+        </div>
       </div>
+
+      {progress && (
+        <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/30">
+          <div
+            className="h-full rounded-full bg-amber-300 transition-all"
+            style={{ width: `${progress.percent}%` }}
+          />
+        </div>
+      )}
 
       <div className="mt-2 flex flex-wrap gap-1.5">
         {levels.map(([level, count]) => (
@@ -284,12 +316,14 @@ function Section({
   icon,
   rows,
   showCount = true,
+  thLevel,
 }: {
   title: string;
   eyebrow: string;
   icon: ReactNode;
   rows: Row[];
   showCount?: boolean;
+  thLevel: number;
 }) {
   if (!rows.length) return null;
 
@@ -681,16 +715,16 @@ export default function VillagePage() {
                   </section>
                 )}
 
-                <Section title="Defenses" eyebrow="Home village" icon={<Shield className="h-5 w-5" />} rows={view.defenses} />
-                <Section title="Traps" eyebrow="Home village" icon={<Zap className="h-5 w-5" />} rows={view.traps} />
-                <Section title="Army buildings" eyebrow="Home village" icon={<Swords className="h-5 w-5" />} rows={view.army} />
-                <Section title="Resources" eyebrow="Home village" icon={<Hammer className="h-5 w-5" />} rows={view.resources} />
-                <Section title="Other buildings" eyebrow="Home village" icon={<Castle className="h-5 w-5" />} rows={view.other} />
-                <Section title="Walls" eyebrow="Home village" icon={<Castle className="h-5 w-5" />} rows={view.walls} showCount={false} />
-                <Section title="Heroes" eyebrow="Units" icon={<Crown className="h-5 w-5" />} rows={view.heroes} />
-                <Section title="Pets" eyebrow="Units" icon={<Sparkles className="h-5 w-5" />} rows={view.pets} />
-                <Section title="Troops & siege machines" eyebrow="Units" icon={<Swords className="h-5 w-5" />} rows={view.troops} />
-                <Section title="Spells" eyebrow="Units" icon={<Sparkles className="h-5 w-5" />} rows={view.spells} />
+                <Section title="Defenses" eyebrow="Home village" icon={<Shield className="h-5 w-5" thLevel={view.thLevel} />} rows={view.defenses} />
+                <Section title="Traps" eyebrow="Home village" icon={<Zap className="h-5 w-5" thLevel={view.thLevel} />} rows={view.traps} />
+                <Section title="Army buildings" eyebrow="Home village" icon={<Swords className="h-5 w-5" thLevel={view.thLevel} />} rows={view.army} />
+                <Section title="Resources" eyebrow="Home village" icon={<Hammer className="h-5 w-5" thLevel={view.thLevel} />} rows={view.resources} />
+                <Section title="Other buildings" eyebrow="Home village" icon={<Castle className="h-5 w-5" thLevel={view.thLevel} />} rows={view.other} />
+                <Section title="Walls" eyebrow="Home village" icon={<Castle className="h-5 w-5" thLevel={view.thLevel} />} rows={view.walls} showCount={false} />
+                <Section title="Heroes" eyebrow="Units" icon={<Crown className="h-5 w-5" thLevel={view.thLevel} />} rows={view.heroes} />
+                <Section title="Pets" eyebrow="Units" icon={<Sparkles className="h-5 w-5" thLevel={view.thLevel} />} rows={view.pets} />
+                <Section title="Troops & siege machines" eyebrow="Units" icon={<Swords className="h-5 w-5" thLevel={view.thLevel} />} rows={view.troops} />
+                <Section title="Spells" eyebrow="Units" icon={<Sparkles className="h-5 w-5" thLevel={view.thLevel} />} rows={view.spells} />
               </>
             )}
           </div>
