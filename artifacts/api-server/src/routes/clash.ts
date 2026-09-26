@@ -8,7 +8,7 @@ import {
   UpsertWarPlannerAssignmentParams,
   UpsertWarPlannerAssignmentResponse,
 } from "@workspace/api-zod";
-import { asc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import {
   capitalRaidArchiveTable,
   clanSelectionTable,
