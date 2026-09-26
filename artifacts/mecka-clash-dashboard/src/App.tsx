@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode, useEffect } from 'react';
+import { lazy, Suspense, type ReactNode, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -86,18 +86,25 @@ function RoutedErrorBoundary({
 }
 
 function ClashIQPreferences() {
+  const audioContextRef = useRef<AudioContext | null>(null);
+
   useEffect(() => {
     let cancelled = false;
-    let settings = {
-      compactMode: false,
-      soundEffects: false,
-    };
+    let settings = { compactMode: false, soundEffects: false };
 
     const applySettings = (next: typeof settings) => {
       settings = next;
       if (cancelled) return;
-      document.documentElement.classList.toggle('clashiq-compact', Boolean(next.compactMode));
+      document.documentElement.classList.toggle('clashiq-compact', next.compactMode);
       document.documentElement.dataset.soundEffects = next.soundEffects ? 'on' : 'off';
+    };
+
+    const handleSettingsChanged = (event: Event) => {
+      const detail = (event as CustomEvent<{ compactMode?: boolean; soundEffects?: boolean }>).detail;
+      applySettings({
+        compactMode: Boolean(detail.compactMode),
+        soundEffects: Boolean(detail.soundEffects),
+      });
     };
 
     void fetch('/api/settings', { headers: { Accept: 'application/json' } })
@@ -107,31 +114,37 @@ function ClashIQPreferences() {
         soundEffects: Boolean(data.soundEffects),
       }))
       .catch(() => {
-        if (!cancelled) {
-          document.documentElement.classList.remove('clashiq-compact');
-          document.documentElement.dataset.soundEffects = 'off';
-        }
+        if (!cancelled) applySettings({ compactMode: false, soundEffects: false });
       });
 
     const playClick = () => {
-      if (cancelled || settings.soundEffects !== true) return;
+      if (cancelled || !settings.soundEffects) return;
       try {
-        const AudioContextCtor = window.AudioContext || (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+        const AudioContextCtor =
+          window.AudioContext ||
+          (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!AudioContextCtor) return;
-        const context = new AudioContextCtor();
+
+        let context = audioContextRef.current;
+        if (!context) {
+          context = new AudioContextCtor();
+          audioContextRef.current = context;
+        }
+        if (context.state === 'suspended') void context.resume();
+
         const oscillator = context.createOscillator();
         const gain = context.createGain();
+        const now = context.currentTime;
         oscillator.type = 'sine';
-        oscillator.frequency.setValueAtTime(720, context.currentTime);
-        oscillator.frequency.exponentialRampToValueAtTime(980, context.currentTime + 0.045);
-        gain.gain.setValueAtTime(0.0001, context.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.045, context.currentTime + 0.008);
-        gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.07);
+        oscillator.frequency.setValueAtTime(680, now);
+        oscillator.frequency.exponentialRampToValueAtTime(920, now + 0.045);
+        gain.gain.setValueAtTime(0.0001, now);
+        gain.gain.exponentialRampToValueAtTime(0.055, now + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.09);
         oscillator.connect(gain);
         gain.connect(context.destination);
-        oscillator.start();
-        oscillator.stop(context.currentTime + 0.075);
-        window.setTimeout(() => void context.close(), 150);
+        oscillator.start(now);
+        oscillator.stop(now + 0.095);
       } catch {
         // Audio is optional enhancement; never let it break the UI.
       }
@@ -142,12 +155,18 @@ function ClashIQPreferences() {
       if (target?.closest('button, a, [role="button"]')) playClick();
     };
 
+    document.addEventListener('clashiq-settings-changed', handleSettingsChanged);
     document.addEventListener('click', handleClick, true);
+
     return () => {
       cancelled = true;
+      document.removeEventListener('clashiq-settings-changed', handleSettingsChanged);
       document.removeEventListener('click', handleClick, true);
       document.documentElement.classList.remove('clashiq-compact');
       delete document.documentElement.dataset.soundEffects;
+      const context = audioContextRef.current;
+      audioContextRef.current = null;
+      if (context) void context.close();
     };
   }, []);
 
