@@ -3,6 +3,7 @@ import healthRouter from "./health";
 import clashRouter from "./clash";
 import warPlannerRouter from "./war-planner";
 import aiCoachRouter from "./ai-coach";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -25,5 +26,6 @@ router.use(clashRouter);
 router.use(warPlannerRouter);
 
 router.use(aiCoachRouter);
+router.use(settingsRouter);
 
 export default router;
