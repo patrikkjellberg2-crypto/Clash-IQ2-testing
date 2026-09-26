@@ -347,7 +347,7 @@ function RowItem({
           <p className="truncate text-sm font-bold">{row.name}</p>
           {progress && (
             <p className="mt-0.5 text-[10px] font-black uppercase tracking-[0.12em] text-slate-500">
-              {progress.remaining === 0 ? 'MAXAD' : `${progress.remaining} nivåer kvar`}
+              {progress.remaining === 0 ? 'MAXED' : `${progress.remaining} levels left`}
             </p>
           )}
         </div>
@@ -557,6 +557,8 @@ export default function VillagePage() {
       }),
       { gold: 0, elixir: 0, darkElixir: 0, seconds: 0, coveredLevels: 0, missingLevels: 0 },
     );
+    const estimatedSixBuilderSeconds = Math.ceil(totalEconomics.seconds / 6);
+
     const completionPercent = totalPossible > 0
       ? Math.min(100, Math.round((totalCurrent / totalPossible) * 100))
       : 0;
@@ -619,6 +621,7 @@ export default function VillagePage() {
       totalRemainingLevels,
       completionPercent,
       totalEconomics,
+      estimatedSixBuilderSeconds,
       activeUpgrades,
     };
   }, [village]);
@@ -713,9 +716,8 @@ export default function VillagePage() {
 
             {!view && (
               <p className="rounded-xl border border-white/5 bg-white/[0.02] p-5 text-sm text-slate-500">
-                No village imported yet. In Clash of Clans open Settings → More
-                Settings → Data Export, copy or save the data, then choose the file
-                or paste it above.
+                No village imported yet. In Clash of Clans open Settings → More Settings → Data Export,
+                copy or save the data, then choose the file or paste it above.
               </p>
             )}
 
@@ -800,34 +802,40 @@ export default function VillagePage() {
                           Upgrade economics
                         </div>
                         <p className="mt-1 text-xs text-slate-500">
-                          Clash IQ räknar nästa uppgradering och kostnad/tid från den lokala kostnadskatalogen.
+                          Clash IQ calculates the next upgrade and its cost/time from the local upgrade catalog.
                         </p>
                       </div>
                       <span className="rounded-lg border border-white/10 bg-black/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.15em] text-slate-500">
                         {view.totalEconomics.coveredLevels} nivåer täckta{view.totalEconomics.missingLevels > 0 ? ` · ${view.totalEconomics.missingLevels} saknas` : ''}
                       </span>
                     </div>
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
                       <div className="rounded-xl border border-amber-300/15 bg-amber-300/[0.04] p-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-amber-300">Gold kvar</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-amber-300">Gold remaining</p>
                         <p className="mt-1 text-xl font-black">{formatResource(view.totalEconomics.gold)}</p>
                       </div>
                       <div className="rounded-xl border border-pink-300/15 bg-pink-300/[0.04] p-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-pink-300">Elixir kvar</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-pink-300">Elixir remaining</p>
                         <p className="mt-1 text-xl font-black">{formatResource(view.totalEconomics.elixir)}</p>
                       </div>
                       <div className="rounded-xl border border-purple-300/15 bg-purple-300/[0.04] p-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-purple-300">Dark Elixir kvar</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-purple-300">Dark Elixir remaining</p>
                         <p className="mt-1 text-xl font-black">{formatResource(view.totalEconomics.darkElixir)}</p>
                       </div>
                       <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.04] p-3">
-                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-sky-300">Builder time</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-sky-300">Total builder time</p>
                         <p className="mt-1 text-xl font-black">{formatDuration(view.totalEconomics.seconds)}</p>
+                        <p className="mt-1 text-[10px] text-slate-500">All upgrades combined</p>
+                      </div>
+                      <div className="rounded-xl border border-emerald-300/15 bg-emerald-300/[0.04] p-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-300">With 6 builders</p>
+                        <p className="mt-1 text-xl font-black">{formatDuration(view.estimatedSixBuilderSeconds)}</p>
+                        <p className="mt-1 text-[10px] text-slate-500">Ideal parallel estimate</p>
                       </div>
                     </div>
                     {view.totalEconomics.missingLevels > 0 && (
                       <p className="mt-3 text-[10px] font-semibold text-slate-500">
-                        Totalen är delvis täckt tills resten av kostnadskatalogen är verifierad. Clash IQ gissar inte på saknade priser.
+                        Totals are partial until the remaining upgrade data is verified. Clash IQ never guesses missing prices.
                       </p>
                     )}
                   </div>
@@ -840,7 +848,7 @@ export default function VillagePage() {
                     </p>
                     <h2 className="text-lg font-black">Lowest-level defenses</h2>
                     <p className="mt-1 text-xs text-slate-500">
-                      Sorted by level within your own base.
+                      Sorted by level within your village.
                     </p>
                     <div className="mt-3 flex flex-wrap gap-2">
                       {view.weakest.map((d, i) => (
