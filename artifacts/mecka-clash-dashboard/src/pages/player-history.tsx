@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, History, RefreshCw, Search, Users } from "lucide-react";
-import { AppSidebar } from "@/components/app-sidebar";
 
 type Player = { playerTag: string; playerName: string; warsCounted: number; attacksUsed: number; attacksPossible: number; starsTotal: number; threeStars: number; };
 
