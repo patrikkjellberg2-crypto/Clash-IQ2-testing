@@ -101,7 +101,8 @@ async function recoverHistoricalWars(
     log.warn({ error }, "ClashIQ historical warlog discovery failed");
   }
 }
-\nconst router: IRouter = Router();
+
+const router: IRouter = Router();
 
 const DEFAULT_CLAN_TAG = "#2Q0Q82C9R";
 const CLASH_API_BASE_URL =
