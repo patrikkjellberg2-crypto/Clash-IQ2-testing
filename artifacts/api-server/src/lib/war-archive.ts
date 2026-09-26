@@ -19,6 +19,28 @@ function warKey(clanTag: string, opponentTag: string, endTime: string) {
   return `${normalizeTag(clanTag)}__${normalizeTag(opponentTag)}__${str(endTime)}`;
 }
 
+function outcomeOf(war: Dict): "win" | "lose" | "tie" | null {
+  const explicit = str(war?.result).trim().toLowerCase();
+  if (explicit === "win" || explicit === "won" || explicit === "victory") return "win";
+  if (explicit === "lose" || explicit === "lost" || explicit === "loss" || explicit === "defeat") return "lose";
+  if (explicit === "tie" || explicit === "draw" || explicit === "tied") return "tie";
+
+  const clan = war?.clan && typeof war.clan === "object" ? war.clan as Dict : null;
+  const opponent = war?.opponent && typeof war.opponent === "object" ? war.opponent as Dict : null;
+  if (!clan || !opponent) return null;
+
+  const clanStars = num(clan.stars);
+  const opponentStars = num(opponent.stars);
+  if (clanStars > opponentStars) return "win";
+  if (clanStars < opponentStars) return "lose";
+
+  const clanDestruction = num(clan.destructionPercentage);
+  const opponentDestruction = num(opponent.destructionPercentage);
+  if (clanDestruction > opponentDestruction) return "win";
+  if (clanDestruction < opponentDestruction) return "lose";
+  return "tie";
+}
+
 function buildRow(clanTag: string, war: Dict, source: "live" | "warlog"): InsertWarArchiveRow | null {
   const clan = war?.clan && typeof war.clan === "object" ? war.clan : null;
   const opponent = war?.opponent && typeof war.opponent === "object" ? war.opponent : null;
