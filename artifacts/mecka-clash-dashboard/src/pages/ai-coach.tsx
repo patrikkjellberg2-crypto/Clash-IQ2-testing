@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
+import WarTimer from '@/components/WarTimer';
 import {
   ArrowRight,
   BrainCircuit,
@@ -325,6 +326,8 @@ export default function AICoachPage() {
                 </div>
               </div>
             </section>
+
+            <WarTimer currentWar={war} compact />
 
             <section className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
               <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5 shadow-[0_12px_45px_rgba(0,0,0,.2)]">
