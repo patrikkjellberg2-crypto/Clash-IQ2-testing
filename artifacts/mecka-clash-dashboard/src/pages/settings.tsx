@@ -207,6 +207,7 @@ export default function SettingsPage() {
       setAutoRefresh(Boolean(data.autoRefresh));
       setCompactMode(Boolean(data.compactMode));
       setSoundEffects(Boolean(data.soundEffects));
+      window.dispatchEvent(new CustomEvent('clashiq-settings-changed', { detail: { compactMode: Boolean(data.compactMode), soundEffects: Boolean(data.soundEffects) } }));
       setSaved(true);
       window.setTimeout(() => setSaved(false), 2200);
     } catch (error) {
