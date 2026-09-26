@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
+import { getUpgradeCost, type UpgradeCost } from '@/lib/upgrade-catalog';
 
 type Dict = Record<string, any>;
 
@@ -267,6 +268,46 @@ function progressForRow(row: Row, maxLevel: number | undefined) {
   };
 }
 
+function economicsForRow(row: Row, maxLevel: number | undefined) {
+  if (!maxLevel) return null;
+  let gold = 0, elixir = 0, darkElixir = 0, seconds = 0;
+  let coveredLevels = 0, missingLevels = 0;
+  let next: { from: number; to: number; count: number; data: UpgradeCost } | null = null;
+
+  for (const [level, count] of row.levels) {
+    if (level >= maxLevel) continue;
+    const first = getUpgradeCost(row.name, level + 1);
+    if (first && !next) next = { from: level, to: level + 1, count, data: first };
+    for (let target = level + 1; target <= maxLevel; target += 1) {
+      const data = getUpgradeCost(row.name, target);
+      if (!data) {
+        missingLevels += count;
+        continue;
+      }
+      coveredLevels += count;
+      seconds += data.seconds * count;
+      if (data.resource === 'Gold') gold += data.cost * count;
+      if (data.resource === 'Elixir') elixir += data.cost * count;
+      if (data.resource === 'Dark Elixir') darkElixir += data.cost * count;
+    }
+  }
+
+  if (!coveredLevels && !missingLevels && !next) return null;
+  return {
+    gold, elixir, darkElixir, seconds, coveredLevels, missingLevels,
+    coveragePercent: coveredLevels + missingLevels > 0
+      ? Math.round((coveredLevels / (coveredLevels + missingLevels)) * 100)
+      : 100,
+    next,
+  };
+}
+
+function formatResource(value: number): string {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value % 1_000_000 === 0 ? 0 : 1)}M`;
+  if (value >= 1_000) return `${Math.round(value / 1_000)}k`;
+  return String(Math.round(value));
+}
+
 /* ------------------------------------------------------------------ */
 
 function Chip({ level, count, low }: { level: number; count: number; low?: boolean }) {
@@ -297,6 +338,7 @@ function RowItem({
   const levels = levelsSorted(row);
   const lowest = levels.length > 1 ? levels[levels.length - 1][0] : null;
   const progress = progressForRow(row, maxLevel);
+  const economics = economicsForRow(row, maxLevel);
 
   return (
     <div className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
@@ -321,6 +363,20 @@ function RowItem({
         </div>
       </div>
 
+      {economics?.next && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-bold">
+          <span className="rounded-md border border-amber-300/20 bg-amber-300/10 px-2 py-1 text-amber-200">
+            Nästa: Lv {economics.next.from} → {economics.next.to}
+          </span>
+          <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-slate-300">
+            {formatResource(economics.next.data.cost)} {economics.next.data.resource}
+          </span>
+          <span className="rounded-md border border-white/10 bg-black/20 px-2 py-1 text-slate-300">
+            {formatDuration(economics.next.data.seconds)}
+          </span>
+        </div>
+      )}
+
       {progress && (
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-black/30">
           <div
@@ -328,6 +384,12 @@ function RowItem({
             style={{ width: `${progress.percent}%` }}
           />
         </div>
+      )}
+
+      {economics && economics.coveredLevels > 0 && progress && progress.remaining > 0 && (
+        <p className="mt-2 text-[10px] font-semibold text-slate-500">
+          Kvar med katalogdata: {formatResource(economics.gold)} Gold · {formatResource(economics.elixir)} Elixir{economics.darkElixir > 0 ? ` · ${formatResource(economics.darkElixir)} Dark Elixir` : ''} · {formatDuration(economics.seconds)}{economics.coveragePercent < 100 ? ` · ${economics.coveragePercent}% täckning` : ''}
+        </p>
       )}
 
       <div className="mt-2 flex flex-wrap gap-1.5">
@@ -481,6 +543,20 @@ export default function VillagePage() {
     const totalPossible = progress.reduce((t, x) => t + x.stats.maxLevel * x.row.count, 0);
     const totalCurrent = progress.reduce((t, x) => t + x.stats.current, 0);
     const totalRemainingLevels = progress.reduce((t, x) => t + x.stats.remaining, 0);
+    const economicsRows = progress
+      .map(x => ({ row: x.row, economics: economicsForRow(x.row, x.stats.maxLevel) }))
+      .filter((x): x is { row: Row; economics: NonNullable<ReturnType<typeof economicsForRow>> } => Boolean(x.economics));
+    const totalEconomics = economicsRows.reduce(
+      (acc, x) => ({
+        gold: acc.gold + x.economics.gold,
+        elixir: acc.elixir + x.economics.elixir,
+        darkElixir: acc.darkElixir + x.economics.darkElixir,
+        seconds: acc.seconds + x.economics.seconds,
+        coveredLevels: acc.coveredLevels + x.economics.coveredLevels,
+        missingLevels: acc.missingLevels + x.economics.missingLevels,
+      }),
+      { gold: 0, elixir: 0, darkElixir: 0, seconds: 0, coveredLevels: 0, missingLevels: 0 },
+    );
     const completionPercent = totalPossible > 0
       ? Math.min(100, Math.round((totalCurrent / totalPossible) * 100))
       : 0;
@@ -542,6 +618,7 @@ export default function VillagePage() {
       progress,
       totalRemainingLevels,
       completionPercent,
+      totalEconomics,
       activeUpgrades,
     };
   }, [village]);
@@ -715,14 +792,44 @@ export default function VillagePage() {
                     </div>
                   )}
 
-                  <div className="mt-4 rounded-xl border border-white/5 bg-black/20 p-3 text-xs text-slate-400">
-                    <div className="flex items-center gap-2 font-bold text-slate-200">
-                      <Coins className="h-4 w-4 text-amber-300" />
-                      Upgrade costs
+                  <div className="mt-4 rounded-xl border border-white/5 bg-black/20 p-4">
+                    <div className="flex flex-wrap items-start justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2 font-bold text-slate-200">
+                          <Coins className="h-4 w-4 text-amber-300" />
+                          Upgrade economics
+                        </div>
+                        <p className="mt-1 text-xs text-slate-500">
+                          Clash IQ räknar nästa uppgradering och kostnad/tid från den lokala kostnadskatalogen.
+                        </p>
+                      </div>
+                      <span className="rounded-lg border border-white/10 bg-black/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.15em] text-slate-500">
+                        {view.totalEconomics.coveredLevels} nivåer täckta{view.totalEconomics.missingLevels > 0 ? ` · ${view.totalEconomics.missingLevels} saknas` : ''}
+                      </span>
                     </div>
-                    <p className="mt-1">
-                      Nästa steg är att koppla in den fullständiga kostnads-/tidskatalogen, så Clash IQ kan visa exakt guld, elixir, dark elixir och total byggtid kvar — inte bara nivåerna och aktiva timers.
-                    </p>
+                    <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="rounded-xl border border-amber-300/15 bg-amber-300/[0.04] p-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-amber-300">Gold kvar</p>
+                        <p className="mt-1 text-xl font-black">{formatResource(view.totalEconomics.gold)}</p>
+                      </div>
+                      <div className="rounded-xl border border-pink-300/15 bg-pink-300/[0.04] p-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-pink-300">Elixir kvar</p>
+                        <p className="mt-1 text-xl font-black">{formatResource(view.totalEconomics.elixir)}</p>
+                      </div>
+                      <div className="rounded-xl border border-purple-300/15 bg-purple-300/[0.04] p-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-purple-300">Dark Elixir kvar</p>
+                        <p className="mt-1 text-xl font-black">{formatResource(view.totalEconomics.darkElixir)}</p>
+                      </div>
+                      <div className="rounded-xl border border-sky-300/15 bg-sky-300/[0.04] p-3">
+                        <p className="text-[10px] font-black uppercase tracking-[0.15em] text-sky-300">Builder time</p>
+                        <p className="mt-1 text-xl font-black">{formatDuration(view.totalEconomics.seconds)}</p>
+                      </div>
+                    </div>
+                    {view.totalEconomics.missingLevels > 0 && (
+                      <p className="mt-3 text-[10px] font-semibold text-slate-500">
+                        Totalen är delvis täckt tills resten av kostnadskatalogen är verifierad. Clash IQ gissar inte på saknade priser.
+                      </p>
+                    )}
                   </div>
                 </section>
 
