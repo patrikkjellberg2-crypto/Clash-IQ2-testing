@@ -1,7 +1,6 @@
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { build as esbuild, version as esbuildVersion } from "esbuild";
 import { rm } from "node:fs/promises";
 
 globalThis.require = createRequire(import.meta.url);
@@ -9,6 +8,7 @@ globalThis.require = createRequire(import.meta.url);
 const artifactDir = path.dirname(fileURLToPath(import.meta.url));
 
 async function buildAll() {
+  const { build: esbuild, version: esbuildVersion } = await import("esbuild");
   const distDir = path.resolve(artifactDir, "dist");
 
   console.error(`[Clash IQ] API build starting — Node ${process.version}, esbuild ${esbuildVersion}`);
