@@ -10,6 +10,7 @@ import {
 } from "@workspace/api-zod";
 import { asc, eq } from "drizzle-orm";
 import {
+  capitalRaidArchiveTable,
   clanSelectionTable,
   db,
   warPlannerAssignmentsTable,
@@ -758,9 +759,88 @@ router.get(
         };
       });
 
-    const capitalRaidSeasons = listItems(
+    const liveCapitalRaidSeasons = listItems(
       officialCapitalRaidResult.data,
     );
+
+    // Persist every season we see so the TEST app builds a durable clan history
+    // instead of only showing the small rolling window returned by Supercell.
+    for (const season of liveCapitalRaidSeasons) {
+      const startTime = String(season.startTime ?? "").trim();
+      const endTime = String(season.endTime ?? "").trim();
+      if (!endTime) continue;
+
+      const leagueRaw =
+        officialClanRaw?.capitalLeague ??
+        basicClanRaw?.capitalLeague ??
+        clashKingClanRaw?.capitalLeague;
+      const leagueName =
+        leagueRaw && typeof leagueRaw === "object"
+          ? String((leagueRaw as ClashRecord).name ?? "")
+          : String(leagueRaw ?? "");
+
+      const seasonClan =
+        season.clan && typeof season.clan === "object"
+          ? season.clan as ClashRecord
+          : null;
+
+      try {
+        await db
+          .insert(capitalRaidArchiveTable)
+          .values({
+            id: `${normalizeClanTag(clanTag)}__${endTime}`,
+            clanTag: normalizeClanTag(clanTag),
+            clanName: String((clan?.name ?? seasonClan?.name ?? "") || "") || null,
+            leagueName: leagueName || null,
+            startTime: startTime || null,
+            endTime,
+            state: String(season.state ?? "") || null,
+            capitalTotalLoot: Number(season.capitalTotalLoot ?? 0) || 0,
+            raidsCompleted: Number(season.raidsCompleted ?? 0) || 0,
+            offensiveReward: Number(season.offensiveReward ?? 0) || 0,
+            defensiveReward: Number(season.defensiveReward ?? 0) || 0,
+            members: Array.isArray(season.members) ? season.members : [],
+            raw: season,
+          })
+          .onConflictDoUpdate({
+            target: capitalRaidArchiveTable.id,
+            set: {
+              clanName: String((clan?.name ?? seasonClan?.name ?? "") || "") || null,
+              leagueName: leagueName || null,
+              startTime: startTime || null,
+              state: String(season.state ?? "") || null,
+              capitalTotalLoot: Number(season.capitalTotalLoot ?? 0) || 0,
+              raidsCompleted: Number(season.raidsCompleted ?? 0) || 0,
+              offensiveReward: Number(season.offensiveReward ?? 0) || 0,
+              defensiveReward: Number(season.defensiveReward ?? 0) || 0,
+              members: Array.isArray(season.members) ? season.members : [],
+              raw: season,
+              updatedAt: new Date(),
+            },
+          });
+      } catch (error) {
+        req.log.warn({ error, endTime }, "ClashIQ capital raid archive save failed");
+      }
+    }
+
+    const archivedCapitalRaids = await db
+      .select()
+      .from(capitalRaidArchiveTable)
+      .where(eq(capitalRaidArchiveTable.clanTag, normalizeClanTag(clanTag)))
+      .orderBy(desc(capitalRaidArchiveTable.endTime));
+
+    const capitalRaidSeasons = archivedCapitalRaids.map((row) => ({
+      ...(row.raw && typeof row.raw === "object" ? row.raw as ClashRecord : {}),
+      startTime: row.startTime,
+      endTime: row.endTime,
+      state: row.state,
+      capitalTotalLoot: row.capitalTotalLoot,
+      raidsCompleted: row.raidsCompleted,
+      offensiveReward: row.offensiveReward,
+      defensiveReward: row.defensiveReward,
+      members: Array.isArray(row.members) ? row.members : [],
+      archiveSource: "persistent",
+    }));
 
     const clashKingClanRaw =
       clanResult.data &&
@@ -957,7 +1037,11 @@ router.get(
           clan.clanCapitalPoints = officialClan.clanCapitalPoints;
         }
         if (officialClan.capitalLeague !== undefined) {
-          clan.capitalLeague = officialClan.capitalLeague;
+          const league = officialClan.capitalLeague;
+          clan.capitalLeague =
+            league && typeof league === "object"
+              ? String((league as ClashRecord).name ?? "—")
+              : league;
         }
       }
     }
