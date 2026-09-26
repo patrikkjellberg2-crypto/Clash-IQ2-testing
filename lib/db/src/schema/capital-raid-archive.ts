@@ -1,4 +1,4 @@
-import { index, integer, jsonb, pgTable, real, text, timestamp, unique } from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgTable, text, timestamp, unique } from "drizzle-orm/pg-core";
 
 export const capitalRaidArchiveTable = pgTable(
   "capital_raid_archive",
