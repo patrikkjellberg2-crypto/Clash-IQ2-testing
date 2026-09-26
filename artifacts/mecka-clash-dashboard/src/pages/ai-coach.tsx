@@ -6,7 +6,6 @@ import WarTimer from '@/components/WarTimer';
 import {
   ArrowRight,
   BrainCircuit,
-  Menu,
   RefreshCw,
   Shield,
   Sparkles,
