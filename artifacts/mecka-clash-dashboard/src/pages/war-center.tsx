@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
-import { ClashIQPageShell } from '@/components/clashiq-page-shell';
+import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
 import {
   ArrowLeft,
@@ -13,6 +13,7 @@ import {
   Clock3,
   Crown,
   Flag,
+  Menu,
   MapPinned,
   RefreshCw,
   Shield,
@@ -369,8 +370,58 @@ export default function WarCenterPage() {
   const destruction = Math.round(num(clan.destructionPercentage));
 
   return (
-    <ClashIQPageShell clanName={label(asDict(dashboard.clan).name, 'BHABE DHEMONS')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} title="War Center" subtitle="Live war status, attacks, targets and defensive intelligence." onRefresh={() => void refetch()}>
+    <div className="min-h-[100dvh] bg-background dashboard-grid">
+      <div className="flex min-h-[100dvh]">
+        <AppSidebar clanName={label(asDict(dashboard.clan).name, 'Mecka Clash')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
 
+        <main className="min-w-0 flex-1">
+          <header className="border-b border-border/80 bg-background/80 px-5 py-4 backdrop-blur-md md:px-8">
+            <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(true)}
+                  className="rounded-xl border border-border bg-card p-2 lg:hidden"
+                  aria-label="Open navigation"
+                >
+                  <Menu className="size-4" />
+                </button>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">
+                    Live krig / {label(currentWar.state, 'status')}
+                  </p>
+                  <h1 className="mt-1 font-display text-xl font-bold tracking-[-.05em] md:text-2xl">
+                    War Center
+                  </h1>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="hidden items-center gap-2 text-right sm:flex">
+                  <span className="size-2 rounded-full bg-[#2b9f78]" />
+                  <div>
+                    <p className="text-xs font-bold">Live feed</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Official data
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void refetch()}
+                  className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  aria-label="Uppdatera kriget"
+                  data-testid="button-refresh-war-center"
+                >
+                  <RefreshCw className="size-4" />
+                </button>
+                <div className="grid size-9 place-items-center rounded-xl bg-primary text-xs font-bold text-primary-foreground">
+                  MC
+                </div>
+              </div>
+            </div>
+          </header>
+
+          <div className="mx-auto max-w-[1400px] space-y-5 px-5 py-6 md:px-8 md:py-8">
             <section
               className="relative overflow-hidden rounded-3xl bg-sidebar p-6 text-sidebar-foreground shadow-lg md:p-8"
               data-testid="card-war-hero"
@@ -737,37 +788,39 @@ export default function WarCenterPage() {
                             <td className="px-3 py-3 font-data text-xs font-bold">{destructionAgainstUs}%</td>
                             <td className="px-5 py-3 text-right">
                               <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${starsAgainstUs === 0 ? 'bg-[#2b9f78]/12 text-[#267a5e]' : starsAgainstUs === 1 ? 'bg-[#f4c542]/20 text-[#9c6e00]' : 'bg-[#cf5b4d]/12 text-[#a84439]'}`}>
-                                 {starsAgainstUs === 0 ? 'Defended' : `${starsAgainstUs} star${starsAgainstUs === 1 ? '' : 's'}`}
-                               </span>
-                             </td>
-                           </tr>
-                         );
-                       })}
-                     </tbody>
-                   </table>
-                 </div>
-               ) : (
-                 <div className="flex min-h-[150px] items-center justify-center px-6 text-center">
-                   <p className="text-xs text-muted-foreground">No defensive attacks recorded yet.</p>
-                 </div>
-               )}
-             </article>
+                                {starsAgainstUs === 0 ? 'Defended' : `${starsAgainstUs} star${starsAgainstUs === 1 ? '' : 's'}`}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="flex min-h-[150px] items-center justify-center px-6 text-center">
+                  <p className="text-xs text-muted-foreground">No defensive attacks recorded yet.</p>
+                </div>
+              )}
+            </article>
 
-             <footer className="flex flex-col justify-between gap-2 border-t border-border/70 pt-5 text-[11px] text-muted-foreground sm:flex-row">
-               <Link
-                 href="/"
-                 className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline"
-               >
-                 <ArrowLeft className="size-3.5" />
-                 Back to overview
-               </Link>
-               <p className="flex items-center gap-1.5">
-                 <Clock3 className="size-3.5" />
-                 Live data from the Clash of Clans API
-                 <ChevronRight className="ml-1 size-3" />
-               </p>
-             </footer>
-           </div>
-         </ClashIQPageShell>
-   );
+            <footer className="flex flex-col justify-between gap-2 border-t border-border/70 pt-5 text-[11px] text-muted-foreground sm:flex-row">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 font-bold text-primary hover:underline"
+              >
+                <ArrowLeft className="size-3.5" />
+                Back to overview
+              </Link>
+              <p className="flex items-center gap-1.5">
+                <Clock3 className="size-3.5" />
+                Live data from the Clash of Clans API
+                <ChevronRight className="ml-1 size-3" />
+              </p>
+            </footer>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
 }
