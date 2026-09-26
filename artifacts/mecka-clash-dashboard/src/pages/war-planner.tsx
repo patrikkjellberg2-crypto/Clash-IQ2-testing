@@ -7,6 +7,8 @@ import {
   Copy,
   CheckCheck,
   ChevronDown,
+  ChevronUp,
+  Loader2,
   Clock3,
   Lock,
   LockOpen,
@@ -885,6 +887,32 @@ function PlannerRow({
       0,
     );
 
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
+  const [recentWars, setRecentWars] = useState<Dict[] | null>(null);
+
+  const toggleHistory = async () => {
+    if (historyOpen) {
+      setHistoryOpen(false);
+      return;
+    }
+    setHistoryOpen(true);
+    if (recentWars !== null || historyLoading) return;
+    setHistoryLoading(true);
+    setHistoryError(null);
+    try {
+      const response = await fetch(`/api/clash/player/${encodeURIComponent(tag)}`);
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(str(body?.error, 'Could not load player history.'));
+      setRecentWars(asArray(body?.historicalWarStats?.recentWars));
+    } catch (error) {
+      setHistoryError(error instanceof Error ? error.message : 'Could not load player history.');
+    } finally {
+      setHistoryLoading(false);
+    }
+  };
+
   const performanceTrend = str(performance?.trend, 'stable');
   const recentAvgStars = num(performance?.recentAvgStars);
   const recentAvgDestruction = num(performance?.recentAvgDestruction);
@@ -964,29 +992,69 @@ function PlannerRow({
         </button>
 
         {performance && (
-          <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-white/10 bg-background/50 px-3 py-2 xl:w-[360px]">
-            <span className={`rounded-full border px-2 py-1 text-[9px] font-black tracking-[.08em] ${formClass}`}>
-              {formLabel}
-            </span>
-            <div className="text-center">
-              <p className="font-data text-sm font-black">{recentAvgStars.toFixed(2)}</p>
-              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">AVG ⭐</p>
-            </div>
-            <div className="h-7 w-px bg-border" />
-            <div className="text-center">
-              <p className="font-data text-sm font-black">{threeStarRate.toFixed(0)}%</p>
-              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">3★ RATE</p>
-            </div>
-            <div className="h-7 w-px bg-border" />
-            <div className="text-center">
-              <p className="font-data text-sm font-black">{recentAvgDestruction.toFixed(0)}%</p>
-              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">DEST.</p>
-            </div>
-            <div className="hidden sm:block h-7 w-px bg-border" />
-            <div className="hidden sm:block text-center">
-              <p className="font-data text-sm font-black">{recentWars}</p>
-              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">WARS</p>
-            </div>
+          <div className="flex shrink-0 flex-col gap-2 xl:w-[390px]">
+            <button
+              type="button"
+              onClick={() => void toggleHistory()}
+              className="flex w-full items-center gap-2 rounded-2xl border border-white/10 bg-background/50 px-3 py-2 text-left transition hover:border-amber-400/20 hover:bg-white/[0.04]"
+            >
+              <span className={`rounded-full border px-2 py-1 text-[9px] font-black tracking-[.08em] ${formClass}`}>
+                {formLabel}
+              </span>
+              <div className="text-center">
+                <p className="font-data text-sm font-black">{recentAvgStars.toFixed(2)}</p>
+                <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">AVG ⭐</p>
+              </div>
+              <div className="h-7 w-px bg-border" />
+              <div className="text-center">
+                <p className="font-data text-sm font-black">{threeStarRate.toFixed(0)}%</p>
+                <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">3★ RATE</p>
+              </div>
+              <div className="h-7 w-px bg-border" />
+              <div className="text-center">
+                <p className="font-data text-sm font-black">{recentAvgDestruction.toFixed(0)}%</p>
+                <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">DEST.</p>
+              </div>
+              <div className="ml-auto grid size-7 shrink-0 place-items-center rounded-lg bg-white/5 text-white/50">
+                {historyLoading ? <Loader2 className="size-3.5 animate-spin" /> : historyOpen ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+              </div>
+            </button>
+            {historyOpen && (
+              <div className="rounded-2xl border border-white/10 bg-black/20 p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-300/70">Recent attacks</p>
+                  <span className="text-[9px] font-bold text-white/30">Last 5 wars</span>
+                </div>
+                {historyError ? (
+                  <p className="text-xs text-red-300">{historyError}</p>
+                ) : historyLoading ? (
+                  <div className="flex items-center gap-2 py-2 text-xs text-white/40"><Loader2 className="size-3.5 animate-spin" /> Loading history…</div>
+                ) : recentWars && recentWars.length > 0 ? (
+                  <div className="space-y-2">
+                    {recentWars.slice(0, 5).map((war, index) => {
+                      const warAttacks = asArray(war.attacks);
+                      return (
+                        <div key={String(war.warId ?? war.endTime ?? index)} className="rounded-xl border border-white/5 bg-white/[.02] p-2.5">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate text-[11px] font-bold text-white/75">{label(war.opponentName, 'Unknown opponent')}</p>
+                              <p className="text-[9px] text-white/30">{war.result ? String(war.result).toUpperCase() : 'WAR'} · {war.endTime ? new Date(String(war.endTime)).toLocaleDateString() : '—'}</p>
+                            </div>
+                            <div className="flex shrink-0 flex-wrap justify-end gap-1">
+                              {warAttacks.length ? warAttacks.map((attack, attackIndex) => (
+                                <span key={attackIndex} className="rounded-md bg-amber-400/10 px-1.5 py-1 text-[9px] font-black text-amber-300">{num(attack.stars)}★ · {num(attack.destructionPercentage)}%</span>
+                              )) : <span className="rounded-md bg-red-400/10 px-1.5 py-1 text-[9px] font-black text-red-300">MISSED</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-white/30">No archived attacks available yet.</p>
+                )}
+              </div>
+            )}
           </div>
         )}
 
