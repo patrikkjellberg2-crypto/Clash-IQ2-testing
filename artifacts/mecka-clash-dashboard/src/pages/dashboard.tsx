@@ -15,7 +15,6 @@ import {
   Database,
   Flag,
   Gem,
-  Menu,
   Medal,
   RefreshCw,
   Search,
@@ -469,9 +468,6 @@ export default function DashboardPage() {
 
   const [searchError, setSearchError] =
     useState<string | null>(null);
-
-  const [mobile, setMobile] =
-    useState(false);
 
   const [selected, setSelected] =
     useState<Dict | null>(null);
