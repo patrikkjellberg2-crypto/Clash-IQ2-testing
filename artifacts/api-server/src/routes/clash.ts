@@ -1143,6 +1143,28 @@ router.get(
 
       archivedPlayer = findArchivedPlayer();
 
+      // If the individual player endpoint is unavailable, use the live clan
+      // roster as a second live fallback. The roster contains the core player
+      // identity fields and keeps Player Intelligence navigable; the richer
+      // player endpoint is still preferred whenever it succeeds.
+      if (!player && process.env.CLASH_API_TOKEN) {
+        const rosterResult = await fetchOptionalResource(
+          `/clans/${encodeURIComponent(clanTag)}/members`,
+          [],
+          req.log,
+        );
+        const roster = listItems(rosterResult.data);
+        const rosterPlayer = roster.find(
+          (m) => normalizeAttackerTag(String(m.tag ?? "")) === tag,
+        );
+        if (rosterPlayer) {
+          player = {
+            ...rosterPlayer,
+            _clashIqSource: "official-clan-roster",
+          };
+        }
+      }
+
       if (!player && !archivedPlayer) {
         await recoverHistoricalWars(clanTag, req.log, 15);
         archivedWars = await listArchivedWars(clanTag, 60);
@@ -1374,7 +1396,14 @@ router.get(
       });
     } catch (error) {
       req.log.warn(
-        { error, tag },
+        {
+          tag,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStatus:
+            typeof error === "object" && error !== null && "status" in error
+              ? (error as { status?: unknown }).status
+              : undefined,
+        },
         "Player Intelligence request failed",
       );
 
