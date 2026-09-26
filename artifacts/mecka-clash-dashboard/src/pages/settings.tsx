@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import {
   Activity,
@@ -137,10 +137,98 @@ export default function SettingsPage() {
   const [compactMode, setCompactMode] = useState(false);
   const [soundEffects, setSoundEffects] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState('');
+
+  const settings = {
+    aiEnabled,
+    notifications,
+    warAlerts,
+    autoRefresh,
+    compactMode,
+    soundEffects,
+  };
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSettings() {
+      try {
+        setLoading(true);
+        setLoadError('');
+        const response = await fetch('/api/settings', {
+          headers: { Accept: 'application/json' },
+        });
+        if (!response.ok) throw new Error('Settings could not be loaded.');
+        const data = await response.json();
+        if (cancelled) return;
+        setAiEnabled(Boolean(data.aiEnabled));
+        setNotifications(Boolean(data.notifications));
+        setWarAlerts(Boolean(data.warAlerts));
+        setAutoRefresh(Boolean(data.autoRefresh));
+        setCompactMode(Boolean(data.compactMode));
+        setSoundEffects(Boolean(data.soundEffects));
+      } catch (error) {
+        if (!cancelled) {
+          setLoadError(error instanceof Error ? error.message : 'Settings could not be loaded.');
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadSettings();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function persistSettings(next: typeof settings) {
+    setSaving(true);
+    setLoadError('');
+    try {
+      const response = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(next),
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error || 'Settings could not be saved.');
+      }
+      const data = await response.json();
+      setAiEnabled(Boolean(data.aiEnabled));
+      setNotifications(Boolean(data.notifications));
+      setWarAlerts(Boolean(data.warAlerts));
+      setAutoRefresh(Boolean(data.autoRefresh));
+      setCompactMode(Boolean(data.compactMode));
+      setSoundEffects(Boolean(data.soundEffects));
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2200);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Settings could not be saved.');
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  function updateAndSave(key: keyof typeof settings, value: boolean) {
+    const next = { ...settings, [key]: value };
+    if (key === 'aiEnabled') setAiEnabled(value);
+    if (key === 'notifications') setNotifications(value);
+    if (key === 'warAlerts') setWarAlerts(value);
+    if (key === 'autoRefresh') setAutoRefresh(value);
+    if (key === 'compactMode') setCompactMode(value);
+    if (key === 'soundEffects') setSoundEffects(value);
+    void persistSettings(next);
+  }
 
   function saveSettings() {
-    setSaved(true);
-    window.setTimeout(() => setSaved(false), 2200);
+    void persistSettings(settings);
   }
 
   return (
@@ -164,16 +252,23 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={saveSettings}
+                disabled={loading || saving}
                 className="flex shrink-0 items-center gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-3.5 py-2.5 text-[10px] font-black uppercase tracking-wider text-amber-200 transition hover:bg-amber-400/15"
               >
                 {saved ? <Check className="h-4 w-4" /> : <Save className="h-4 w-4" />}
-                <span className="hidden sm:inline">{saved ? 'Saved' : 'Save changes'}</span>
-                <span className="sm:hidden">{saved ? 'Saved' : 'Save'}</span>
+                <span className="hidden sm:inline">{saving ? 'Saving…' : saved ? 'Saved' : 'Save changes'}</span>
+                <span className="sm:hidden">{saving ? 'Saving…' : saved ? 'Saved' : 'Save'}</span>
               </button>
             </div>
           </header>
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
+          {loadError ? (
+            <div className="rounded-2xl border border-red-400/20 bg-red-400/[0.05] px-4 py-3 text-xs text-red-200">
+              {loadError}
+            </div>
+          ) : null}
+
             <section className="relative overflow-hidden rounded-3xl border border-amber-400/15 bg-gradient-to-br from-[#17130b] via-[#0e1117] to-[#090b10] p-6 shadow-2xl md:p-8">
               <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-amber-400/10 blur-3xl" />
               <div className="absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-blue-500/5 blur-3xl" />
@@ -211,19 +306,19 @@ export default function SettingsPage() {
             <div className="grid gap-6 lg:grid-cols-2">
               <Section icon={Globe2} eyebrow="01 • General" title="Interface">
                 <SettingRow icon={RefreshCw} title="Automatic refresh" description="Keep clan, war and player data refreshed while you work.">
-                  <Toggle enabled={autoRefresh} onClick={() => setAutoRefresh(!autoRefresh)} />
+                  <Toggle enabled={autoRefresh} onClick={() => updateAndSave('autoRefresh', !autoRefresh)} />
                 </SettingRow>
                 <SettingRow icon={Palette} title="Compact interface" description="Use tighter spacing when you want more information on screen.">
-                  <Toggle enabled={compactMode} onClick={() => setCompactMode(!compactMode)} />
+                  <Toggle enabled={compactMode} onClick={() => updateAndSave('compactMode', !compactMode)} />
                 </SettingRow>
                 <SettingRow icon={Volume2} title="Sound effects" description="Enable interface feedback for important command-center actions.">
-                  <Toggle enabled={soundEffects} onClick={() => setSoundEffects(!soundEffects)} />
+                  <Toggle enabled={soundEffects} onClick={() => updateAndSave('soundEffects', !soundEffects)} />
                 </SettingRow>
               </Section>
 
               <Section icon={Bot} eyebrow="02 • Intelligence" title="AI Coach">
                 <SettingRow icon={Sparkles} title="AI analysis" description="Allow tactical analysis and recommendations from AI Coach.">
-                  <Toggle enabled={aiEnabled} onClick={() => setAiEnabled(!aiEnabled)} />
+                  <Toggle enabled={aiEnabled} onClick={() => updateAndSave('aiEnabled', !aiEnabled)} />
                 </SettingRow>
                 <div className="mt-4 rounded-2xl border border-blue-400/15 bg-blue-400/[0.04] p-4">
                   <div className="flex items-start gap-3">
@@ -243,10 +338,10 @@ export default function SettingsPage() {
 
               <Section icon={Swords} eyebrow="03 • War operations" title="War alerts">
                 <SettingRow icon={Bell} title="Notifications" description="Enable Clash IQ command-center notifications.">
-                  <Toggle enabled={notifications} onClick={() => setNotifications(!notifications)} />
+                  <Toggle enabled={notifications} onClick={() => updateAndSave('notifications', !notifications)} />
                 </SettingRow>
                 <SettingRow icon={Swords} title="War alerts" description="Highlight important active-war and attack activity.">
-                  <Toggle enabled={warAlerts} onClick={() => setWarAlerts(!warAlerts)} />
+                  <Toggle enabled={warAlerts} onClick={() => updateAndSave('warAlerts', !warAlerts)} />
                 </SettingRow>
                 <div className="mt-4 grid gap-2 sm:grid-cols-2">
                   <Link href="/war-center" className="flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.025] p-3 transition hover:bg-white/[0.05]">
