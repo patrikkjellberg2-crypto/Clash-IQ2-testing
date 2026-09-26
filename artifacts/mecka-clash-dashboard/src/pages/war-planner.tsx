@@ -830,6 +830,7 @@ function PlannerRow({
   member,
   assignment,
   opponents,
+  performance,
   pending,
   onAssign,
   onToggleLock,
@@ -841,6 +842,7 @@ function PlannerRow({
   member: Dict;
   assignment: Assignment;
   opponents: Dict[];
+  performance?: Dict;
   pending: boolean;
   onAssign: (
     target: number | null,
@@ -882,6 +884,24 @@ function PlannerRow({
       2 - attacksUsed,
       0,
     );
+
+  const performanceTrend = str(performance?.trend, 'stable');
+  const recentAvgStars = num(performance?.recentAvgStars);
+  const recentAvgDestruction = num(performance?.recentAvgDestruction);
+  const threeStarRate = num(performance?.threeStarRate);
+  const recentWars = num(performance?.recentWars);
+  const formLabel =
+    performanceTrend === 'improving'
+      ? 'ON FIRE'
+      : performanceTrend === 'declining'
+        ? 'FORM DIP'
+        : 'STABLE';
+  const formClass =
+    performanceTrend === 'improving'
+      ? 'border-emerald-400/20 bg-emerald-400/[0.06] text-emerald-300'
+      : performanceTrend === 'declining'
+        ? 'border-red-400/20 bg-red-400/[0.06] text-red-300'
+        : 'border-amber-400/20 bg-amber-400/[0.06] text-amber-300';
 
   const assignedTarget =
     opponents.find(
@@ -942,6 +962,33 @@ function PlannerRow({
             </div>
           </div>
         </button>
+
+        {performance && (
+          <div className="flex shrink-0 items-center gap-2 rounded-2xl border border-white/10 bg-background/50 px-3 py-2 xl:w-[360px]">
+            <span className={`rounded-full border px-2 py-1 text-[9px] font-black tracking-[.08em] ${formClass}`}>
+              {formLabel}
+            </span>
+            <div className="text-center">
+              <p className="font-data text-sm font-black">{recentAvgStars.toFixed(2)}</p>
+              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">AVG ⭐</p>
+            </div>
+            <div className="h-7 w-px bg-border" />
+            <div className="text-center">
+              <p className="font-data text-sm font-black">{threeStarRate.toFixed(0)}%</p>
+              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">3★ RATE</p>
+            </div>
+            <div className="h-7 w-px bg-border" />
+            <div className="text-center">
+              <p className="font-data text-sm font-black">{recentAvgDestruction.toFixed(0)}%</p>
+              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">DEST.</p>
+            </div>
+            <div className="hidden sm:block h-7 w-px bg-border" />
+            <div className="hidden sm:block text-center">
+              <p className="font-data text-sm font-black">{recentWars}</p>
+              <p className="text-[8px] uppercase tracking-[.12em] text-muted-foreground">WARS</p>
+            </div>
+          </div>
+        )}
 
         <div className="flex min-w-0 flex-1 items-center gap-3">
           <div className="w-full max-w-[400px]">
@@ -1564,11 +1611,54 @@ export default function WarPlannerPage() {
   ] = useState(false);
 
   const [
+    performanceByTag,
+    setPerformanceByTag,
+  ] = useState<Record<string, Dict>>({});
+
+  const [
     now,
     setNow,
   ] = useState(
     Date.now(),
   );
+
+  /* =======================================================
+     WAR INTELLIGENCE
+  ======================================================= */
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadPerformance = async () => {
+      const clanTag = str(dashboard.clanTag);
+      if (!clanTag) return;
+
+      try {
+        const response = await fetch(`/api/clash/war-intelligence?clanTag=${encodeURIComponent(clanTag)}`, {
+          headers: { Accept: 'application/json' },
+        });
+        if (!response.ok) return;
+        const body = await response.json();
+        if (cancelled) return;
+
+        const rows = Array.isArray(body?.players) ? body.players : [];
+        const next = rows.reduce<Record<string, Dict>>((result, row: Dict) => {
+          const tag = str(row.playerTag).toUpperCase();
+          if (tag) result[tag] = row;
+          return result;
+        }, {});
+        setPerformanceByTag(next);
+      } catch {
+        // War intelligence is an enhancement; the planner remains usable.
+      }
+    };
+
+    void loadPerformance();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [dashboard.clanTag]);
 
   /* =======================================================
      CLOCK
@@ -3089,6 +3179,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                         member={member}
                         assignment={assignment}
                         opponents={opponentMembers}
+                        performance={performanceByTag[tag.toUpperCase()]}
                         pending={pendingTag === tag || pendingTag === '__ai__'}
                         onAssign={(target) => handleAssign(tag, target)}
                         onToggleLock={() => handleToggleLock(tag)}
