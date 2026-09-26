@@ -2770,7 +2770,8 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
         />
 
         {/* MAIN */}
-        <main className="relative min-w-0 flex-1">\n          <ClashIQInlineBanner />
+        <main className="relative min-w-0 flex-1">
+          <ClashIQInlineBanner />
           <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
 
                           {/* TOP BAR */}
