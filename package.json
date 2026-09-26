@@ -10,6 +10,7 @@
     "start": "pnpm --filter @workspace/db push && pnpm --filter @workspace/api-server start"
   },
   "private": true,
+  "packageManager": "pnpm@10.34.5",
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.3"
   },
