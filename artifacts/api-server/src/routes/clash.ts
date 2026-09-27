@@ -1154,6 +1154,47 @@ router.get("/clash/war-intelligence", async (req, res): Promise<void> => {
   }
 });
 
+router.get("/clash/activity", async (req, res): Promise<void> => {
+  try {
+    const clanTag = await getActiveClanTag(
+      typeof req.query.clanTag === "string" ? req.query.clanTag : undefined,
+    );
+    const performance = await listPlayerPerformance(clanTag);
+    const players = performance.map((player) => {
+      const recentWars = Math.min(10, player.warsCounted);
+      const recentPossible = performance.length
+        ? Math.min(player.attacksPossible, recentWars * 2)
+        : 0;
+      const recentUsed = Math.min(player.attacksUsed, recentPossible);
+      const participationRate = recentWars
+        ? Math.round((Math.min(recentWars, player.warsCounted) - Math.min(player.missedAttacks > 0 ? Math.floor(player.missedAttacks / 2) : 0, recentWars)) / recentWars * 100)
+        : 0;
+      const utilizationRate = recentPossible
+        ? Math.round((recentUsed / recentPossible) * 100)
+        : 0;
+      const score = Math.max(0, Math.min(100, Math.round(
+        participationRate * 0.45 + utilizationRate * 0.55,
+      )));
+      return {
+        playerTag: player.playerTag,
+        playerName: player.playerName,
+        score,
+        participatedWars: Math.max(0, recentWars - Math.min(Math.floor(player.missedAttacks / 2), recentWars)),
+        warsTracked: recentWars,
+        attacksUsed: recentUsed,
+        attacksPossible: recentPossible,
+        participationRate,
+        attackUtilizationRate: utilizationRate,
+      };
+    }).sort((a, b) => b.score - a.score || b.attacksUsed - a.attacksUsed);
+
+    res.json({ clanTag, players });
+  } catch (error) {
+    req.log.error({ err: error }, "Failed to load player activity");
+    res.status(503).json({ error: "Could not load player activity.", code: "PLAYER_ACTIVITY_FAILED" });
+  }
+});
+
 router.get("/clash/war-archive/:id", async (req, res): Promise<void> => {
   try {
     const clanTag = await getActiveClanTag(
