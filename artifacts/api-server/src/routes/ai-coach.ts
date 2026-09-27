@@ -208,6 +208,10 @@ IMPORTANT OUTPUT RULES:
 - Do not repeat the same fact in multiple sections.
 - Do not claim an attack is "perfect" unless the supplied attack record proves 3 stars and 100% destruction.
 - Do not recommend a specific troop composition unless the supplied data actually contains composition data.
+- Never instruct the user to remove, kick, transfer, purge, punish, report or otherwise administratively act on another player's account. You may identify participation patterns and suggest reviewing or discussing them with the clan leadership.
+- Never present an unsupported game rule, matchmaking effect, raid requirement, district assignment rule, deadline or other mechanic as fact. If it is not present in the supplied data, label it as a suggestion or say that the data is insufficient.
+- Never infer donations from trophies, war attacks, or other unrelated fields.
+- Never turn a recommendation into a claim that an outcome is guaranteed.
 - If the war is over, analyze the result rather than pretending attacks remain.
 
 1. ENEMY WAR SUMMARY
@@ -350,6 +354,21 @@ async function callOpenRouterModel(prompt: string) {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+function hasMalformedRepetition(answer: string) {
+  const lines = answer
+    .split(/\\r?\\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (lines.length < 6) return false;
+
+  const counts = new Map<string, number>();
+  for (const line of lines) {
+    counts.set(line, (counts.get(line) || 0) + 1);
+  }
+
+  return Array.from(counts.values()).some((count) => count >= 3);
+}
+
 function isBusyError(error: any) {
   const status = Number(error?.httpStatus || 0);
   const message = String(error?.message || error).toLowerCase();
@@ -397,7 +416,27 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
     const prompt = buildPrompt(data, mode, question);
     if (prompt.length > MAX_PROMPT_CHARS) throw new Error(`AI war data exceeded the safety limit (${prompt.length} characters).`);
 
-    const answer = await callOpenRouter(prompt);
+    let answer = await callOpenRouter(prompt);
+
+    if (hasMalformedRepetition(answer)) {
+      const repairPrompt = [
+        prompt,
+        "",
+        "OUTPUT REPAIR REQUIRED:",
+        "The previous answer was malformed because it repeated identical lines.",
+        "Rewrite the complete answer from scratch.",
+        "Do not repeat any player, bullet, sentence or section unless the requested structure requires it.",
+        "Keep exactly the requested numbered sections and use only the verified supplied data.",
+        "Do not add administrative instructions about removing, kicking or transferring players."
+      ].join("\n");
+      try {
+        const repaired = await callOpenRouter(repairPrompt);
+        if (!hasMalformedRepetition(repaired)) answer = repaired;
+      } catch (repairError) {
+        console.warn("AI Coach output repair failed:", String((repairError as any)?.message || repairError));
+      }
+    }
+
     return res.json({ answer, mode, clanTag: tag });
   } catch (error: any) {
     console.error("AI Coach error:", error);
