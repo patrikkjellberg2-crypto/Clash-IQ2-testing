@@ -1402,7 +1402,12 @@ function OpponentAttackHistory({
                       #{opponentPosition}
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-black">{opponentName}</p>
+                      <p
+                        data-player-tag={str(opponent.tag)}
+                        className="cursor-pointer truncate text-sm font-black hover:text-amber-300"
+                      >
+                        {opponentName}
+                      </p>
                       <p className="mt-1 font-data text-[11px] text-muted-foreground">
                         TH{opponentTH} · {attacks.length}/2 attacks used
                       </p>
