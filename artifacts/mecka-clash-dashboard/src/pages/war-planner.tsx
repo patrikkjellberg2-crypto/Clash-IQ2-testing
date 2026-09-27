@@ -3221,17 +3221,6 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                     into tactical decisions.
                   </p>
                 </div>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={() => void generateAIPlan()}
-                    disabled={aiGenerating}
-                    className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-500 px-4 text-sm font-black text-white shadow-[0_8px_28px_rgba(59,130,246,.2)] disabled:opacity-50"
-                  >
-                    <Brain className="size-4" />
-                    {aiGenerating ? 'Analyzing War…' : 'Analyze War'}
-                  </button>
-                </div>
               </div>
 
               {aiError && (
