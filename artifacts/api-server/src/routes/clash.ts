@@ -576,6 +576,7 @@ router.get(
       officialClanResult,
       officialMembersResult,
       currentWarResult,
+      clashKingCurrentWarPointerResult,
       officialWarlogResult,
       officialCapitalRaidResult,
       clashKingWarlogResult,
@@ -622,6 +623,12 @@ router.get(
             req.log,
           )
         : Promise.resolve({ data: null, failed: false }),
+      // Public ClashKing fallback for the current-war pointer.
+      fetchOptionalClashKingResource(
+        `/v2/war/${encodedClanTag}/basic`,
+        null,
+        req.log,
+      ),
       // Prefer the official Supercell war log for the requested clan. This
       // endpoint is explicitly clan-scoped, so it is the authoritative source
       // for the Dashboard's Latest War Log. ClashKing remains a fallback.
@@ -678,7 +685,7 @@ router.get(
     const rawCurrentWar =
       currentWarResult.data;
 
-    const currentWar =
+    let currentWar =
       rawCurrentWar &&
       !Array.isArray(rawCurrentWar) &&
       [
@@ -692,6 +699,48 @@ router.get(
       )
         ? rawCurrentWar
         : null;
+
+    // Recover the full live-war payload through ClashKing when the official
+    // current-war endpoint is unavailable. ClashKing's /basic endpoint only
+    // gives us the end-time pointer, so fetch the stored war detail next.
+    if (!currentWar) {
+      const pointer =
+        clashKingCurrentWarPointerResult.data &&
+        !Array.isArray(clashKingCurrentWarPointerResult.data)
+          ? clashKingCurrentWarPointerResult.data
+          : null;
+
+      const pointerEndTime =
+        pointer && typeof pointer.endTime === "string"
+          ? pointer.endTime.trim()
+          : "";
+
+      if (pointerEndTime) {
+        const detail =
+          await fetchOptionalClashKingResource(
+            `/v2/war/${encodedClanTag}/previous/${encodeURIComponent(pointerEndTime)}`,
+            null,
+            req.log,
+          );
+
+        const candidate =
+          detail.data &&
+          !Array.isArray(detail.data)
+            ? detail.data
+            : null;
+
+        if (
+          candidate &&
+          ["preparation", "inWar", "matchmaking"].includes(
+            typeof candidate.state === "string"
+              ? candidate.state
+              : "",
+          )
+        ) {
+          currentWar = candidate;
+        }
+      }
+    }
 
     const officialWarlog = normalizeWarLog(
       listItems(officialWarlogResult.data),
@@ -1081,6 +1130,20 @@ router.get(
       clanTag,
       apiConfigured: true,
     };
+
+    req.log.info(
+      {
+        clanTag,
+        memberCount: members.length,
+        warCount: warlog.length,
+        capitalRaidSeasonCount: capitalRaidSeasons.length,
+        hasCurrentWar: Boolean(dashboard.currentWar),
+        hasClashKingClan: Boolean(clashKingClan),
+        hasOfficialClan: Boolean(officialClan),
+        hasOfficialRoster: officialMembersRaw.length > 0,
+      },
+      "ClashIQ dashboard data assembled",
+    );
 
     res.json(
       GetClashDashboardResponse.parse(
