@@ -289,7 +289,14 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
   const byPlayer = new Map<string, { name: string; wars: PlayerSample[] }>();
 
   for (const war of wars) {
-    if (war.source !== "live" || war.state !== "warEnded") continue;
+    // Use every completed live archive. Some older rows can have a state
+    // label that differs from "warEnded", while Player Cards still expose
+    // their history correctly. The endTime is the reliable completion gate.
+    if (
+      war.source !== "live" ||
+      !war.endTime ||
+      new Date(war.endTime).getTime() > Date.now()
+    ) continue;
     const members = Array.isArray(war.members) ? (war.members as Dict[]) : [];
     const possiblePerPlayer = num(war.attacksPerMember) || 2;
 
