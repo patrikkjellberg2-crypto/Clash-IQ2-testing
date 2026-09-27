@@ -507,7 +507,7 @@ router.get(
       let clan: ClashRecord | ClashRecord[] | null;
       try {
         clan = await fetchClashKingResource(
-          `/clan/${encodedClanTag}/basic`,
+          `/v2/clan/${encodedClanTag}/cached`,
           controller.signal,
         );
       } finally {
@@ -581,7 +581,7 @@ router.get(
       // Use ClashKing's documented clan endpoint as the primary public source.
       // This is more stable than the older /v2/.../cached compatibility route.
       fetchOptionalClashKingResource(
-        `/clan/${encodedClanTag}/basic`,
+        `/v2/clan/${encodedClanTag}/cached`,
         null,
         req.log,
       ),
@@ -642,7 +642,7 @@ router.get(
       // wars and is more reliable for Recent War Performance than the older
       // /v2/.../wars compatibility route.
       fetchOptionalClashKingResource(
-        `/war/${encodedClanTag}/previous`,
+        `/v2/clan/${encodedClanTag}/wars`,
         [],
         req.log,
       ),
