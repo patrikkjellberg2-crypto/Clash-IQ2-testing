@@ -3105,6 +3105,17 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
               </div>
 
               <div className="flex min-w-[230px] flex-col justify-center gap-2 rounded-2xl border border-white/10 bg-white/[.02] p-3">
+                <button
+                  type="button"
+                  onClick={() => void generateAIPlan()}
+                  disabled={aiGenerating || clanMembers.length === 0 || opponentMembers.length === 0}
+                  className="group flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 px-3 py-2 text-sm font-black text-black shadow-[0_8px_24px_rgba(245,158,11,.18)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {aiGenerating ? <RefreshCw className="size-4 animate-spin" /> : <Brain className="size-4" />}
+                  {aiGenerating ? 'Analyzing War…' : 'AI War Analysis'}
+                </button>
+
+
                 <div className="mb-1 text-center text-[9px] font-black uppercase tracking-[.22em] text-white/30">
                   {timerLabel} · {countdown}
                 </div>
