@@ -14,6 +14,7 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   if (!member) return null;
   const name = label(member.name, 'Unknown player');
   const league = asDict(member.league);
+  const rankedLeague = asDict(member.leagueTier);
   const builderLeague = asDict(member.builderBaseLeague);
   const attacks = Array.isArray(member.attacks) ? member.attacks.map(asDict) : [];
   const activity = asDict(member.activity);
