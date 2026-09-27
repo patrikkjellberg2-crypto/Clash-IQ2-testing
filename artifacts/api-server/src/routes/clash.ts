@@ -1590,3 +1590,271 @@ router.get(
                 attack.stars ?? 0,
               ) <= 1,
           ).length;
+
+        maxDestruction = Math.max(
+          maxDestruction,
+          ...attacks.map(
+            (attack) =>
+              Number(
+                attack.destructionPercentage ??
+                  0,
+              ),
+          ),
+          0,
+        );
+
+        if (attacks.length === 0) {
+          missedWars += 1;
+        }
+
+        wars.push({
+          endTime:
+            war.endTime ??
+            war.startTime ??
+            null,
+          result:
+            war.result ?? null,
+          opponentName:
+            (
+              war.opponent as
+                | ClashRecord
+                | undefined
+            )?.name ?? null,
+          opponentStars:
+            (
+              war.opponent as
+                | ClashRecord
+                | undefined
+            )?.stars ?? null,
+          clanStars:
+            (
+              war.clan as
+                | ClashRecord
+                | undefined
+            )?.stars ?? null,
+          attacks,
+        });
+      }
+
+      res.json({
+        ...player,
+        historicalWarStats: {
+          wars: wars.length,
+          totalAttacks,
+          totalStars,
+          averageStarsPerAttack:
+            totalAttacks
+              ? totalStars /
+                totalAttacks
+              : 0,
+          averageDestruction:
+            totalAttacks
+              ? totalDestruction /
+                totalAttacks
+              : 0,
+          maxDestruction,
+          threeStarAttacks,
+          oneStarOrLess,
+          missedWars,
+          recentWars:
+            wars.slice(0, 20),
+        },
+        clashOfStatsHistory,
+        rankings,
+      });
+    } catch (error) {
+      req.log.warn(
+        {
+          tag,
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStatus:
+            typeof error === "object" && error !== null && "status" in error
+              ? (error as { status?: unknown }).status
+              : undefined,
+        },
+        "Player Intelligence request failed",
+      );
+
+      res.status(503).json({
+        error:
+          "Could not load Player Intelligence from live or archived data.",
+        code: "PLAYER_FETCH_FAILED",
+      });
+    }
+  },
+);
+
+/* -------------------------------------------------------------------------- */
+/* War Planner - load assignments                                             */
+/* -------------------------------------------------------------------------- */
+
+router.get(
+  "/clash/war-planner",
+  async (req, res): Promise<void> => {
+    const parsedQuery =
+      GetWarPlannerQueryParams.safeParse({
+        warKey: req.query.warKey,
+      });
+
+    if (!parsedQuery.success) {
+      res.status(400).json({
+        error:
+          "A valid war key is required.",
+        code: "INVALID_WAR_KEY",
+      });
+      return;
+    }
+
+    const { warKey } =
+      parsedQuery.data;
+
+    const assignments =
+      await db
+        .select()
+        .from(warPlannerAssignmentsTable)
+        .where(
+          eq(
+            warPlannerAssignmentsTable.warKey,
+            warKey,
+          ),
+        )
+        .orderBy(
+          asc(
+            warPlannerAssignmentsTable.attackerTag,
+          ),
+        );
+
+    res.json(
+      GetWarPlannerResponse.parse({
+        warKey,
+        assignments,
+      }),
+    );
+  },
+);
+
+/* -------------------------------------------------------------------------- */
+/* War Planner - save assignment                                              */
+/* -------------------------------------------------------------------------- */
+
+async function saveWarPlannerAssignment(
+  req: any,
+  res: any,
+): Promise<void> {
+  const parsedParams =
+    UpsertWarPlannerAssignmentParams.safeParse(
+      {
+        attackerTag:
+          req.params.attackerTag,
+      },
+    );
+
+  const parsedBody =
+    UpsertWarPlannerAssignmentBody.safeParse(
+      req.body,
+    );
+
+  if (
+    !parsedParams.success ||
+    !parsedBody.success
+  ) {
+    res.status(400).json({
+      error:
+        "The planner assignment is invalid.",
+      code:
+        "INVALID_WAR_PLANNER_ASSIGNMENT",
+    });
+    return;
+  }
+
+  const attackerTag =
+    normalizeAttackerTag(
+      parsedParams.data.attackerTag,
+    );
+
+  const {
+    warKey,
+    assignedTargetMapPosition,
+    locked,
+    completed,
+  } = parsedBody.data;
+
+  try {
+    const [assignment] =
+      await db
+        .insert(
+          warPlannerAssignmentsTable,
+        )
+        .values({
+          warKey,
+          attackerTag,
+          assignedTargetMapPosition,
+          locked,
+          completed,
+        })
+        .onConflictDoUpdate({
+          target: [
+            warPlannerAssignmentsTable.warKey,
+            warPlannerAssignmentsTable.attackerTag,
+          ],
+          set: {
+            assignedTargetMapPosition,
+            locked,
+            completed,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+
+    if (!assignment) {
+      res.status(500).json({
+        error:
+          "The planner assignment could not be saved.",
+        code:
+          "WAR_PLANNER_SAVE_FAILED",
+      });
+      return;
+    }
+
+    res.json(
+      UpsertWarPlannerAssignmentResponse.parse(
+        assignment,
+      ),
+    );
+  } catch (error) {
+    req.log?.error?.(
+      {
+        error,
+        attackerTag,
+        warKey,
+      },
+      "Could not save war planner assignment",
+    );
+
+    res.status(500).json({
+      error:
+        "Could not save the planner assignment.",
+      code:
+        "WAR_PLANNER_DATABASE_ERROR",
+    });
+  }
+}
+
+/*
+ * The frontend uses POST.
+ */
+router.post(
+  "/clash/war-planner/:attackerTag",
+  saveWarPlannerAssignment,
+);
+
+/*
+ * Keep PUT support as well so older frontend code
+ * continues to work.
+ */
+router.put(
+  "/clash/war-planner/:attackerTag",
+  saveWarPlannerAssignment,
+);
+
+export default router;
