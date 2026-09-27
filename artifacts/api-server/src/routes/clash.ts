@@ -573,7 +573,9 @@ router.get(
       clanResult,
       officialClanResult,
       officialMembersResult,
+      clashKingMemberSearchResult,
       currentWarResult,
+      clashKingCurrentWarPointerResult,
       officialWarlogResult,
       officialCapitalRaidResult,
       clashKingWarlogResult,
@@ -581,7 +583,7 @@ router.get(
       // Use ClashKing's documented clan endpoint as the primary public source.
       // This is more stable than the older /v2/.../cached compatibility route.
       fetchOptionalClashKingResource(
-        `/clan/${encodedClanTag}/basic`,
+        `/v2/clan/${encodedClanTag}/cached`,
         null,
         req.log,
       ),
@@ -610,6 +612,12 @@ router.get(
             req.log,
           )
         : Promise.resolve({ data: null, failed: false }),
+      // Public ClashKing roster fallback when no official API token is configured.
+      fetchOptionalClashKingResource(
+        `/v2/player/search?query=&clanTags=${encodedClanTag}&limit=50`,
+        [],
+        req.log,
+      ),
       // ClashKing exposes the current-war pointer publicly, but not the
       // complete live war board. Keep Supercell as a temporary live-war
       // fallback until the live board is available through ClashKing.
@@ -620,6 +628,12 @@ router.get(
             req.log,
           )
         : Promise.resolve({ data: null, failed: false }),
+      // Public ClashKing fallback for the current-war pointer.
+      fetchOptionalClashKingResource(
+        `/v2/war/${encodedClanTag}/basic`,
+        null,
+        req.log,
+      ),
       // Prefer the official Supercell war log for the requested clan. This
       // endpoint is explicitly clan-scoped, so it is the authoritative source
       // for the Dashboard's Latest War Log. ClashKing remains a fallback.
@@ -642,7 +656,7 @@ router.get(
       // wars and is more reliable for Recent War Performance than the older
       // /v2/.../wars compatibility route.
       fetchOptionalClashKingResource(
-        `/war/${encodedClanTag}/previous`,
+        `/v2/clan/${encodedClanTag}/wars`,
         [],
         req.log,
       ),
@@ -676,7 +690,7 @@ router.get(
     const rawCurrentWar =
       currentWarResult.data;
 
-    const currentWar =
+    let currentWar =
       rawCurrentWar &&
       !Array.isArray(rawCurrentWar) &&
       [
@@ -690,6 +704,38 @@ router.get(
       )
         ? rawCurrentWar
         : null;
+
+    if (!currentWar) {
+      const pointer =
+        clashKingCurrentWarPointerResult.data &&
+        !Array.isArray(clashKingCurrentWarPointerResult.data)
+          ? clashKingCurrentWarPointerResult.data
+          : null;
+      const pointerEndTime =
+        pointer && typeof pointer.endTime === "string"
+          ? pointer.endTime.trim()
+          : "";
+
+      if (pointerEndTime) {
+        const detail = await fetchOptionalClashKingResource(
+          `/v2/war/${encodedClanTag}/previous/${encodeURIComponent(pointerEndTime)}`,
+          null,
+          req.log,
+        );
+        const candidate =
+          detail.data && !Array.isArray(detail.data)
+            ? detail.data
+            : null;
+        if (
+          candidate &&
+          ["preparation", "inWar", "matchmaking"].includes(
+            typeof candidate.state === "string" ? candidate.state : "",
+          )
+        ) {
+          currentWar = candidate;
+        }
+      }
+    }
 
     const officialWarlog = normalizeWarLog(
       listItems(officialWarlogResult.data),
@@ -901,23 +947,24 @@ router.get(
 
     let searchedClan: ClashRecord | null = null;
 
-    if (typeof clanNameForSearch === "string" && clanNameForSearch.trim()) {
-      const searchResult =
-        await fetchOptionalClashKingResource(
-          `/clan/search?name=${encodeURIComponent(clanNameForSearch.trim())}&limit=25`,
-          [],
-          req.log,
-        );
-
-      searchedClan =
-        listItems(searchResult.data).find((item) =>
-          isRequestedClan(item, clanTag),
-        ) ?? null;
-    }
+    // The legacy /clan/search endpoint currently returns 404. The exact clan
+    // has already been resolved above, so do not make this failing request.
+    const searchedClan: ClashRecord | null = null;
 
     const officialMembersRaw = listItems(
       officialMembersResult.data,
     );
+
+    const clashKingSearchMembersRaw = listItems(
+      clashKingMemberSearchResult.data,
+    );
+    const clashKingSearchMembers = clashKingSearchMembersRaw.filter((item) => {
+      const memberClan =
+        item.clan && typeof item.clan === "object"
+          ? (item.clan as ClashRecord)
+          : null;
+      return normalizeClanTag(String(memberClan?.tag ?? "")) === normalizeClanTag(clanTag);
+    });
 
     /*
      * IMPORTANT: all clan switching must use the exact requested tag.
@@ -966,6 +1013,7 @@ router.get(
 
     const rosterCandidates = [
       officialMembersRaw,
+      clashKingSearchMembers,
       officialEmbeddedMembers,
       searchedEmbeddedMembers,
       basicEmbeddedMembers,
