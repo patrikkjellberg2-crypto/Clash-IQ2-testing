@@ -940,13 +940,6 @@ router.get(
       ? officialClanRaw
       : null;
 
-    const clanNameForSearch =
-      (basicClan?.name ??
-        clashKingClan?.name ??
-        officialClan?.name);
-
-    let searchedClan: ClashRecord | null = null;
-
     // The legacy /clan/search endpoint currently returns 404. The exact clan
     // has already been resolved above, so do not make this failing request.
     const searchedClan: ClashRecord | null = null;
