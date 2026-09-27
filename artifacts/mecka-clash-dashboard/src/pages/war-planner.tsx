@@ -1679,6 +1679,8 @@ export default function WarPlannerPage() {
     setAiApplied,
   ] = useState(false);
 
+  const aiResultRef = useRef<HTMLElement | null>(null);
+
   const [
     performanceByTag,
     setPerformanceByTag,
@@ -2347,6 +2349,12 @@ export default function WarPlannerPage() {
         );
       } finally {
         setAiGenerating(false);
+        window.setTimeout(() => {
+          aiResultRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        }, 50);
       }
     };
 
@@ -3110,7 +3118,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
             </section>
 
             {/* AI PANEL */}
-            <section className="mb-5 overflow-hidden rounded-[24px] border border-blue-400/20 bg-[#06111b]">
+            <section ref={aiResultRef} className="mb-5 scroll-mt-24 overflow-hidden rounded-[24px] border border-blue-400/20 bg-[#06111b]">
               <div className="flex flex-col gap-4 border-b border-white/10 bg-gradient-to-r from-blue-500/10 to-transparent p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div>
                   <div className="flex items-center gap-2">
@@ -3137,7 +3145,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                     className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-500 px-4 text-sm font-black text-white shadow-[0_8px_28px_rgba(59,130,246,.2)] disabled:opacity-50"
                   >
                     <Brain className="size-4" />
-                    Analyze War
+                    {aiGenerating ? 'Analyzing War…' : 'Analyze War'}
                   </button>
                 </div>
               </div>
@@ -3220,6 +3228,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                   <p className="mt-3 font-bold">Ready for tactical analysis</p>
                   <p className="mt-1 max-w-md text-sm text-white/35">
                     Run AI analysis when you want ClashIQ to evaluate the live war.
+                    {aiGenerating ? ' The AI can take around 45–60 seconds to return a complete attack plan.' : ''}
                   </p>
                 </div>
               )}
