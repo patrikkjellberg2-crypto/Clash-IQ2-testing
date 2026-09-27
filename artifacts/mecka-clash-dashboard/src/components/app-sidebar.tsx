@@ -14,6 +14,7 @@ import {
   X,
   BarChart3,
   Sparkles,
+  Activity,
   Trophy,
   MessageSquareText,
 } from "lucide-react";
