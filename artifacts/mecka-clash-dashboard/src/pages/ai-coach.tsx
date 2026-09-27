@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
@@ -56,6 +56,8 @@ export default function AICoachPage() {
 
   const [loading, setLoading] =
     useState(false);
+
+  const resultRef = useRef<HTMLElement | null>(null);
 
   const analyze = async (
     selectedMode: Mode = mode,
@@ -121,12 +123,24 @@ export default function AICoachPage() {
         result.answer ||
           'No analysis was returned.',
       );
+      window.setTimeout(() => {
+        resultRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 50);
     } catch (err) {
       setError(
         err instanceof Error
           ? err.message
           : 'AI Coach could not complete the analysis.',
       );
+      window.setTimeout(() => {
+        resultRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 50);
     } finally {
       setLoading(false);
     }
@@ -416,7 +430,7 @@ export default function AICoachPage() {
 
               </article>
 
-              <article className="min-h-[520px] overflow-hidden rounded-2xl border border-white/[.07] bg-[#06111b]/90 shadow-[0_12px_45px_rgba(0,0,0,.2)]">
+              <article ref={resultRef} className="min-h-[520px] scroll-mt-24 overflow-hidden rounded-2xl border border-white/[.07] bg-[#06111b]/90 shadow-[0_12px_45px_rgba(0,0,0,.2)]">
                 <div className="flex items-center gap-3 border-b border-white/[.06] bg-gradient-to-r from-[#f4c542]/[.07] to-[#2d8cff]/[.05] px-5 py-4">
                   <div className="grid size-10 place-items-center rounded-xl border border-[#f4c542]/20 bg-[#f4c542]/10">
                     <BrainCircuit className="size-5 text-[#f4c542]" />
@@ -471,7 +485,15 @@ export default function AICoachPage() {
                     )}
 
                   {loading && (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
+                      <div className="rounded-xl border border-[#f4c542]/15 bg-[#f4c542]/[.04] p-4">
+                        <p className="text-sm font-black text-[#f4c542]">
+                          AI is analyzing your war…
+                        </p>
+                        <p className="mt-1 text-xs leading-5 text-white/45">
+                          The AI analysis can take around 45–60 seconds. Keep this page open while ClashIQ processes the live war data.
+                        </p>
+                      </div>
                       {[
                         1,
                         2,
