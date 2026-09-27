@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ExternalLink, ListMusic, Music2, Play, Plus, Trash2, Youtube } from "lucide-react";
+import { ListMusic, Music2, Play, Plus, Trash2, Youtube } from "lucide-react";
 import { Link } from "wouter";
 import { ClashIQPageShell } from "@/components/clashiq-page-shell";
 
@@ -120,10 +120,6 @@ export default function MusicPage() {
     setPlaylist((current) => current.filter((track) => track.id !== id));
   };
 
-  const openMusic = () => {
-    window.open("https://music.youtube.com/", "_blank", "noopener,noreferrer");
-  };
-
   const embedUrl = selected
     ? `https://www.youtube.com/embed/${selected.id}?rel=0&modestbranding=1`
     : "";
@@ -145,14 +141,6 @@ export default function MusicPage() {
                 <h2 className="font-black text-white">{selected?.title ?? "Ingen video vald"}</h2>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={openMusic}
-              className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs font-bold text-slate-300 transition hover:bg-white/[0.08] hover:text-white"
-            >
-              <ExternalLink className="size-3.5" />
-              Öppna YouTube Music
-            </button>
           </div>
 
           <div className="aspect-video bg-black">
@@ -261,11 +249,38 @@ export default function MusicPage() {
 
       <div className="mt-5 flex items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#0d1117]/90 p-4">
         <p className="text-xs text-slate-500">
-          Nästa steg kan vara en delad klanplaylist som alla i klanen ser, utan att vi behöver lagra Google-inloggningar.
+          Spellistan styr spelaren. Klicka på en låt så byts den inbäddade spelaren längst ner i Clash IQ.
         </p>
         <Link href="/" className="shrink-0 text-xs font-bold text-amber-300 hover:text-amber-200">
           Till Overview
         </Link>
+      </div>
+
+      <div className="sticky bottom-3 z-30 mt-5 overflow-hidden rounded-2xl border border-amber-300/15 bg-[#090c11]/95 shadow-2xl backdrop-blur-xl">
+        <div className="flex items-center gap-3 border-b border-white/[0.06] px-4 py-3">
+          <div className="grid size-8 place-items-center rounded-lg border border-red-400/20 bg-red-400/10 text-red-400">
+            <Youtube className="size-4" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-[10px] font-black uppercase tracking-[0.18em] text-slate-500">Clash IQ Music</p>
+            <p className="truncate text-xs font-bold text-white">{selected?.title ?? "Ingen låt vald"}</p>
+          </div>
+        </div>
+        <div className="aspect-video max-h-[45vh] bg-black">
+          {selected ? (
+            <iframe
+              src={embedUrl}
+              title={selected.title}
+              className="h-full w-full"
+              allow="autoplay; encrypted-media; picture-in-picture"
+              allowFullScreen
+            />
+          ) : (
+            <div className="grid h-full place-items-center text-xs text-slate-600">
+              Välj en låt från spellistan.
+            </div>
+          )}
+        </div>
       </div>
     </ClashIQPageShell>
   );
