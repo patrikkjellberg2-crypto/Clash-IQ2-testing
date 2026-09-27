@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { getActiveClanTag } from "../lib/clan-selection";
-import { normalizeAttackerTag } from "../lib/clash-tags";
+import { clanSelectionTable, db } from "@workspace/db";
+import { eq } from "drizzle-orm";
 import {
   getPlayerWarHistory,
   listArchivedWars,
@@ -9,6 +9,23 @@ import {
 
 const router: IRouter = Router();
 const MAX_WARS = 60;
+const DEFAULT_CLAN_TAG = "#2Q0Q82C9R";
+const CLAN_SELECTION_ID = 1;
+
+function normalizeTag(value: string): string {
+  const trimmed = value.trim().toUpperCase();
+  return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
+}
+
+async function getActiveClanTag(requestedTag?: string): Promise<string> {
+  if (requestedTag) return normalizeTag(requestedTag);
+  const [selection] = await db
+    .select({ clanTag: clanSelectionTable.clanTag })
+    .from(clanSelectionTable)
+    .where(eq(clanSelectionTable.id, CLAN_SELECTION_ID))
+    .limit(1);
+  return selection?.clanTag ?? DEFAULT_CLAN_TAG;
+}
 
 function clampWars(value: unknown): number {
   const parsed = Number(value);
@@ -80,7 +97,7 @@ router.get("/clash/trends/player/:tag", async (req, res): Promise<void> => {
     const clanTag = await getActiveClanTag(
       typeof req.query.clanTag === "string" ? req.query.clanTag : undefined,
     );
-    const playerTag = normalizeAttackerTag(decodeURIComponent(req.params.tag));
+    const playerTag = normalizeTag(decodeURIComponent(req.params.tag));
     const history = await getPlayerWarHistory(
       clanTag,
       playerTag,
