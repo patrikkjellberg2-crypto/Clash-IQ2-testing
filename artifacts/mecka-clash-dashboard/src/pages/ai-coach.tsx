@@ -399,6 +399,54 @@ export default function AICoachPage() {
                   placeholder={mode === 'question' ? 'Type your question here...' : mode === 'opponent' ? 'What do you want to know about the opponent?' : 'What do you want to know about your clan?'}
                 />
 
+                <div className="mt-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[9px] font-black uppercase tracking-[.16em] text-white/40">
+                      Quick Missions
+                    </label>
+                    <span className="text-[9px] text-white/25">
+                      One tap
+                    </span>
+                  </div>
+
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                    {[
+                      {
+                        label: 'Next 3 moves',
+                        mode: 'clan' as Mode,
+                        prompt: 'Give me the three most important things our clan should do next. Be specific and prioritize the actions by impact.',
+                      },
+                      {
+                        label: 'Enemy targets',
+                        mode: 'opponent' as Mode,
+                        prompt: 'Analyze the current opponent and identify the best attack targets in priority order. Explain briefly why each target matters.',
+                      },
+                      {
+                        label: 'Member attention',
+                        mode: 'clan' as Mode,
+                        prompt: 'Based on the available clan data, identify members who need attention and explain what the leadership team should check.',
+                      },
+                      {
+                        label: 'War risk check',
+                        mode: 'opponent' as Mode,
+                        prompt: 'Assess the current war situation and tell me the biggest risks right now and what we should do to reduce them.',
+                      },
+                    ].map((mission) => (
+                      <button
+                        key={mission.label}
+                        type="button"
+                        onClick={() => {
+                          setMode(mission.mode);
+                          setQuestion(mission.prompt);
+                        }}
+                        className="rounded-xl border border-white/[.07] bg-white/[.02] px-3 py-2.5 text-left text-[11px] font-bold text-white/70 transition hover:border-[#f4c542]/20 hover:bg-[#f4c542]/[.05] hover:text-white"
+                      >
+                        {mission.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
                   type="button"
                   onClick={() =>
