@@ -243,6 +243,7 @@ export default function PlayerPage() {
   );
 
   const rankings = asDict(player?.rankings);
+  const homeVillageRanking = asDict(rankings.homeVillage);
   const rankingLocation = asDict(rankings.location);
   const countryName = str(
     rankingLocation.name,
@@ -252,6 +253,8 @@ export default function PlayerPage() {
     rankingLocation.countryCode,
     '',
   );
+  const worldRank = num(homeVillageRanking.globalRank);
+  const countryRank = num(homeVillageRanking.localRank);
 
   const attacks = asArray(profile.attacks);
 
@@ -474,6 +477,22 @@ export default function PlayerPage() {
                         XP {num(profile.expLevel)}
                       </span>
                     </div>
+
+                    {(worldRank > 0 || countryRank > 0) && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {worldRank > 0 && (
+                          <span className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-1.5 text-xs font-black text-amber-200">
+                            🌍 World #{worldRank.toLocaleString('en-US')}
+                          </span>
+                        )}
+
+                        {countryRank > 0 && (
+                          <span className="rounded-lg border border-emerald-400/15 bg-emerald-400/[0.05] px-3 py-1.5 text-xs font-black text-emerald-200">
+                            {countryFlag(countryCode)} {countryName} #{countryRank.toLocaleString('en-US')}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -528,26 +547,6 @@ export default function PlayerPage() {
                 </div>
               </div>
             </section>
-
-            {/* Rankings */}
-            {(num(rankings.globalRank) > 0 ||
-              num(rankings.localRank) > 0) && (
-              <section className="grid gap-4 sm:grid-cols-2">
-                <Stat
-                  icon={Trophy}
-                  label="World Ranking"
-                  value={num(rankings.globalRank) ? `#${num(rankings.globalRank).toLocaleString('en-US')}` : '—'}
-                  sub="Global player ranking"
-                />
-
-                <Stat
-                  icon={Trophy}
-                  label={`${countryFlag(countryCode)} ${countryName} Ranking`}
-                  value={num(rankings.localRank) ? `#${num(rankings.localRank).toLocaleString('en-US')}` : '—'}
-                  sub={countryCode ? `National player ranking · ${countryCode}` : 'Local player ranking'}
-                />
-              </section>
-            )}
 
             {/* Core stats */}
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
