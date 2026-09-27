@@ -3150,7 +3150,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
 
               {aiPlan ? (
                 <div className="p-5 sm:p-6">
-                  <div className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-black/20 p-5 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-black/20 p-5 lg:flex-row lg:items-start lg:justify-between">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusPill
@@ -3171,6 +3171,23 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                         {aiPlan.summary}
                       </p>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => void applyAIPlan()}
+                      disabled={
+                        aiApplied ||
+                        pendingTag === '__ai__' ||
+                        aiPlan.recommendations.length === 0
+                      }
+                      className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-amber-400 px-4 text-sm font-black text-black transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {pendingTag === '__ai__' ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Target className="size-4" />
+                      )}
+                      {aiApplied ? 'Plan Applied' : 'Apply AI Plan'}
+                    </button>
                   </div>
 
                   {aiPlan.recommendations.length > 0 && (
@@ -3354,17 +3371,19 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
               <button
                 type="button"
                 onClick={() => void generateAIPlan()}
-                disabled={aiGenerating || !clanMembers.length}
-                className="group rounded-2xl border border-white/10 bg-[#06111b] p-5 text-left transition hover:border-amber-400/25 hover:bg-[#0a1722] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={aiGenerating || clanMembers.length === 0 || opponentMembers.length === 0}
+                className="group relative rounded-2xl border border-amber-400/15 bg-[#06111b] p-5 text-left transition hover:border-amber-400/40 hover:bg-[#0a1722] disabled:cursor-not-allowed disabled:opacity-60"
               >
                 <div className="flex items-start gap-3">
-                  <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/5 text-amber-300 group-hover:bg-amber-400/10">
-                    <Target className="size-4" />
+                  <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-amber-400/10 text-amber-300 group-hover:bg-amber-400/15">
+                    {aiGenerating ? <Loader2 className="size-4 animate-spin" /> : <Target className="size-4" />}
                   </div>
                   <div>
-                    <p className="font-bold">Smart Targeting</p>
-                    <p className="mt-1 text-xs leading-5 text-white/35">
-                      {aiGenerating ? 'AI is analyzing the matchup…' : 'Use matchup data to generate target priorities.'}
+                    <p className="font-bold">{aiGenerating ? 'AI is analyzing…' : 'Smart Targeting'}</p>
+                    <p className="mt-1 text-xs leading-5 text-white/45">
+                      {aiGenerating
+                        ? 'Building attack recommendations from the live war data. This can take up to a minute.'
+                        : 'Tap to let AI choose the highest-value targets for your players.'}
                     </p>
                   </div>
                 </div>
