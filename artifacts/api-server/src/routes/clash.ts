@@ -894,26 +894,12 @@ router.get(
       ? officialClanRaw
       : null;
 
-    const clanNameForSearch =
-      (basicClan?.name ??
-        clashKingClan?.name ??
-        officialClan?.name);
-
-    let searchedClan: ClashRecord | null = null;
-
-    if (typeof clanNameForSearch === "string" && clanNameForSearch.trim()) {
-      const searchResult =
-        await fetchOptionalClashKingResource(
-          `/clan/search?name=${encodeURIComponent(clanNameForSearch.trim())}&limit=25`,
-          [],
-          req.log,
-        );
-
-      searchedClan =
-        listItems(searchResult.data).find((item) =>
-          isRequestedClan(item, clanTag),
-        ) ?? null;
-    }
+    // Do not call ClashKing's legacy /clan/search endpoint here.
+    // The exact clan tag has already been resolved above from the live clan
+    // sources, and the legacy search endpoint returns 404 on the current API.
+    // Keeping this optional lookup out of the dashboard prevents a known
+    // failing request from turning every page load into an error state.
+    const searchedClan: ClashRecord | null = null;
 
     const officialMembersRaw = listItems(
       officialMembersResult.data,
