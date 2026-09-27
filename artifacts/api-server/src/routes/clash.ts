@@ -572,7 +572,6 @@ router.get(
 
     const [
       basicClanResult,
-      clanResult,
       officialClanResult,
       officialMembersResult,
       clashKingMemberSearchResult,
@@ -664,8 +663,8 @@ router.get(
       basicClanResult.data &&
       !Array.isArray(basicClanResult.data);
     const hasValidClashKingClan =
-      clanResult.data &&
-      !Array.isArray(clanResult.data);
+      basicClanResult.data &&
+      !Array.isArray(basicClanResult.data);
     const hasValidOfficialClan =
       officialClanResult.data &&
       !Array.isArray(officialClanResult.data);
@@ -827,7 +826,7 @@ router.get(
       const leagueRaw =
         (officialClanResult.data && !Array.isArray(officialClanResult.data) ? officialClanResult.data.capitalLeague : undefined) ??
         (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.capitalLeague : undefined) ??
-        (clanResult.data && !Array.isArray(clanResult.data) ? clanResult.data.capitalLeague : undefined);
+        (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.capitalLeague : undefined);
       const leagueName =
         leagueRaw && typeof leagueRaw === "object"
           ? String((leagueRaw as ClashRecord).name ?? "")
@@ -847,7 +846,7 @@ router.get(
             clanName: String((
               (officialClanResult.data && !Array.isArray(officialClanResult.data) ? officialClanResult.data.name : undefined) ??
               (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.name : undefined) ??
-              (clanResult.data && !Array.isArray(clanResult.data) ? clanResult.data.name : undefined) ??
+              (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.name : undefined) ??
               seasonClan?.name ??
               ""
             ) || "") || null,
@@ -868,7 +867,7 @@ router.get(
               clanName: String((
                 (officialClanResult.data && !Array.isArray(officialClanResult.data) ? officialClanResult.data.name : undefined) ??
                 (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.name : undefined) ??
-                (clanResult.data && !Array.isArray(clanResult.data) ? clanResult.data.name : undefined) ??
+                (basicClanResult.data && !Array.isArray(basicClanResult.data) ? basicClanResult.data.name : undefined) ??
                 seasonClan?.name ??
                 ""
               ) || "") || null,
@@ -909,9 +908,9 @@ router.get(
     }));
 
     const clashKingClanRaw =
-      clanResult.data &&
-      !Array.isArray(clanResult.data)
-        ? clanResult.data
+      basicClanResult.data &&
+      !Array.isArray(basicClanResult.data)
+        ? basicClanResult.data
         : null;
 
     const basicClanRaw =
