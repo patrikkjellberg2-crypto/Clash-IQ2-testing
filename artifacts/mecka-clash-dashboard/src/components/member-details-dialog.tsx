@@ -8,6 +8,7 @@ const str = (value: unknown, fallback = '—') => typeof value === 'string' ? va
 const num = (value: unknown, fallback = 0) => typeof value === 'number' ? value : fallback;
 const label = (value: unknown, fallback = '—') => str(value, fallback);
 const compact = (value: number) => new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
+const rankingNumber = (value: unknown) => typeof value === 'number' && value > 0 ? value : null;
 const initials = (name: string) => name.split(/\s+/).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'MC';
 
 export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; onClose: () => void }) {
@@ -19,6 +20,13 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const builderHallLevel = num(member.builderHallLevel, num(member.builderBaseHallLevel, num(member.builderHallLevel)));
   const attacks = Array.isArray(member.attacks) ? member.attacks.map(asDict) : [];
   const activity = asDict(member.activity);
+  const rankings = asDict(member.rankings);
+  const homeVillageRanking = asDict(rankings.homeVillage);
+  const rankingLocation = asDict(rankings.location);
+  const worldRank = rankingNumber(homeVillageRanking.globalRank);
+  const countryRank = rankingNumber(homeVillageRanking.localRank);
+  const countryName = str(rankingLocation.name, 'Country');
+  const countryCode = str(rankingLocation.countryCode, '');
   const activityScore = num(activity.score, -1);
   const clan = asDict(member.clan);
   const clanBadgeUrls = asDict(clan.badgeUrls);
@@ -100,6 +108,30 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Trophy className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Trophies</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.trophies))}</p><p className="mt-1 text-xs text-muted-foreground">{label(league.name, 'Unranked')}</p></div>
           <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-4"><div className="flex items-center gap-2 text-primary"><Trophy className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Ranked League</span></div><div className="mt-2 flex items-center gap-3">{rankedLeagueIconUrl ? <img src={rankedLeagueIconUrl} alt="" className="size-10 object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}<div><p className="font-data text-lg font-bold">{label(rankedLeague.name, "Unranked")}</p><p className="mt-1 text-xs text-muted-foreground">Current Ranked Battles league</p></div></div></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Crown className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Experience</span></div><p className="mt-2 font-data text-2xl font-bold">Lv {num(member.expLevel)}</p><p className="mt-1 text-xs text-muted-foreground">Town Hall {num(member.townHallLevel, num(member.townhallLevel))}</p></div>
+          {(worldRank !== null || countryRank !== null) && (
+            <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.045] p-4 sm:col-span-2">
+              <div className="flex items-center gap-2 text-amber-300">
+                <Trophy className="size-4" />
+                <span className="text-[10px] font-bold uppercase tracking-[.12em]">Home Village Ranking</span>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {worldRank !== null && (
+                  <div className="rounded-xl border border-amber-400/15 bg-black/10 p-3">
+                    <p className="text-xs text-muted-foreground">World Ranking</p>
+                    <p className="mt-1 font-data text-2xl font-black text-amber-200">#{worldRank.toLocaleString('en-US')}</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">Current Home Village global rank</p>
+                  </div>
+                )}
+                {countryRank !== null && (
+                  <div className="rounded-xl border border-emerald-400/15 bg-emerald-400/[0.035] p-3">
+                    <p className="text-xs text-muted-foreground">{countryName} Ranking</p>
+                    <p className="mt-1 font-data text-2xl font-black text-emerald-200">#{countryRank.toLocaleString('en-US')}</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">Current Home Village local rank</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Gift className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Donations</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.donations))}</p><p className="mt-1 text-xs text-muted-foreground">mottagna {compact(num(member.donationsReceived))}</p></div>
           <div className="rounded-2xl border border-amber-400/15 bg-amber-400/[0.035] p-4"><div className="flex items-center gap-2 text-amber-300"><UserRound className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Builder Base</span></div><div className="mt-2 flex items-center gap-3"><div className="grid size-11 place-items-center rounded-xl bg-amber-400/10"><span className="font-data text-lg font-black text-amber-200">{builderHallLevel > 0 ? `BH${builderHallLevel}` : "BH—"}</span></div><div><p className="font-data text-xl font-bold">{compact(num(member.builderBaseTrophies))}</p><p className="mt-1 text-xs text-muted-foreground">{label(builderLeague.name, 'No league')}</p></div></div></div>
           {activityScore >= 0 && (
