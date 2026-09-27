@@ -4,7 +4,7 @@
   "webDir": "www",
   "backgroundColor": "#07090d",
   "server": {
-    "url": "https://cocproject420-1.onrender.com",
+    "url": "https://clash-iq2-testing.onrender.com",
     "cleartext": false,
     "errorPath": "error.html"
   },
