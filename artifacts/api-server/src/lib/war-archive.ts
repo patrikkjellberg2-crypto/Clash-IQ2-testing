@@ -19,6 +19,27 @@ function warKey(clanTag: string, opponentTag: string, endTime: string) {
   return `${normalizeTag(clanTag)}__${normalizeTag(opponentTag)}__${str(endTime)}`;
 }
 
+
+async function findNearDuplicateWarId(
+  clanTag: string,
+  opponentTag: string,
+  endTime: string,
+): Promise<string | null> {
+  const rows = await db
+    .select({ id: warArchiveTable.id, opponentTag: warArchiveTable.opponentTag, endTime: warArchiveTable.endTime })
+    .from(warArchiveTable)
+    .where(eq(warArchiveTable.clanTag, normalizeTag(clanTag)))
+    .orderBy(desc(warArchiveTable.endTime))
+    .limit(300);
+  const targetOpponent = normalizeTag(opponentTag);
+  const targetMs = Date.parse(endTime);
+  if (!Number.isFinite(targetMs)) return null;
+  const match = rows.find((row) => {
+    const rowMs = Date.parse(str(row.endTime));
+    return normalizeTag(str(row.opponentTag)) === targetOpponent && Number.isFinite(rowMs) && Math.abs(rowMs - targetMs) <= 60_000;
+  });
+  return match?.id ?? null;
+}
 function outcomeOf(war: Dict): "win" | "lose" | "tie" | null {
   const explicit = str(war?.result).trim().toLowerCase();
   if (explicit === "win" || explicit === "won" || explicit === "victory") return "win";
@@ -29,13 +50,13 @@ function outcomeOf(war: Dict): "win" | "lose" | "tie" | null {
   const opponent = war?.opponent && typeof war.opponent === "object" ? war.opponent as Dict : null;
   if (!clan || !opponent) return null;
 
-  const clanStars = num(clan.stars);
-  const opponentStars = num(opponent.stars);
+  const clanStars = clan ? num(clan.stars) : num(war?.clanStars);
+  const opponentStars = opponent ? num(opponent.stars) : num(war?.opponentStars);
   if (clanStars > opponentStars) return "win";
   if (clanStars < opponentStars) return "lose";
 
-  const clanDestruction = num(clan.destructionPercentage);
-  const opponentDestruction = num(opponent.destructionPercentage);
+  const clanDestruction = clan ? num(clan.destructionPercentage) : num(war?.clanDestruction);
+  const opponentDestruction = opponent ? num(opponent.destructionPercentage) : num(war?.opponentDestruction);
   if (clanDestruction > opponentDestruction) return "win";
   if (clanDestruction < opponentDestruction) return "lose";
   return "tie";
@@ -168,6 +189,8 @@ export async function snapshotCurrentWar(clanTag: string, currentWar: unknown, l
 
     const row = buildRow(clanTag, war, "live");
     if (!row) return;
+    const existingId = await findNearDuplicateWarId(clanTag, str(war?.opponent?.tag), str(war?.endTime));
+    if (existingId) row.id = existingId;
 
     await db
       .insert(warArchiveTable)
@@ -184,6 +207,7 @@ export async function snapshotCurrentWar(clanTag: string, currentWar: unknown, l
           opponentDestruction: row.opponentDestruction,
           members: row.members,
           opponentMembers: row.opponentMembers,
+          source: "live",
           updatedAt: new Date(),
         },
       });
@@ -418,14 +442,21 @@ export async function getPlayerWarHistory(clanTag: string, playerTag: string, li
   const wars = await db
     .select()
     .from(warArchiveTable)
-    .where(and(eq(warArchiveTable.clanTag, tag), eq(warArchiveTable.source, "live")))
+    .where(eq(warArchiveTable.clanTag, tag))
     .orderBy(desc(warArchiveTable.endTime))
     .limit(300);
 
   const entries: PlayerWarHistoryEntry[] = [];
+  const seenWars: Array<{ opponentTag: string; endTimeMs: number }> = [];
 
   for (const war of wars) {
+    const endTimeMs = Date.parse(str(war.endTime));
+    if (!Number.isFinite(endTimeMs) || endTimeMs > Date.now() || str(war.state) === "inWar") continue;
     const members = Array.isArray(war.members) ? (war.members as Dict[]) : [];
+    if (!members.length) continue;
+    const duplicate = seenWars.some((seen) => normalizeTag(str(war.opponentTag)) === seen.opponentTag && Math.abs(endTimeMs - seen.endTimeMs) <= 60_000);
+    if (duplicate) continue;
+    seenWars.push({ opponentTag: normalizeTag(str(war.opponentTag)), endTimeMs });
     const mine = members.find((m) => normalizeTag(str(m?.tag)) === player);
     if (!mine) continue;
 
