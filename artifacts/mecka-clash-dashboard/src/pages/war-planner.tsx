@@ -1503,6 +1503,7 @@ export default function WarPlannerPage() {
     data,
     isLoading,
     isError,
+    isFetching,
     refetch,
   } =
     useGetClashDashboard();
