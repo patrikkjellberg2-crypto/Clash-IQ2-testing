@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
+import { PlayerCardProvider } from '@/components/player-card-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 
@@ -99,16 +100,18 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter
-          base={import.meta.env.BASE_URL.replace(
-            /\/$/,
-            '',
-          )}
-        >
-          <Router />
-        </WouterRouter>
+        <PlayerCardProvider>
+          <WouterRouter
+            base={import.meta.env.BASE_URL.replace(
+              /\/$/,
+              '',
+            )}
+          >
+            <Router />
+          </WouterRouter>
 
-        <Toaster />
+          <Toaster />
+        </PlayerCardProvider>
       </TooltipProvider>
     </QueryClientProvider>
   );
