@@ -79,7 +79,7 @@ export function MemberDetailsOverlay() {
       const tagged = target.closest('[data-player-tag]') as HTMLElement | null;
       const link = target.closest('a[href]') as HTMLAnchorElement | null;
       const href = link?.getAttribute('href') || '';
-      const playerRoute = href.match(/^\\/player\\/(.+)$/);
+      const playerRoute = href.match(/^\/player\/(.+)$/);
 
       if (!tagged && !playerRoute) return;
 
