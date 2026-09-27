@@ -470,6 +470,8 @@ export default function DashboardPage() {
   const [selected, setSelected] =
     useState<Dict | null>(null);
 
+  const [activityPlayers, setActivityPlayers] = useState<Dict[]>([]);
+
   const initialized = useRef(false);
 
   const {
@@ -487,6 +489,22 @@ export default function DashboardPage() {
 
   const dash =
     data as unknown as DashboardShape | undefined;
+
+  useEffect(() => {
+    if (!requested) return;
+    let cancelled = false;
+    fetch(`/api/clash/activity?clanTag=${encodeURIComponent(requested)}`)
+      .then(response => response.ok ? response.json() : null)
+      .then(payload => {
+        if (!cancelled && payload && Array.isArray(payload.players)) {
+          setActivityPlayers(payload.players.map((player: unknown) => d(player)));
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setActivityPlayers([]);
+      });
+    return () => { cancelled = true; };
+  }, [requested]);
 
   const members = useMemo(
     () =>
@@ -855,6 +873,55 @@ export default function DashboardPage() {
                   <ArrowRight className="size-3.5" />
                 </Link>
               </article>
+            </section>
+
+            <section className="premium-card overflow-hidden rounded-2xl">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
+                <div>
+                  <h2 className="font-bold">Most Active Members</h2>
+                  <p className="text-xs text-muted-foreground">War activity · last 10 completed wars</p>
+                </div>
+                <Link
+                  href="/members"
+                  className="rounded-lg bg-primary/15 px-3 py-1.5 text-[10px] font-bold text-sky-300"
+                >
+                  View All
+                </Link>
+              </div>
+
+              <div className="grid gap-3 p-4 sm:grid-cols-2 lg:grid-cols-5">
+                {activityPlayers.slice(0, 5).map((player, index) => {
+                  const score = n(player.score);
+                  const name = s(player.playerName, "Unknown");
+                  return (
+                    <button
+                      type="button"
+                      key={s(player.playerTag, String(index))}
+                      onClick={() => {
+                        const member = members.find(
+                          candidate => s(candidate.tag).toUpperCase() === s(player.playerTag).toUpperCase(),
+                        );
+                        setSelected(member ?? { tag: player.playerTag, name: player.playerName });
+                      }}
+                      className="rounded-2xl border border-white/10 bg-white/[.03] p-4 text-left transition hover:border-sky-400/30 hover:bg-white/[.05]"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="grid size-9 place-items-center rounded-xl bg-sky-400/10 text-xs font-bold text-sky-200">
+                          {initials(name)}
+                        </span>
+                        <span className="font-data text-lg font-black text-emerald-300">{score}%</span>
+                      </div>
+                      <p className="mt-3 truncate text-sm font-bold">{name}</p>
+                      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-full rounded-full bg-emerald-400" style={{ width: `${score}%` }} />
+                      </div>
+                      <p className="mt-2 text-[10px] text-muted-foreground">
+                        {n(player.attacksUsed)}/{n(player.attacksPossible)} attacks · {n(player.participatedWars)}/{n(player.warsTracked)} wars
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
             </section>
 
             <section className="grid gap-5 xl:grid-cols-[1.05fr_1fr_.72fr]">
