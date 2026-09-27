@@ -61,6 +61,7 @@ export default function AICoachPage() {
 
   const analyze = async (
     selectedMode: Mode = mode,
+    customQuestion = '',
   ) => {
     if (!clanTag || loading) return;
 
@@ -438,6 +439,7 @@ export default function AICoachPage() {
                         onClick={() => {
                           setMode(mission.mode);
                           setQuestion(mission.prompt);
+                          void analyze(mission.mode, mission.prompt);
                         }}
                         className="rounded-xl border border-white/[.07] bg-white/[.02] px-3 py-2.5 text-left text-[11px] font-bold text-white/70 transition hover:border-[#f4c542]/20 hover:bg-[#f4c542]/[.05] hover:text-white"
                       >
