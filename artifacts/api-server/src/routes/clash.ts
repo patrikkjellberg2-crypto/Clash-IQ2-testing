@@ -575,6 +575,7 @@ router.get(
       clanResult,
       officialClanResult,
       officialMembersResult,
+      clashKingMemberSearchResult,
       currentWarResult,
       clashKingCurrentWarPointerResult,
       officialWarlogResult,
@@ -613,6 +614,14 @@ router.get(
             req.log,
           )
         : Promise.resolve({ data: null, failed: false }),
+      // Public ClashKing fallback for the current roster. The player search
+      // endpoint supports filtering by clan tag and returns player records
+      // even when the cached clan object does not embed memberList.
+      fetchOptionalClashKingResource(
+        `/v2/player/search?query=&clanTags=${encodedClanTag}&limit=50`,
+        [],
+        req.log,
+      ),
       // ClashKing exposes the current-war pointer publicly, but not the
       // complete live war board. Keep Supercell as a temporary live-war
       // fallback until the live board is available through ClashKing.
@@ -956,6 +965,27 @@ router.get(
       officialMembersResult.data,
     );
 
+    const clashKingSearchMembersRaw = listItems(
+      clashKingMemberSearchResult.data,
+    );
+
+    const clashKingSearchMembers =
+      clashKingSearchMembersRaw
+        .filter(
+          (item): item is ClashRecord =>
+            Boolean(item && typeof item === "object"),
+        )
+        .filter((item) => {
+          const memberClan =
+            item.clan && typeof item.clan === "object"
+              ? item.clan as ClashRecord
+              : null;
+          return (
+            normalizeClanTag(String(memberClan?.tag ?? "")) ===
+            normalizeClanTag(clanTag)
+          );
+        });
+
     /*
      * IMPORTANT: all clan switching must use the exact requested tag.
      *
@@ -1003,6 +1033,7 @@ router.get(
 
     const rosterCandidates = [
       officialMembersRaw,
+      clashKingSearchMembers,
       officialEmbeddedMembers,
       searchedEmbeddedMembers,
       basicEmbeddedMembers,
@@ -1030,7 +1061,9 @@ router.get(
         : null,
       typeof clashKingClan?.members === "number"
         ? clashKingClan.members
-        : null,
+        : Number.isFinite(Number(clashKingClan?.members))
+          ? Number(clashKingClan.members)
+          : null,
     ].filter(
       (value): value is number =>
         typeof value === "number" && value > 0,
@@ -1141,6 +1174,8 @@ router.get(
         hasClashKingClan: Boolean(clashKingClan),
         hasOfficialClan: Boolean(officialClan),
         hasOfficialRoster: officialMembersRaw.length > 0,
+        hasClashKingRoster: clashKingSearchMembers.length > 0,
+        clashApiTokenConfigured: Boolean(process.env.CLASH_API_TOKEN),
       },
       "ClashIQ dashboard data assembled",
     );
