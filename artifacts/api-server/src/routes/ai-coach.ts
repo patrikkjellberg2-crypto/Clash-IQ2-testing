@@ -306,7 +306,11 @@ async function getClanData(clanTag: string) {
 
 async function callGeminiModel(model: string, prompt: string) {
   const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) throw new Error("GEMINI_API_KEY is not configured.");
+  if (!apiKey) {
+    throw new Error(
+      "GEMINI_API_KEY is not configured. Confirm the variable is set on the correct Render service (clash-iq-builder-base-test) and that the service has been redeployed after setting it. Check /api/healthz/config for a non-secret presence report.",
+    );
+  }
 
   const response = await fetch(`${GEMINI_BASE_URL}/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
     method: "POST",
