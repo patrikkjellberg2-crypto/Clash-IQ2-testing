@@ -767,7 +767,10 @@ function RecommendationCard({
           </div>
 
           <div className="min-w-0">
-            <p className="truncate text-sm font-black">
+            <p
+              data-player-tag={recommendation.attackerTag}
+              className="cursor-pointer truncate text-sm font-black hover:text-amber-300"
+            >
               {recommendation.attackerName}
             </p>
 
