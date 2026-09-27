@@ -4,6 +4,7 @@ import clashRouter from "./clash";
 import warPlannerRouter from "./war-planner";
 import aiCoachRouter from "./ai-coach";
 import settingsRouter from "./settings";
+import clanMusicRouter from "./clan-music";
 
 const router: IRouter = Router();
 
@@ -27,5 +28,6 @@ router.use(warPlannerRouter);
 
 router.use(aiCoachRouter);
 router.use(settingsRouter);
+router.use(clanMusicRouter);
 
 export default router;
