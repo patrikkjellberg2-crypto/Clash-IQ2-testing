@@ -499,62 +499,6 @@ export default function AICoachPage() {
               </article>
             </section>
 
-            <section className="grid gap-4 md:grid-cols-3">
-              <a
-                href="/war-planner"
-                className="group rounded-2xl border border-white/[.07] bg-[#06111b]/80 p-5 transition hover:border-[#f4c542]/20"
-              >
-                <Swords className="size-5 text-[#f4c542]" />
-
-                <p className="mt-3 text-sm font-bold">
-                  Open War Planner
-                </p>
-
-                <p className="mt-1 text-xs text-white/40">
-                  Turn intelligence into assignments.
-                </p>
-
-                <ArrowRight className="mt-4 size-4 text-white/30 transition group-hover:translate-x-1" />
-              </a>
-
-              <a
-                href="/war-center"
-                className="group rounded-2xl border border-white/[.07] bg-[#06111b]/80 p-5 transition hover:border-[#2d8cff]/20"
-              >
-                <Target className="size-5 text-[#5da9ff]" />
-
-                <p className="mt-3 text-sm font-bold">
-                  Open War Center
-                </p>
-
-                <p className="mt-1 text-xs text-white/40">
-                  Review attacks and remaining targets.
-                </p>
-
-                <ArrowRight className="mt-4 size-4 text-white/30 transition group-hover:translate-x-1" />
-              </a>
-
-              <a
-                href="/"
-                className="group rounded-2xl border border-white/[.07] bg-[#06111b]/80 p-5 transition hover:border-white/15"
-              >
-                <Shield className="size-5 text-white/60" />
-
-                <p className="mt-3 text-sm font-bold">
-                  Back to Overview
-                </p>
-
-                <p className="mt-1 text-xs text-white/40">
-                  Return to the clan command center.
-                </p>
-
-                <ArrowRight className="mt-4 size-4 text-white/30 transition group-hover:translate-x-1" />
-              </a>
-            </section>
-
-            <footer className="border-t border-white/[.06] pt-5 text-[10px] text-white/35">
-              CLASHIQ · Elite War Intelligence
-            </footer>
           </div>
         </main>
       </div>
