@@ -32,6 +32,7 @@ const navigation = [
   { label: "War Center", href: "/war-center", icon: Swords, section: "COMMAND" },
   { label: "War Planner", href: "/war-planner", icon: Shield, section: "COMMAND" },
   { label: "Capital Raids", href: "/capital-raids", icon: Castle, section: "COMMAND" },
+  { label: "Builder Base", href: "/builder-base", icon: Hammer, section: "COMMAND" },
   { label: "Members", href: "/members", icon: Users, section: "COMMAND" },
   { label: "Member Activity", href: "/activity", icon: Activity, section: "COMMAND" },
   { label: "AI Coach", href: "/ai-coach", icon: BrainCircuit, section: "INTELLIGENCE" },
