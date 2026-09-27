@@ -130,9 +130,8 @@ export default function MusicPage() {
 
   return (
     <ClashIQPageShell
-      eyebrow="Entertainment"
       title="YouTube Music"
-      description="Spela Clash-musik direkt i Clash IQ och behåll en egen lokal spellista på enheten."
+      subtitle="Spela Clash-musik direkt i Clash IQ och behåll en egen lokal spellista på enheten."
     >
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,.8fr)]">
         <section className="overflow-hidden rounded-2xl border border-white/10 bg-[#0d1117]/95 shadow-xl">
