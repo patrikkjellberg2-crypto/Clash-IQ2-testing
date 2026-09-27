@@ -882,7 +882,7 @@ export default function DashboardPage() {
                   <p className="text-xs text-muted-foreground">War activity · last 10 completed wars</p>
                 </div>
                 <Link
-                  href="/members"
+                  href="/activity"
                   className="rounded-lg bg-primary/15 px-3 py-1.5 text-[10px] font-bold text-sky-300"
                 >
                   View All
