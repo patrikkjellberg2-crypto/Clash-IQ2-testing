@@ -27,6 +27,9 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const countryRank = rankingNumber(homeVillageRanking.localRank);
   const countryName = str(rankingLocation.name, 'Country');
   const countryCode = str(rankingLocation.countryCode, '');
+  const builderBaseRanking = asDict(rankings.builderBase);
+  const builderWorldRank = rankingNumber(builderBaseRanking.globalRank);
+  const builderCountryRank = rankingNumber(builderBaseRanking.localRank);
   const activityScore = num(activity.score, -1);
   const clan = asDict(member.clan);
   const clanBadgeUrls = asDict(clan.badgeUrls);
@@ -108,6 +111,31 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Trophy className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Trophies</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.trophies))}</p><p className="mt-1 text-xs text-muted-foreground">{label(league.name, 'Unranked')}</p></div>
           <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-4"><div className="flex items-center gap-2 text-primary"><Trophy className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Ranked League</span></div><div className="mt-2 flex items-center gap-3">{rankedLeagueIconUrl ? <img src={rankedLeagueIconUrl} alt="" className="size-10 object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}<div><p className="font-data text-lg font-bold">{label(rankedLeague.name, "Unranked")}</p><p className="mt-1 text-xs text-muted-foreground">Current Ranked Battles league</p></div></div></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Crown className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Experience</span></div><p className="mt-2 font-data text-2xl font-bold">Lv {num(member.expLevel)}</p><p className="mt-1 text-xs text-muted-foreground">Town Hall {num(member.townHallLevel, num(member.townhallLevel))}</p></div>
+          {(builderWorldRank !== null || builderCountryRank !== null) && (
+            <div className="rounded-2xl border border-blue-400/20 bg-blue-400/[0.045] p-4 sm:col-span-2">
+              <div className="flex items-center gap-2 text-blue-300">
+                <Trophy className="size-4" />
+                <span className="text-[10px] font-bold uppercase tracking-[.12em]">Builder Base Ranking</span>
+              </div>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {builderWorldRank !== null && (
+                  <div className="rounded-xl border border-blue-400/15 bg-black/10 p-3">
+                    <p className="text-xs text-muted-foreground">BH World Ranking</p>
+                    <p className="mt-1 font-data text-2xl font-black text-blue-200">#{builderWorldRank.toLocaleString('en-US')}</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">Current Builder Base global rank</p>
+                  </div>
+                )}
+                {builderCountryRank !== null && (
+                  <div className="rounded-xl border border-cyan-400/15 bg-cyan-400/[0.035] p-3">
+                    <p className="text-xs text-muted-foreground">{countryName} BH Ranking</p>
+                    <p className="mt-1 font-data text-2xl font-black text-cyan-200">#{builderCountryRank.toLocaleString('en-US')}</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">Current Builder Base local rank</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {(worldRank !== null || countryRank !== null) && (
             <div className="rounded-2xl border border-amber-400/20 bg-amber-400/[0.045] p-4 sm:col-span-2">
               <div className="flex items-center gap-2 text-amber-300">
