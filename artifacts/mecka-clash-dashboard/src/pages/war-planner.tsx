@@ -3198,6 +3198,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                   <span className="block truncate text-[10px] text-white/35">Refresh live war data</span>
                 </span>
               </button>
+              </div>
             </section>
 
             {/* AI PANEL */}
