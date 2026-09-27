@@ -1,8 +1,8 @@
 {
   "name": "clash-iq-android",
-  "version": "1.1.0",
+  "version": "4.0.0-beta.1",
   "private": true,
-  "description": "Capacitor Android shell for Clash IQ (loads the hosted dashboard).",
+  "description": "Capacitor Android prerelease shell for Clash IQ 4.0 (loads the 4.0 prerelease dashboard).",
   "scripts": {
     "sync": "cap sync android"
   },
