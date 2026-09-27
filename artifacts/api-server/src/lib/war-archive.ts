@@ -352,7 +352,8 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
     const previous = aggregate(counted.slice(5, 10));
     const starDelta = recent.avgStars - previous.avgStars;
     const destructionDelta = recent.avgDestruction - previous.avgDestruction;
-    const comparable = previous.length >= 2 && previous.used > 0;
+    const previousWarCount = counted.slice(5, 10).length;
+    const comparable = previousWarCount >= 2 && previous.used > 0;
     const trend = !comparable
       ? "stable"
       : starDelta >= 0.2 || destructionDelta >= 5
@@ -388,6 +389,18 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
       : a.trend === "improving" ? -1 : b.trend === "improving" ? 1 : a.trend === "stable" ? -1 : 1,
   );
 }
+
+export type PlayerWarHistoryEntry = {
+  warId: string;
+  opponentName: string | null;
+  endTime: string;
+  won: "win" | "lose" | "tie" | "live";
+  teamSize: number;
+  townhallLevel: number;
+  mapPosition: number;
+  attacks: { stars: number; destructionPercentage: number; defenderTag: string; order: number }[];
+  defenses: { stars: number; destructionPercentage: number; attackerTag: string }[];
+};
 
 export async function listPlayerWarStats(clanTag: string) {
   const tag = normalizeTag(clanTag);
