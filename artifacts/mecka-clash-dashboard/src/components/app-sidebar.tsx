@@ -38,6 +38,7 @@ const navigation = [
   { label: "AI Coach", href: "/ai-coach", icon: BrainCircuit, section: "INTELLIGENCE" },
   { label: "Statistics", href: "/statistics", icon: BarChart3, section: "INTELLIGENCE" },
   { label: "Trends", href: "/trends", icon: TrendingUp, section: "INTELLIGENCE" },
+  { label: "Clan Music", href: "/music", icon: Music2, section: "INTELLIGENCE" },
   { label: "War Archive", href: "/war-archive", icon: Trophy, section: "INTELLIGENCE" },
   { label: "War Board", href: "/war-chat", icon: MessageSquareText, section: "INTELLIGENCE" },
   { label: "Player History", href: "/player-history", icon: Users, section: "INTELLIGENCE" },
@@ -217,7 +218,7 @@ function SidebarContent({
       <div className="space-y-2 px-4 pb-4">
         <button
           type="button"
-          onClick={openYouTubeMusic}
+          onClick={() => { window.location.href = "/music"; }}
           aria-label="Open YouTube Music"
           data-testid="sidebar-youtube-music"
           className="group block w-full cursor-pointer rounded-2xl border border-red-400/10 bg-gradient-to-br from-red-500/[0.08] to-amber-500/[0.04] p-3.5 text-left transition-all hover:border-red-400/25 hover:bg-red-500/[0.12] active:scale-[0.99]"
