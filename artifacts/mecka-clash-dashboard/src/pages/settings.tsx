@@ -366,27 +366,6 @@ export default function SettingsPage() {
               </Section>
             </div>
 
-            <section className="rounded-3xl border border-white/10 bg-[#11151c]/90 p-5 shadow-xl md:p-6">
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-xl border border-white/10 bg-white/[0.035]">
-                    <Zap className="h-5 w-5 text-amber-300" />
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">Command status</p>
-                    <p className="text-sm font-black text-white">Clash IQ configuration</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.04] px-3 py-2">
-                  <Activity className="h-4 w-4 text-emerald-400" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-300">Ready</span>
-                </div>
-              </div>
-            </section>
-
-            <div className="pb-8 pt-1 text-center">
-              <p className="text-[9px] font-semibold uppercase tracking-[0.3em] text-slate-700">CLASHIQ • Elite War Command Center</p>
-            </div>
           </div>
         </main>
       </div>
