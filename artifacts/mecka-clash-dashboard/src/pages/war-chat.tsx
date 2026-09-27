@@ -96,7 +96,7 @@ export default function WarChatPage() {
             ) : (
               <section className="space-y-3">
                 {messages.map(message => {
-                  const meta = sourceMeta[message.source];
+                  const meta = sourceMeta[message.source] ?? sourceMeta.manual;
                   const Icon = meta.icon;
                   return (
                     <article key={message.id} className="overflow-hidden rounded-2xl border border-white/[.07] bg-[#06111b]/90">
