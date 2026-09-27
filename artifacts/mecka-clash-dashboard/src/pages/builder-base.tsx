@@ -125,6 +125,7 @@ export default function BuilderBasePage() {
                           <tr className="border-b border-white/10 text-[10px] font-black uppercase tracking-[0.15em] text-slate-600">
                             <th className="px-3 py-3">Player</th>
                             <th className="px-3 py-3">BH</th>
+                            <th className="px-3 py-3 min-w-[220px]">Progress</th>
                             <th className="px-3 py-3">Trophies</th>
                             <th className="px-3 py-3">League</th>
                           </tr>
@@ -132,8 +133,32 @@ export default function BuilderBasePage() {
                         <tbody>
                           {rows.map((p, i) => (
                             <tr key={p.tag || p.name || i} className="border-b border-white/5">
-                              <td className="px-3 py-3 font-bold">{str(p.name)}</td>
+                              <td className="px-3 py-3 font-bold">
+                                {p.tag ? (
+                                  <Link
+                                    href={`/player/${encodeURIComponent(p.tag)}`}
+                                    className="text-white transition hover:text-amber-300 hover:underline"
+                                  >
+                                    {str(p.name)}
+                                  </Link>
+                                ) : (
+                                  str(p.name)
+                                )}
+                              </td>
                               <td className="px-3 py-3 font-black text-amber-200">BH {p.builderHallLevel || "—"}</td>
+                              <td className="px-3 py-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="h-2 min-w-[120px] flex-1 overflow-hidden rounded-full bg-black/40">
+                                    <div
+                                      className="h-full rounded-full bg-gradient-to-r from-amber-500 to-yellow-300"
+                                      style={{ width: `${highestBH ? Math.min(100, (p.builderHallLevel / highestBH) * 100) : 0}%` }}
+                                    />
+                                  </div>
+                                  <span className="w-12 text-right font-data text-[10px] text-slate-500">
+                                    {highestBH ? Math.round((p.builderHallLevel / highestBH) * 100) : 0}%
+                                  </span>
+                                </div>
+                              </td>
                               <td className="px-3 py-3 font-mono text-slate-300">{p.trophies.toLocaleString()}</td>
                               <td className="px-3 py-3 text-slate-400">{p.league}</td>
                             </tr>
