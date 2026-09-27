@@ -50,6 +50,16 @@ const initials = (n: string) =>
     .join('')
     .toUpperCase() || 'CQ';
 
+const countryFlag = (code: string) =>
+  code.length === 2
+    ? String.fromCodePoint(
+        ...code
+          .toUpperCase()
+          .split('')
+          .map((char) => 127397 + char.charCodeAt(0)),
+      )
+    : '🌍';
+
 const formatDate = (v: any) => {
   if (!v) return 'Unknown date';
 
@@ -230,6 +240,17 @@ export default function PlayerPage() {
   const league = asDict(profile.league);
   const builderLeague = asDict(
     profile.builderBaseLeague,
+  );
+
+  const rankings = asDict(player?.rankings);
+  const rankingLocation = asDict(rankings.location);
+  const countryName = str(
+    rankingLocation.name,
+    'Local',
+  );
+  const countryCode = str(
+    rankingLocation.countryCode,
+    '',
   );
 
   const attacks = asArray(profile.attacks);
@@ -507,6 +528,26 @@ export default function PlayerPage() {
                 </div>
               </div>
             </section>
+
+            {/* Rankings */}
+            {(num(rankings.globalRank) > 0 ||
+              num(rankings.localRank) > 0) && (
+              <section className="grid gap-4 sm:grid-cols-2">
+                <Stat
+                  icon={Trophy}
+                  label="World Ranking"
+                  value={num(rankings.globalRank) ? `#${num(rankings.globalRank).toLocaleString('en-US')}` : '—'}
+                  sub="Global player ranking"
+                />
+
+                <Stat
+                  icon={Trophy}
+                  label={`${countryFlag(countryCode)} ${countryName} Ranking`}
+                  value={num(rankings.localRank) ? `#${num(rankings.localRank).toLocaleString('en-US')}` : '—'}
+                  sub={countryCode ? `National player ranking · ${countryCode}` : 'Local player ranking'}
+                />
+              </section>
+            )}
 
             {/* Core stats */}
             <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
