@@ -1,3 +1,4 @@
+import clashTrendsRouter from "./clash-trends";
 import { Router, type IRouter } from "express";
 import {
   GetClashDashboardResponse,
@@ -106,6 +107,7 @@ async function recoverHistoricalWars(
 }
 
 const router: IRouter = Router();
+router.use(clashTrendsRouter);
 
 const DEFAULT_CLAN_TAG = "#2Q0Q82C9R";
 const CLASH_API_BASE_URL =
