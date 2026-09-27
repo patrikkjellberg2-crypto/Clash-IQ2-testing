@@ -43,10 +43,7 @@ export default function AICoachPage() {
   const [mode, setMode] =
     useState<Mode>('clan');
 
-  const [question, setQuestion] =
-    useState(
-      'Give me the three most important things we should do next.',
-    );
+  const [question, setQuestion] = useState('');
 
   const [answer, setAnswer] =
     useState('');
@@ -397,7 +394,7 @@ export default function AICoachPage() {
                   }
                   rows={5}
                   className="mt-2 w-full resize-none rounded-xl border border-white/[.08] bg-black/20 p-3 text-sm leading-6 text-white outline-none transition placeholder:text-white/25 focus:border-[#f4c542]/30"
-                  placeholder={mode === 'question' ? 'Type your question here...' : mode === 'opponent' ? 'What do you want to know about the opponent?' : 'What do you want to know about your clan?'}
+                  placeholder="Ask AI Coach about your clan, the enemy, attacks or war strategy..."
                 />
 
                 <div className="mt-4">
@@ -413,24 +410,39 @@ export default function AICoachPage() {
                   <div className="mt-2 grid gap-2 sm:grid-cols-2">
                     {[
                       {
-                        label: 'Next 3 moves',
-                        mode: 'clan' as Mode,
-                        prompt: 'Give me the three most important things our clan should do next. Be specific and prioritize the actions by impact.',
-                      },
-                      {
-                        label: 'Enemy targets',
+                        label: 'Biggest Threats',
                         mode: 'opponent' as Mode,
-                        prompt: 'Analyze the current opponent and identify the best attack targets in priority order. Explain briefly why each target matters.',
+                        prompt: `Analyze ONLY the enemy side of the current war.
+
+Identify exactly the 3 most dangerous enemy players based on Town Hall level, recorded attack results in this current war, number of recorded attacks, and consistency.
+
+For each player, show their exact recorded attack results and explain why they are a strategic threat.
+
+Do not analyze our clan players. Do not use historical wars unless explicitly needed. Do not use total historical attack wins as if they were current-war attacks. Do not invent missing results. Do not claim that one successful attack proves a player can 3-star any base.
+
+End with exactly 3 enemy players and a short explanation for each.`,
                       },
                       {
-                        label: 'Member attention',
-                        mode: 'clan' as Mode,
-                        prompt: 'Based on the available clan data, identify members who need attention and explain what the leadership team should check.',
-                      },
-                      {
-                        label: 'War risk check',
+                        label: 'Best Targets',
                         mode: 'opponent' as Mode,
-                        prompt: 'Assess the current war situation and tell me the biggest risks right now and what we should do to reduce them.',
+                        prompt: `Analyze the enemy bases in the current war and identify the best attack targets for our remaining attacks.
+
+Consider Town Hall level, any recorded defensive or attack-related evidence available in the supplied current-war data, and the likely strategic value of each target.
+
+Give a clear priority order and explain why each target should be considered.
+
+Use only the supplied data. Do not invent missing results, attack history, or player capabilities. Clearly state when the available data is insufficient to judge a target.`,
+                      },
+                      {
+                        label: 'War Strategy',
+                        mode: 'opponent' as Mode,
+                        prompt: `Analyze the current war between our clan and the opponent and give us a practical war strategy.
+
+Consider the current score, destruction, attacks used and remaining, enemy Town Hall levels, recorded attack results, and any other relevant current-war information in the supplied data.
+
+Identify the most important risks, what we should prioritize with our remaining attacks, and what mistakes we should avoid.
+
+Separate documented facts from strategic recommendations. Use only the supplied data and do not invent missing information.`,
                       },
                     ].map((mission) => (
                       <button
@@ -438,10 +450,9 @@ export default function AICoachPage() {
                         type="button"
                         onClick={() => {
                           setMode(mission.mode);
-                          setQuestion(mission.prompt);
                           void analyze(mission.mode, mission.prompt);
                         }}
-                        className="rounded-xl border border-white/[.07] bg-white/[.02] px-3 py-2.5 text-left text-[11px] font-bold text-white/70 transition hover:border-[#f4c542]/20 hover:bg-[#f4c542]/[.05] hover:text-white"
+                        className="rounded-xl border border-white/[.07] bg-white/[.02] px-3 py-3 text-left text-[11px] font-bold text-white/70 transition hover:border-[#f4c542]/20 hover:bg-[#f4c542]/[.05] hover:text-white"
                       >
                         {mission.label}
                       </button>
