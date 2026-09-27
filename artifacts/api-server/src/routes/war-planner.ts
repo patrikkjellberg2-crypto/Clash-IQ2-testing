@@ -247,7 +247,11 @@ Rules:
 - Never invent tags, names, Town Hall levels or attacks.
 - Respect attacks already used.
 - Never assign the same target twice.
+- Never recommend the same attacker twice in one generated plan.
 - Do not recommend a player who has already used all attacks.
+- Existing planner assignments are authoritative: never overwrite or contradict a LOCKED or COMPLETED assignment.
+- Do not assign an attacker who already has an existing target in the planner unless the supplied planner state explicitly says that assignment is unlocked and still needs a better target.
+- Prefer leaving an attacker unassigned rather than inventing a weak matchup.
 - Prefer realistic Town Hall matchups.
 - Use PLAYER FORM INTELLIGENCE when selecting attackers. Favor improving form for difficult 3-star attempts when the matchup supports it.
 - Treat declining form as a planning risk, not proof of poor skill. Use stable/improving players for higher-confidence assignments when the matchup is otherwise similar.
@@ -304,6 +308,20 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
       return res.status(400).json({ error: "clanTag krävs." });
     }
 
+    const plannerAssignments = Array.isArray(req.body?.assignments)
+      ? req.body.assignments
+          .map((item: any) => ({
+            attackerTag: cleanTag(item?.attackerTag),
+            targetPosition: num(item?.targetPosition, 0),
+            locked: Boolean(item?.locked),
+            completed: Boolean(item?.completed),
+          }))
+          .filter((item: any) => item.attackerTag)
+          .slice(0, 60)
+      : [];
+
+    const plannerData = JSON.stringify(plannerAssignments);
+
     const war = await getWarForPlanner(clanTag);
 
     if (!war || typeof war !== "object") {
@@ -331,14 +349,14 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
     const warData = JSON.stringify(compact);
     const intelligenceData = JSON.stringify(performanceData);
 
-    if ((warData.length + intelligenceData.length) > MAX_INPUT_CHARS) {
+    if ((warData.length + intelligenceData.length + plannerData.length) > MAX_INPUT_CHARS) {
       return res.status(413).json({
         error: `War-data är fortfarande för stor efter komprimering (${warData.length} tecken).`,
       });
     }
 
     const output = await callGemini(
-      `${SYSTEM_PROMPT}\n\nCURRENT WAR DATA:\n${warData}\n\nPLAYER FORM INTELLIGENCE (use this when choosing attackers):\n${intelligenceData}`,
+      `${SYSTEM_PROMPT}\n\nCURRENT WAR DATA:\n${warData}\n\nPLAYER FORM INTELLIGENCE (use this when choosing attackers):\n${intelligenceData}\n\nCURRENT WAR PLANNER ASSIGNMENTS (locked/completed entries are authoritative; do not replace them):\n${plannerData}`,
     );
 
     let plan: AnyObject;
@@ -392,7 +410,17 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
     );
 
     const usedTargets = new Set<number>();
+    const usedAttackers = new Set<string>();
     const maxAttacks = num(war?.attacksPerMember, 2);
+
+    for (const assignment of plannerAssignments) {
+      if (assignment.targetPosition > 0) {
+        usedTargets.add(assignment.targetPosition);
+      }
+      if (assignment.attackerTag && (assignment.locked || assignment.completed)) {
+        usedAttackers.add(assignment.attackerTag);
+      }
+    }
 
     const recommendations = rawRecommendations
       .slice(0, 15)
@@ -407,9 +435,11 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
 
         if (!attacker || !target) return null;
         if (usedTargets.has(target.position)) return null;
+        if (usedAttackers.has(attacker.tag.toUpperCase())) return null;
         if (attacker.attacksUsed >= maxAttacks) return null;
 
         usedTargets.add(target.position);
+        usedAttackers.add(attacker.tag.toUpperCase());
 
         return {
           attackerTag: attacker.tag,
