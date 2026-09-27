@@ -3351,26 +3351,78 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
             </section>
 
             <footer className="mt-5 grid gap-3 md:grid-cols-3">
-              {[
-                [Target, 'Smart Targeting', 'Use matchup data to prioritize the right base.'],
-                [Lock, 'Lock the Plan', 'Freeze assignments when your strategy is set.'],
-                [Clock3, 'Live Intelligence', 'Refresh the board as the war develops.'],
-              ].map(([Icon, title, text]) => (
-                <div
-                  key={String(title)}
-                  className="rounded-2xl border border-white/10 bg-[#06111b] p-5"
-                >
-                  <div className="flex items-start gap-3">
-                    <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/5 text-amber-300">
-                      <Icon className="size-4" />
-                    </div>
-                    <div>
-                      <p className="font-bold">{title}</p>
-                      <p className="mt-1 text-xs leading-5 text-white/35">{text}</p>
-                    </div>
+              <button
+                type="button"
+                onClick={() => void generateAIPlan()}
+                disabled={aiGenerating || !clanMembers.length}
+                className="group rounded-2xl border border-white/10 bg-[#06111b] p-5 text-left transition hover:border-amber-400/25 hover:bg-[#0a1722] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/5 text-amber-300 group-hover:bg-amber-400/10">
+                    <Target className="size-4" />
+                  </div>
+                  <div>
+                    <p className="font-bold">Smart Targeting</p>
+                    <p className="mt-1 text-xs leading-5 text-white/35">
+                      {aiGenerating ? 'AI is analyzing the matchup…' : 'Use matchup data to generate target priorities.'}
+                    </p>
                   </div>
                 </div>
-              ))}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const candidates = Object.values(assignments).filter(
+                    assignment =>
+                      assignment.assignedTargetMapPosition !== null &&
+                      !assignment.completed &&
+                      !assignment.locked,
+                  );
+                  if (!candidates.length) {
+                    setSaveError('Assign at least one unlocked target before locking the plan.');
+                    return;
+                  }
+                  void Promise.all(
+                    candidates.map(assignment =>
+                      saveAssignment(assignment.attacksTag, { locked: true }),
+                    ),
+                  );
+                }}
+                disabled={pendingTag === '__ai__' || !assignedCount}
+                className="group rounded-2xl border border-white/10 bg-[#06111b] p-5 text-left transition hover:border-amber-400/25 hover:bg-[#0a1722] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/5 text-amber-300 group-hover:bg-amber-400/10">
+                    <Lock className="size-4" />
+                  </div>
+                  <div>
+                    <p className="font-bold">Lock the Plan</p>
+                    <p className="mt-1 text-xs leading-5 text-white/35">
+                      Freeze all assigned targets so the strategy cannot be changed accidentally.
+                    </p>
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => void refresh()}
+                disabled={isFetching || plannerQuery.isFetching}
+                className="group rounded-2xl border border-white/10 bg-[#06111b] p-5 text-left transition hover:border-amber-400/25 hover:bg-[#0a1722] disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <div className="flex items-start gap-3">
+                  <div className="grid size-9 shrink-0 place-items-center rounded-xl bg-white/5 text-amber-300 group-hover:bg-amber-400/10">
+                    <Clock3 className={`size-4 ${isFetching || plannerQuery.isFetching ? 'animate-spin' : ''}`} />
+                  </div>
+                  <div>
+                    <p className="font-bold">Live Intelligence</p>
+                    <p className="mt-1 text-xs leading-5 text-white/35">
+                      Refresh the board and war data as the war develops.
+                    </p>
+                  </div>
+                </div>
+              </button>
             </footer>
           </div>
         </main>
