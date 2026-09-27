@@ -1,4 +1,4 @@
-import { X, Trophy, Swords, Shield, Gift, UserRound, Crown } from 'lucide-react';
+import { X, Trophy, Swords, Shield, Gift, UserRound, Crown, Activity } from 'lucide-react';
 
 type Dict = Record<string, unknown>;
 const asDict = (value: unknown): Dict => value && typeof value === 'object' ? value as Dict : {};
@@ -14,6 +14,8 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const league = asDict(member.league);
   const builderLeague = asDict(member.builderBaseLeague);
   const attacks = Array.isArray(member.attacks) ? member.attacks.map(asDict) : [];
+  const activity = asDict(member.activity);
+  const activityScore = num(activity.score, -1);
   const stars = attacks.reduce((sum, attack) => sum + num(attack.stars), 0);
   const destruction = attacks.length ? Math.round(attacks.reduce((sum, attack) => sum + num(attack.destructionPercentage), 0) / attacks.length) : 0;
 
@@ -32,6 +34,24 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Crown className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Experience</span></div><p className="mt-2 font-data text-2xl font-bold">Lv {num(member.expLevel)}</p><p className="mt-1 text-xs text-muted-foreground">Town Hall {num(member.townHallLevel, num(member.townhallLevel))}</p></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Gift className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Donations</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.donations))}</p><p className="mt-1 text-xs text-muted-foreground">mottagna {compact(num(member.donationsReceived))}</p></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><UserRound className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Builder Base</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.builderBaseTrophies))}</p><p className="mt-1 text-xs text-muted-foreground">{label(builderLeague.name, 'No league')}</p></div>
+          {activityScore >= 0 && (
+            <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4 sm:col-span-2">
+              <div className="flex items-center gap-2 text-emerald-300">
+                <Activity className="size-4" />
+                <span className="text-[10px] font-bold uppercase tracking-[.12em]">War activity</span>
+                <span className="ml-auto font-data text-lg font-black">{activityScore}%</span>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
+                <div className="h-full rounded-full bg-emerald-400" style={{ width: `${Math.max(0, Math.min(100, activityScore))}%` }} />
+              </div>
+              <div className="mt-3 grid grid-cols-2 gap-3 text-xs">
+                <div><span className="text-muted-foreground">Wars</span><p className="font-data font-bold">{num(activity.participatedWars)}/{num(activity.windowWars)}</p></div>
+                <div><span className="text-muted-foreground">Attacks</span><p className="font-data font-bold">{num(activity.attacksUsed)}/{num(activity.attacksPossible)}</p></div>
+              </div>
+              <p className="mt-2 text-[10px] text-muted-foreground">Based on the last 10 completed wars. This measures war activity, not attack quality.</p>
+            </div>
+          )}
+
           {attacks.length > 0 && <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-4 sm:col-span-2"><div className="flex items-center gap-2 text-primary"><Swords className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Current war</span></div><div className="mt-3 grid grid-cols-3 gap-3"><div><p className="text-xs text-muted-foreground">Attacks</p><p className="font-data text-lg font-bold">{attacks.length}/2</p></div><div><p className="text-xs text-muted-foreground">Stars</p><p className="font-data text-lg font-bold">{stars}</p></div><div><p className="text-xs text-muted-foreground">Average destruction</p><p className="font-data text-lg font-bold">{destruction}%</p></div></div></div>}
           {member.clanRank !== undefined && <div className="flex items-center gap-2 rounded-xl border border-border/70 px-3 py-2 text-xs text-muted-foreground sm:col-span-2"><Shield className="size-3.5 text-primary" /> Previous clan rank: <span className="font-data font-bold text-foreground">#{num(member.previousClanRank)}</span></div>}
         </div>
