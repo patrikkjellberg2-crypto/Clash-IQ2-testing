@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { MemberDetailsDialog } from '@/components/member-details-dialog';
 
 type Dict = Record<string, unknown>;
@@ -21,8 +21,10 @@ export function usePlayerCard() {
 export function PlayerCardProvider({ children }: { children: ReactNode }) {
   const [player, setPlayer] = useState<Dict | null>(null);
   const [loading, setLoading] = useState(false);
+  const requestId = useRef(0);
 
   const closePlayerCard = useCallback(() => {
+    requestId.current += 1;
     setPlayer(null);
     setLoading(false);
   }, []);
@@ -31,6 +33,10 @@ export function PlayerCardProvider({ children }: { children: ReactNode }) {
     const tag = String(rawTag || '').trim().toUpperCase();
     if (!tag) return;
 
+    const id = ++requestId.current;
+
+    // Open immediately with roster data. Live enrichment is optional and
+    // must never be allowed to break the player card.
     setPlayer(member ? { ...member, tag } : { tag });
     setLoading(true);
 
@@ -40,14 +46,20 @@ export function PlayerCardProvider({ children }: { children: ReactNode }) {
         return response.json();
       })
       .then((details) => {
+        if (id !== requestId.current) return;
         if (details && typeof details === 'object') {
-          setPlayer((current) => current ? { ...current, ...(details as Dict), tag } : null);
+          setPlayer((current) =>
+            current ? { ...current, ...(details as Dict), tag } : null,
+          );
         }
       })
       .catch(() => {
-        // The roster data is still useful even if the detailed player request fails.
+        // Detailed player data is best-effort. The roster card stays open
+        // even when the live player endpoint is unavailable.
       })
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (id === requestId.current) setLoading(false);
+      });
   }, []);
 
   useEffect(() => {
