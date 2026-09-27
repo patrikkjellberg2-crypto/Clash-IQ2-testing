@@ -22,9 +22,11 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const clan = asDict(member.clan);
   const clanBadgeUrls = asDict(clan.badgeUrls);
   const leagueIconUrls = asDict(league.iconUrls);
+  const rankedLeagueIconUrls = asDict(rankedLeague.iconUrls);
   const builderLeagueIconUrls = asDict(builderLeague.iconUrls);
   const clanBadgeUrl = str(clanBadgeUrls.medium, str(clanBadgeUrls.large, str(clanBadgeUrls.small, "")));
   const leagueIconUrl = str(leagueIconUrls.medium, str(leagueIconUrls.small, str(leagueIconUrls.tiny, "")));
+  const rankedLeagueIconUrl = str(rankedLeagueIconUrls.medium, str(rankedLeagueIconUrls.small, str(rankedLeagueIconUrls.tiny, "")));
   const builderLeagueIconUrl = str(builderLeagueIconUrls.medium, str(builderLeagueIconUrls.small, str(builderLeagueIconUrls.tiny, "")));
   const stars = attacks.reduce((sum, attack) => sum + num(attack.stars), 0);
   const destruction = attacks.length ? Math.round(attacks.reduce((sum, attack) => sum + num(attack.destructionPercentage), 0) / attacks.length) : 0;
@@ -72,7 +74,7 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
           <button type="button" onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground hover:border-primary/40 hover:text-primary" aria-label="Close player card"><X className="size-4" /></button>
         </header>
         <div className="grid gap-3 p-5 sm:grid-cols-2">
-          {(clanBadgeUrl || leagueIconUrl || builderLeagueIconUrl) && (
+          {(clanBadgeUrl || leagueIconUrl || rankedLeagueIconUrl || builderLeagueIconUrl) && (
             <div className="rounded-2xl border border-primary/15 bg-primary/[0.035] p-4 sm:col-span-2">
               <div className="flex items-center justify-between gap-4">
                 <div>
