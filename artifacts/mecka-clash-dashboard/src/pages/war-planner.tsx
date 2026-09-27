@@ -2170,9 +2170,15 @@ export default function WarPlannerPage() {
               },
 
               body:
-                JSON.stringify({
-                  clanTag,
-                }),
+                  JSON.stringify({
+                    clanTag,
+                    assignments: Object.values(assignments).map((assignment) => ({
+                      attackerTag: assignment.attacksTag,
+                      targetPosition: assignment.assignedTargetMapPosition,
+                      locked: assignment.locked,
+                      completed: assignment.completed,
+                    })),
+                  }),
             },
           );
 
