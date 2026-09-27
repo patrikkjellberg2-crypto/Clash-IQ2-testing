@@ -3479,10 +3479,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
       {selectedMember && (
         <MemberDetailsDialog
           member={selectedMember}
-          open={Boolean(selectedMember)}
-          onOpenChange={(open) => {
-            if (!open) setSelectedMember(null);
-          }}
+          onClose={() => setSelectedMember(null)}
         />
       )}
     </div>
