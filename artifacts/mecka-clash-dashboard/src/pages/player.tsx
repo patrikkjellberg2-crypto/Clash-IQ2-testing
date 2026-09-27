@@ -216,10 +216,27 @@ export default function PlayerPage() {
   const war = asDict(d?.currentWar);
   const warClan = asDict(war.clan);
 
+  // Keep Player Profile clan ranking consistent with Members. The API can
+  // omit clanRank on an individual player even though the dashboard roster
+  // contains the player in a deterministic sorted position.
+  const sortedMembers = useMemo(
+    () =>
+      [...members].sort(
+        (a, b) =>
+          num(a.clanRank, 99) -
+          num(b.clanRank, 99),
+      ),
+    [members],
+  );
+
+  const memberIndex = sortedMembers.findIndex(
+    (m) => str(m.tag, '').toUpperCase() === tag,
+  );
+
   const member =
-    members.find(
-      (m) => str(m.tag).toUpperCase() === tag,
-    ) || {};
+    memberIndex >= 0
+      ? sortedMembers[memberIndex]
+      : {};
 
   const warMember =
     asArray(warClan.members).find(
@@ -255,6 +272,11 @@ export default function PlayerPage() {
   );
   const worldRank = num(homeVillageRanking.globalRank);
   const countryRank = num(homeVillageRanking.localRank);
+
+  const localRank = num(
+    member.clanRank,
+    memberIndex >= 0 ? memberIndex + 1 : 0,
+  );
 
   const attacks = asArray(profile.attacks);
 
@@ -462,7 +484,7 @@ export default function PlayerPage() {
 
                     <p className="mt-2 font-data text-xs text-slate-600">
                       {str(profile.tag)} · Clan Rank #
-                      {num(profile.clanRank)}
+                      {localRank}
                     </p>
 
                     <div className="mt-3 flex flex-wrap gap-2">
@@ -592,9 +614,7 @@ export default function PlayerPage() {
               <Stat
                 icon={Shield}
                 label="Clan Rank"
-                value={`#${num(
-                  profile.clanRank,
-                )}`}
+                value={`#${localRank}`}
                 sub={`Previous #${num(
                   profile.previousClanRank,
                 )}`}
