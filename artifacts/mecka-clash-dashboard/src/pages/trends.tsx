@@ -188,7 +188,13 @@ export default function TrendsPage() {
                       >
                         <Icon className={`size-4 ${mover.trend === "improving" ? "text-emerald-300" : mover.trend === "declining" ? "text-rose-300" : "text-slate-400"}`} />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate text-sm font-bold">{mover.playerName}</span>
+                          <span
+                            data-player-tag={mover.playerTag}
+                            data-player-name={mover.playerName}
+                            className="block cursor-pointer truncate text-sm font-bold hover:text-[#f4c542]"
+                          >
+                            {mover.playerName}
+                          </span>
                           <span className="text-[10px] text-white/30">{mover.warsCounted} wars tracked</span>
                         </span>
                         <span className="text-right">
