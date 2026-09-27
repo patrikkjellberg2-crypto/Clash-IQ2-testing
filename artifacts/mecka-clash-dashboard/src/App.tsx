@@ -22,6 +22,7 @@ const WarArchivePage = lazy(() => import('@/pages/war-archive'));
 const WarChatPage = lazy(() => import('@/pages/war-chat'));
 const PlayerHistoryPage = lazy(() => import('@/pages/player-history'));
 const ActivityPage = lazy(() => import('@/pages/activity'));
+const TrendsPage = lazy(() => import('@/pages/trends'));
 
 import {
   Route,
@@ -66,6 +67,7 @@ function Router() {
           <Route path="/war-chat" component={WarChatPage} />
           <Route path="/player-history" component={PlayerHistoryPage} />
           <Route path="/activity" component={ActivityPage} />
+          <Route path="/trends" component={TrendsPage} />
           <Route path="/player/:tag" component={PlayerPage} />
           <Route component={NotFound} />
         </Switch>
