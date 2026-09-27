@@ -434,6 +434,19 @@ Give a clear priority order and explain why each target should be considered.
 Use only the supplied data. Do not invent missing results, attack history, or player capabilities. Clearly state when the available data is insufficient to judge a target.`,
                       },
                       {
+                        label: 'Next 3 Moves',
+                        mode: 'opponent' as Mode,
+                        prompt: `Based ONLY on the current war data supplied, give exactly the 3 most important actions our clan should take next.
+
+Use the current score, destruction, attacks used and remaining, enemy Town Hall levels, recorded current-war attacks and target information where available.
+
+For each action, give a short concrete action and the exact data-based reason for it.
+
+Separate documented facts from recommendations. Do not invent missing information, attack capabilities, troop compositions, game rules or guaranteed outcomes.
+
+End with exactly 3 numbered actions.`,
+                      },
+                      {
                         label: 'War Strategy',
                         mode: 'opponent' as Mode,
                         prompt: `Analyze the current war between our clan and the opponent and give us a practical war strategy.
