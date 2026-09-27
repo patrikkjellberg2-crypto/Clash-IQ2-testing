@@ -3125,7 +3125,17 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
 
 
             {/* WAR CONTROLS */}
-            <section className="mb-5 grid gap-3 md:grid-cols-3">
+            <section className="mb-5">
+              <div className="mb-3 px-1">
+                <p className="text-[9px] font-black uppercase tracking-[.24em] text-amber-300/70">
+                  Tactical Controls
+                </p>
+                <h2 className="mt-1 text-lg font-black">WAR CONTROLS</h2>
+                <p className="mt-1 text-xs text-white/35">
+                  Direct the AI, lock the plan and refresh live war intelligence.
+                </p>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3">
               <button
                 type="button"
                 onClick={() => void generateAIPlan()}
@@ -3210,7 +3220,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                     type="button"
                     onClick={() => void generateAIPlan()}
                     disabled={aiGenerating || clanMembers.length === 0 || opponentMembers.length === 0}
-                    className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 px-4 text-sm font-black text-black shadow-[0_8px_24px_rgba(245,158,11,.18)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="mt-4 inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 px-4 text-sm font-black text-black shadow-[0_8px_24px_rgba(245,158,11,.18)] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {aiGenerating ? <RefreshCw className="size-4 animate-spin" /> : <Brain className="size-4" />}
                     {aiGenerating ? 'Analyzing War…' : 'AI War Analysis'}
