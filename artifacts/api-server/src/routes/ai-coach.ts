@@ -304,97 +304,6 @@ async function getClanData(clanTag: string) {
   return { clan, clanTag, currentWar, warlog, capital, playerDetailsText };
 }
 
-async function callGeminiModel(model: string, prompt: string) {
-  const apiKey = process.env.GEMINI_API_KEY?.trim();
-  if (!apiKey) {
-    throw new Error(
-      "GEMINI_API_KEY is not configured. Confirm the variable is set on the correct Render service (clash-iq-builder-base-test) and that the service has been redeployed after setting it. Check /api/healthz/config for a non-secret presence report.",
-    );
-  }
-
-  const response = await fetch(`${GEMINI_BASE_URL}/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      systemInstruction: {
-        parts: [{ text: "You are CLASHIQ AI Coach. Always answer in English, even if the question is written in another language. Accuracy comes first. Use only verified supplied Clash API facts. Be specific, tactical and complete. Never invent missing facts. Follow the requested plain-text section structure exactly. You must finish every requested section before stopping." }],
-      },
-      contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: {
-        maxOutputTokens: MAX_OUTPUT_TOKENS,
-        temperature: 0.15,
-        thinkingConfig: {
-          thinkingLevel: "low",
-        },
-      },
-    }),
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    const err: any = new Error(`Gemini ${model} HTTP ${response.status}: ${String(data?.error?.message || data?.error?.status || "Gemini API error")}`);
-    err.httpStatus = response.status;
-    throw err;
-  }
-
-  const candidate = data?.candidates?.[0];
-  const answer = candidate?.content?.parts
-    ?.map((part: any) => typeof part?.text === "string" && !part?.thought ? part.text : "")
-    .join("")
-    .trim() || "";
-
-  if (!answer) throw new Error(`Gemini ${model} returned an empty response`);
-  return answer;
-}
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function isBusyError(error: any) {
-  const status = Number(error?.httpStatus || 0);
-  const message = String(error?.message || error).toLowerCase();
-  return (
-    [429, 500, 502, 503, 504].includes(status) ||
-    message.includes("overload") ||
-    message.includes("unavailable") ||
-    message.includes("high demand") ||
-    message.includes("quota") ||
-    message.includes("rate limit") ||
-    message.includes("fetch failed") ||
-    message.includes("empty response")
-  );
-}
-
-// Tries each model in turn. When Gemini is overloaded (503/429) it waits and
-// retries the same model, then falls through to the next model.
-async function callGemini(prompt: string) {
-  const models = Array.from(new Set([GEMINI_MODEL, "gemini-3.7-flash", "gemini-3.6-flash", GEMINI_FALLBACK_MODEL]));
-  const attemptsPerModel = 3;
-  let lastError: any = null;
-
-  for (const model of models) {
-    for (let attempt = 1; attempt <= attemptsPerModel; attempt++) {
-      try {
-        return await callGeminiModel(model, prompt);
-      } catch (error: any) {
-        lastError = error;
-        const status = Number(error?.httpStatus || 0);
-        console.warn(`Gemini ${model} attempt ${attempt}/${attemptsPerModel} failed:`, String(error?.message || error));
-        if (status === 404) break; // model not available: go straight to the next one
-        if (!isBusyError(error)) throw error; // e.g. bad API key: retrying will not help
-        if (attempt < attemptsPerModel) await sleep(1500 * attempt);
-      }
-    }
-  }
-
-  throw lastError || new Error("Gemini is unavailable");
-}
-
-const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
-const OPENROUTER_MODEL = process.env.OPENROUTER_MODEL || "openrouter/free";
-const MAX_PROMPT_CHARS = 24000;
-const MAX_OUTPUT_TOKENS = 5000;
-
-
 async function callOpenRouterModel(prompt: string) {
   const apiKey = process.env.OPENROUTER_API_KEY?.trim();
   if (!apiKey) {
@@ -403,7 +312,7 @@ async function callOpenRouterModel(prompt: string) {
     );
   }
 
-  const response = await fetch(`${OPENROUTER_BASE_URL}/chat/completions`, {
+  const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -412,7 +321,7 @@ async function callOpenRouterModel(prompt: string) {
       "X-Title": "Clash IQ AI Coach",
     },
     body: JSON.stringify({
-      model: OPENROUTER_MODEL,
+      model: process.env.OPENROUTER_MODEL || "openrouter/free",
       messages: [
         {
           role: "system",
@@ -420,7 +329,7 @@ async function callOpenRouterModel(prompt: string) {
         },
         { role: "user", content: prompt },
       ],
-      max_tokens: MAX_OUTPUT_TOKENS,
+      max_tokens: 5000,
       temperature: 0.15,
     }),
   });
@@ -428,16 +337,18 @@ async function callOpenRouterModel(prompt: string) {
   const data = await response.json();
   if (!response.ok) {
     const err: any = new Error(
-      `OpenRouter ${OPENROUTER_MODEL} HTTP ${response.status}: ${String(data?.error?.message || data?.error?.type || "OpenRouter API error")}`,
+      `OpenRouter HTTP ${response.status}: ${String(data?.error?.message || data?.error?.type || "OpenRouter API error")}`,
     );
     err.httpStatus = response.status;
     throw err;
   }
 
   const answer = data?.choices?.[0]?.message?.content?.trim() || "";
-  if (!answer) throw new Error(`OpenRouter ${OPENROUTER_MODEL} returned an empty response`);
+  if (!answer) throw new Error("OpenRouter returned an empty response");
   return answer;
 }
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function isBusyError(error: any) {
   const status = Number(error?.httpStatus || 0);
@@ -451,8 +362,6 @@ function isBusyError(error: any) {
     message.includes("empty response")
   );
 }
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function callOpenRouter(prompt: string) {
   try {
