@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ClashIQPageBanner } from '@/components/clashiq-page-banner';
+import { MemberDetailsOverlay } from '@/components/member-details-dialog';
 import { WarArchiver } from '@/components/war-archiver';
 
 import NotFound from '@/pages/not-found';
@@ -191,6 +192,7 @@ function App() {
         </WouterRouter>
 
         <WarArchiver />
+        <MemberDetailsOverlay />
 
         <Toaster />
       </TooltipProvider>
