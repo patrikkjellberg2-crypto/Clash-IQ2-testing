@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
+import { publishWarChatMessage } from '@/lib/war-chat';
 import {
   ArrowRight,
   BrainCircuit,
@@ -491,9 +492,27 @@ export default function AICoachPage() {
                   )}
 
                   {answer && (
-                    <div className="whitespace-pre-wrap text-sm leading-7 text-white/75">
-                      {answer}
-                    </div>
+                    <>
+                      <div className="whitespace-pre-wrap text-sm leading-7 text-white/75">
+                        {answer}
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            publishWarChatMessage({
+                              source: 'ai-coach',
+                              title: 'AI Coach briefing',
+                              body: answer,
+                            })
+                          }
+                          className="inline-flex h-10 items-center gap-2 rounded-xl border border-blue-400/20 bg-blue-400/10 px-4 text-xs font-black text-blue-200 transition hover:bg-blue-400/15"
+                        >
+                          <Sparkles className="size-4" />
+                          Publish to War Chat
+                        </button>
+                      </div>
+                    </>
                   )}
                 </div>
               </article>
