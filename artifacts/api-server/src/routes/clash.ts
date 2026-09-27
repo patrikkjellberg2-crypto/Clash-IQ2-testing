@@ -1419,10 +1419,54 @@ router.get(
         null,
         req.log,
       );
-      const rankings =
+      const rawRankings =
         rankingsResult.data && !Array.isArray(rankingsResult.data)
           ? rankingsResult.data
           : null;
+
+      // Normalize ClashKing ranking values at the API boundary. Some cached
+      // responses can serialize numeric ranks as strings; Player Cards should
+      // receive one stable shape regardless of the upstream representation.
+      const rankingValue = (value: unknown): number | null => {
+        const n = typeof value === "number" ? value : Number(value);
+        return Number.isFinite(n) && n > 0 ? n : null;
+      };
+
+      const rawHomeRanking =
+        rawRankings?.homeVillage && typeof rawRankings.homeVillage === "object"
+          ? rawRankings.homeVillage as ClashRecord
+          : null;
+      const rawBuilderRanking =
+        rawRankings?.builderBase && typeof rawRankings.builderBase === "object"
+          ? rawRankings.builderBase as ClashRecord
+          : null;
+      const rawLocation =
+        rawRankings?.location && typeof rawRankings.location === "object"
+          ? rawRankings.location as ClashRecord
+          : null;
+
+      const rankings = rawRankings
+        ? {
+            tag: String(rawRankings.tag ?? tag),
+            homeVillage: {
+              trophies: rankingValue(rawHomeRanking?.trophies),
+              globalRank: rankingValue(rawHomeRanking?.globalRank),
+              localRank: rankingValue(rawHomeRanking?.localRank),
+            },
+            builderBase: {
+              trophies: rankingValue(rawBuilderRanking?.trophies),
+              globalRank: rankingValue(rawBuilderRanking?.globalRank),
+              localRank: rankingValue(rawBuilderRanking?.localRank),
+            },
+            location: {
+              id: rankingValue(rawLocation?.id),
+              name: String(rawLocation?.name ?? ""),
+              isCountry: Boolean(rawLocation?.isCountry),
+              countryCode: String(rawLocation?.countryCode ?? ""),
+              localizedName: String(rawLocation?.localizedName ?? ""),
+            },
+          }
+        : null;
 
       const archivedHistory = await getPlayerWarHistory(clanTag, tag, 50);
       const recentActivityWars = archivedHistory.slice(0, 10);
