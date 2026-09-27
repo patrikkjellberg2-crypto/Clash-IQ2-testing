@@ -70,7 +70,7 @@ export default function AICoachPage() {
     setError('');
 
     const prompt =
-      question.trim() ||
+      (customQuestion?.trim() || question.trim()) ||
       (selectedMode === 'clan'
         ? 'Analyze our clan strengths, weaknesses and priorities.'
         : selectedMode === 'opponent'
