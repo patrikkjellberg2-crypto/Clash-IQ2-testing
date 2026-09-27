@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { X, Trophy, Swords, Shield, Gift, UserRound, Crown, Activity } from 'lucide-react';
+import { useGetClashDashboard } from '@workspace/api-client-react';
 
 type Dict = Record<string, unknown>;
 const asDict = (value: unknown): Dict => value && typeof value === 'object' ? value as Dict : {};
@@ -58,4 +60,58 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
       </section>
     </div>
   );
+}
+
+
+/**
+ * Global player-card trigger. Any player link (/player/:tag) or element with
+ * data-player-tag opens the same Player Card without navigating away.
+ */
+export function MemberDetailsOverlay() {
+  const { data } = useGetClashDashboard();
+  const [selected, setSelected] = useState<Dict | null>(null);
+
+  useEffect(() => {
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (!target) return;
+
+      const tagged = target.closest('[data-player-tag]') as HTMLElement | null;
+      const link = target.closest('a[href]') as HTMLAnchorElement | null;
+      const href = link?.getAttribute('href') || '';
+      const playerRoute = href.match(/^\\/player\\/(.+)$/);
+
+      if (!tagged && !playerRoute) return;
+
+      const tag = (tagged?.getAttribute('data-player-tag') ||
+        (playerRoute ? decodeURIComponent(playerRoute[1]) : '')).trim();
+      if (!tag) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const dashboard = data && typeof data === 'object' ? data as Dict : {};
+      const members = Array.isArray(dashboard.members) ? dashboard.members : [];
+      const member = members.find((item) => {
+        const candidate = item && typeof item === 'object' ? item as Dict : {};
+        return str(candidate.tag, '').toUpperCase() === tag.toUpperCase();
+      });
+
+      const explicitName = tagged?.getAttribute('data-player-name') || '';
+      const linkedName = link?.querySelector('p, span')?.textContent?.trim() || '';
+      const fallbackName = tagged?.textContent?.trim().split('\\n')[0] || '';
+      const name = explicitName || linkedName || fallbackName || 'Unknown player';
+
+      setSelected(
+        member && typeof member === 'object'
+          ? member as Dict
+          : { tag, name },
+      );
+    };
+
+    document.addEventListener('click', handleClick, true);
+    return () => document.removeEventListener('click', handleClick, true);
+  }, [data]);
+
+  return <MemberDetailsDialog member={selected} onClose={() => setSelected(null)} />;
 }
