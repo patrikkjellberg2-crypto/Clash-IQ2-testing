@@ -18,8 +18,8 @@ router.get("/healthz/config", (_req, res) => {
   res.json({
     status: "ok",
     env: {
-      GROQ_API_KEY: Boolean(process.env.GROQ_API_KEY?.trim()),
-      GROQ_MODEL: process.env.GROQ_MODEL || "openai/gpt-oss-120b (default)",
+      OPENROUTER_API_KEY: Boolean(process.env.OPENROUTER_API_KEY?.trim()),
+      OPENROUTER_MODEL: process.env.OPENROUTER_MODEL || "openrouter/free (default)",
       CLASH_API_TOKEN: Boolean(process.env.CLASH_API_TOKEN?.trim()),
       CLASH_API_BASE_URL: process.env.CLASH_API_BASE_URL || "https://cocproxy.royaleapi.dev/v1 (default)",
       MECKA_API_KEY: Boolean(process.env.MECKA_API_KEY?.trim()),
