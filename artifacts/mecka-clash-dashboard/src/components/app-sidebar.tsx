@@ -18,6 +18,7 @@ import {
   Trophy,
   MessageSquareText,
   TrendingUp,
+  Music2,
 } from "lucide-react";
 
 type AppSidebarProps = {
@@ -108,6 +109,28 @@ function NavItem({
   );
 }
 
+function openYouTubeMusic() {
+  const isAndroid = /Android/i.test(navigator.userAgent);
+
+  if (!isAndroid) {
+    window.open("https://music.youtube.com/", "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  // Let the installed YouTube Music app handle the session/playback.
+  // No Google credentials ever pass through Clash IQ.
+  const intentUrl = "intent://music.youtube.com/#Intent;scheme=https;package=com.google.android.apps.youtube.music;end";
+  const fallbackUrl = "https://music.youtube.com/";
+  const startedAt = Date.now();
+
+  window.location.href = intentUrl;
+  window.setTimeout(() => {
+    if (Date.now() - startedAt < 1800) {
+      window.location.href = fallbackUrl;
+    }
+  }, 1200);
+}
+
 function SidebarContent({
   clanName,
   clanTag,
@@ -191,7 +214,30 @@ function SidebarContent({
         </div>
       </nav>
 
-      <div className="px-4 pb-4">
+      <div className="space-y-2 px-4 pb-4">
+        <button
+          type="button"
+          onClick={openYouTubeMusic}
+          aria-label="Open YouTube Music"
+          data-testid="sidebar-youtube-music"
+          className="group block w-full cursor-pointer rounded-2xl border border-red-400/10 bg-gradient-to-br from-red-500/[0.08] to-amber-500/[0.04] p-3.5 text-left transition-all hover:border-red-400/25 hover:bg-red-500/[0.12] active:scale-[0.99]"
+        >
+          <div className="flex items-center gap-2">
+            <div className="grid size-8 place-items-center rounded-lg bg-red-400/10 text-red-400 group-hover:bg-red-400/20">
+              <Music2 className="size-4" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[10px] font-black uppercase tracking-[0.12em] text-white">
+                YouTube Music
+              </p>
+              <p className="truncate text-[9px] text-slate-500">
+                Play music while you command
+              </p>
+            </div>
+            <span className="ml-auto size-1.5 shrink-0 rounded-full bg-red-400 shadow-[0_0_7px_rgba(248,113,113,0.8)]" />
+          </div>
+        </button>
+
         <Link
           href="/ai-coach"
           onClick={onNavigate}
