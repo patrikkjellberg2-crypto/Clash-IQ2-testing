@@ -207,7 +207,12 @@ async function callGeminiModel(model: string, prompt: string): Promise<string> {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({
       systemInstruction: { parts: [{ text: "You are CLASHIQ AI War Coach. Use only supplied verified Clash data. Always finish the requested JSON. Never invent missing facts." }] },
       contents: [{ role: "user", parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: MAX_OUTPUT_TOKENS, temperature: 0.15, thinkingConfig: { thinkingLevel: "low" } },
+      generationConfig: {
+        maxOutputTokens: 3000,
+        temperature: 0.1,
+        responseMimeType: "application/json",
+        thinkingConfig: { thinkingLevel: "low" },
+      },
     })
   });
   const data = await response.json();
@@ -339,16 +344,24 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
     let plan: AnyObject;
 
     try {
-      plan = JSON.parse(output);
-    } catch {
-      const first = output.indexOf("{");
-      const last = output.lastIndexOf("}");
+      const cleaned = output
+        .replace(/^\s*```(?:json)?\s*/i, "")
+        .replace(/\s*```\s*$/i, "")
+        .trim();
 
-      if (first === -1 || last === -1 || last <= first) {
-        throw new Error("AI returnerade ogiltig JSON.");
+      try {
+        plan = JSON.parse(cleaned);
+      } catch {
+        const first = cleaned.indexOf("{");
+        const last = cleaned.lastIndexOf("}");
+        if (first === -1 || last === -1 || last <= first) {
+          throw new Error("AI returnerade ogiltig JSON.");
+        }
+        plan = JSON.parse(cleaned.slice(first, last + 1));
       }
-
-      plan = JSON.parse(output.slice(first, last + 1));
+    } catch (error) {
+      console.error("AI WAR PLANNER JSON PARSE ERROR:", error);
+      throw new Error("AI:n returnerade en ogiltig attackplan. Försök igen.");
     }
 
     const rawRecommendations = Array.isArray(plan?.recommendations)
