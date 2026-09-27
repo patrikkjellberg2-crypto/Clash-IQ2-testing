@@ -1694,38 +1694,36 @@ export default function WarPlannerPage() {
      WAR INTELLIGENCE
   ======================================================= */
 
+  const refreshWarIntelligence = async () => {
+    const clanTag = str(dashboard.clanTag);
+    if (!clanTag) return;
+
+    try {
+      const response = await fetch(`/api/clash/war-intelligence?clanTag=${encodeURIComponent(clanTag)}`, {
+        headers: { Accept: 'application/json' },
+      });
+      if (!response.ok) return;
+      const body = await response.json();
+      const rows = Array.isArray(body?.players) ? body.players : [];
+      const next = rows.reduce<Record<string, Dict>>((result, row: Dict) => {
+        const tag = str(row.playerTag).toUpperCase();
+        if (tag) result[tag] = row;
+        return result;
+      }, {});
+      setPerformanceByTag(next);
+    } catch {
+      // War intelligence is an enhancement; the planner remains usable.
+    }
+  };
+
   useEffect(() => {
-    let cancelled = false;
+    void refreshWarIntelligence();
 
-    const loadPerformance = async () => {
-      const clanTag = str(dashboard.clanTag);
-      if (!clanTag) return;
+    const interval = window.setInterval(() => {
+      void refreshWarIntelligence();
+    }, 30000);
 
-      try {
-        const response = await fetch(`/api/clash/war-intelligence?clanTag=${encodeURIComponent(clanTag)}`, {
-          headers: { Accept: 'application/json' },
-        });
-        if (!response.ok) return;
-        const body = await response.json();
-        if (cancelled) return;
-
-        const rows = Array.isArray(body?.players) ? body.players : [];
-        const next = rows.reduce<Record<string, Dict>>((result, row: Dict) => {
-          const tag = str(row.playerTag).toUpperCase();
-          if (tag) result[tag] = row;
-          return result;
-        }, {});
-        setPerformanceByTag(next);
-      } catch {
-        // War intelligence is an enhancement; the planner remains usable.
-      }
-    };
-
-    void loadPerformance();
-
-    return () => {
-      cancelled = true;
-    };
+    return () => window.clearInterval(interval);
   }, [dashboard.clanTag]);
 
   /* =======================================================
@@ -2877,6 +2875,7 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
       await Promise.all([
         refetch(),
         plannerQuery.refetch(),
+        refreshWarIntelligence(),
       ]);
     };
 
