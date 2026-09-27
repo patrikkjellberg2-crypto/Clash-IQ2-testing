@@ -172,7 +172,7 @@ function rosterText(clan: Dict) {
   ).join("\n");
 }
 
-function buildPrompt(data: Dict, mode: "clan" | "opponent", question = "") {
+function buildPrompt(data: Dict, mode: "clan" | "opponent" | "question", question = "") {
   const clan = data.clan || {};
   const clanTag = normalizeTag(String(clan.tag || data.clanTag || DEFAULT_CLAN_TAG));
 
@@ -180,13 +180,20 @@ function buildPrompt(data: Dict, mode: "clan" | "opponent", question = "") {
     `CLAN: ${clan.name || "Unknown"} ${clanTag}`,
     `LEVEL=${number(clan.clanLevel)} MEMBERS=${number(clan.members)} WAR_WINS=${number(clan.warWins)} WAR_LOSSES=${number(clan.warLosses)} WIN_STREAK=${number(clan.warWinStreak)}`,
     `WAR_LEAGUE=${clan.warLeague?.name || "unknown"} CAPITAL_LEAGUE=${clan.capitalLeague?.name || "unknown"} CLAN_POINTS=${number(clan.clanPoints)} CAPITAL_POINTS=${number(clan.clanCapitalPoints)}`,
-    `ROSTER:\n${rosterText(clan)}`,
+    `ROSTER (official member order):\n${rosterText(clan)}`,
+    `DETAILED PLAYER DATA (first five members):\n${data.playerDetailsText || "No individual player detail was available."}`,
     `CURRENT WAR:\n${currentWarText(data.currentWar, clanTag)}`,
     `RECENT WAR LOG:\n${warlogText(data.warlog, clanTag)}`,
     `CAPITAL RAID HISTORY:\n${capitalText(data.capital)}`,
   ].join("\n\n");
 
-  const instructions = mode === "opponent"
+  const instructions = mode === "question"
+    ? `You are CLASHIQ AI COACH answering a specific Clash of Clans question.
+
+Use ONLY the supplied live Clash API facts. Answer the user's question directly instead of returning the generic clan briefing. For player questions, use the supplied names, tags, Town Hall, trophies, league, donations, war data and other fields. If the user says "first five", use the first five members in official roster order and identify all five.
+Never invent missing facts. If a requested field is unavailable, say "Not available from the current API data."
+Use plain text. Answer directly in the first paragraph. For player questions, give each requested player a separate entry with concrete data. Include player tags when available.`
+    : mode === "opponent"
     ? `You are CLASHIQ AI COACH, a precise Clash of Clans war strategist.
 
 Use ONLY the supplied live Clash API facts. Never invent troops, spells, heroes, defenses, attack strategies, replays, player skill, motives, or missing statistics. Do not assume a player has a specific army just because of Town Hall level. If something cannot be established from the data, say: "Not available from the current API data."
@@ -277,7 +284,24 @@ async function getClanData(clanTag: string) {
     clashFetch(`/clans/${encoded}/capitalraidseasons?limit=5`, []),
   ]);
 
-  return { clan, clanTag, currentWar, warlog, capital };
+  const members = Array.isArray(clan?.memberList) ? clan.memberList : [];
+  const firstFive = members.slice(0, 5);
+  const playerDetails = await Promise.all(firstFive.map(async (member: Dict) => {
+    const playerTag = String(member?.tag || "").trim();
+    if (!playerTag) return { member, detail: null };
+    try {
+      const detail = await clashFetch(`/players/${encodeURIComponent(normalizeTag(playerTag))}`, null);
+      return { member, detail };
+    } catch {
+      return { member, detail: null };
+    }
+  }));
+  const playerDetailsText = playerDetails.map(({ member, detail }, index) => {
+    const source = detail && typeof detail === "object" ? detail as Dict : member;
+    return `PLAYER ${index + 1}: ${String(source?.name || member?.name || "Unknown")} | TAG=${String(source?.tag || member?.tag || "not available")} | TH=${number(source?.townHallLevel ?? member?.townHallLevel ?? member?.townhallLevel)} | EXP_LEVEL=${number(source?.expLevel)} | TROPHIES=${number(source?.trophies ?? member?.trophies)} | BEST_TROPHIES=${number(source?.bestTrophies)} | LEAGUE=${source?.league?.name || member?.league?.name || "unknown"} | CLAN_RANK=${number(member?.clanRank)} | DONATIONS=${number(source?.donations ?? member?.donations)} | RECEIVED=${number(source?.donationsReceived ?? member?.donationsReceived)} | WAR_STARS=${number(source?.warStars)} | ATTACK_WINS=${number(source?.attackWins)} | DEFENSE_WINS=${number(source?.defenseWins)} | ROLE=${source?.role || member?.role || "unknown"}`;
+  }).join("\n");
+
+  return { clan, clanTag, currentWar, warlog, capital, playerDetailsText };
 }
 
 async function callGeminiModel(model: string, prompt: string) {
@@ -377,7 +401,7 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
     if (!/^#[0-9A-Z]{3,15}$/.test(tag)) {
       return res.status(400).json({ error: "Enter a valid Clash clan tag." });
     }
-    const mode = req.body?.mode === "opponent" ? "opponent" : "clan";
+    const mode = req.body?.mode === "opponent" ? "opponent" : req.body?.mode === "question" ? "question" : "clan";
     const question = typeof req.body?.question === "string" ? req.body.question.slice(0, 1000) : "";
 
     const data = await getClanData(tag);
