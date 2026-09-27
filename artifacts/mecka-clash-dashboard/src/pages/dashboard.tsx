@@ -5,9 +5,7 @@ import { Link } from "wouter";
 import { MemberDetailsDialog } from "@/components/member-details-dialog";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
-  AlertTriangle,
   ArrowRight,
-  BrainCircuit,
   Check,
   Clock3,
   Coins,
@@ -472,20 +470,6 @@ export default function DashboardPage() {
   const [selected, setSelected] =
     useState<Dict | null>(null);
 
-  const [aiLoading, setAiLoading] =
-    useState(false);
-
-  const [aiMode, setAiMode] =
-    useState<"clan" | "opponent" | null>(
-      null,
-    );
-
-  const [aiAnswer, setAiAnswer] =
-    useState<string | null>(null);
-
-  const [aiError, setAiError] =
-    useState<string | null>(null);
-
   const initialized = useRef(false);
 
   const {
@@ -523,97 +507,6 @@ export default function DashboardPage() {
       initialized.current = true;
     }
   }, [dash?.clanTag]);
-
-  /*
-   * MECKA AI COACH
-   *
-   * Two separate AI modes:
-   *
-   * clan     = analyzes our clan
-   * opponent = analyzes the current enemy clan
-   *
-   * The backend fetches the full Clash data
-   * itself, so we only send the clan tag,
-   * mode and a small instruction.
-   */
-
-  const analyzeAI = async (
-    mode: "clan" | "opponent",
-  ) => {
-    if (!dash || aiLoading) {
-      return;
-    }
-
-    setAiLoading(true);
-    setAiMode(mode);
-    setAiAnswer(null);
-    setAiError(null);
-
-    try {
-      const response = await fetch(
-        "/api/ai/coach",
-        {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json",
-          },
-
-          body: JSON.stringify({
-            clanTag: dash.clanTag,
-
-            mode,
-
-            question:
-              mode === "clan"
-                ? "Analyze our clan in detail. Focus on our strengths, weaknesses, members, activity, donations, trophies, Capital, recent war performance and the three most important improvements we should make."
-                : "Analyze our current war opponent in detail. Focus specifically on the enemy clan, their Town Hall distribution, strongest and weakest players, attack performance, stars, destruction, used attacks, remaining attacks and weaknesses. Recommend the best war strategy and target priorities against this opponent. Do not invent missing data.",
-          }),
-        },
-      );
-
-      const text =
-        await response.text();
-
-      let result: {
-        answer?: string;
-        error?: string;
-      };
-
-      try {
-        result = JSON.parse(text);
-      } catch {
-        throw new Error(
-          `AI server did not return JSON (${response.status}).`,
-        );
-      }
-
-      if (!response.ok) {
-        throw new Error(
-          result.error ||
-            `AI Coach could not respond (${response.status}).`,
-        );
-      }
-
-      if (!result.answer) {
-        throw new Error(
-          "AI Coach returned no answer.",
-        );
-      }
-
-      setAiAnswer(result.answer);
-    } catch (error) {
-      setAiError(
-        error instanceof Error
-          ? error.message
-          : "AI Coach could not complete the analysis.",
-      );
-    } finally {
-      setAiLoading(false);
-      setAiMode(null);
-    }
-  };
 
   if (isLoading) {
     return <Loading />;
@@ -706,10 +599,7 @@ export default function DashboardPage() {
     }
 
     setRequested(tag);
-
-    setAiAnswer(null);
-    setAiError(null);
-  };
+};
 
   return (
     <div className="clashiq-overview min-h-screen bg-[#07090d] text-white">
@@ -837,191 +727,7 @@ export default function DashboardPage() {
               )}
             </form>
 
-            <section
-              className="overflow-hidden rounded-2xl border border-sky-400/20 bg-card"
-              data-testid="panel-ai-coach"
-            >
-              <div className="border-b border-white/10 bg-gradient-to-r from-sky-400/10 to-amber-400/10 px-5 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-                    <BrainCircuit className="size-5" />
-                  </div>
-
-                  <div>
-                    <h2 className="text-sm font-bold">
-                      CLASH IQ AI
-                    </h2>
-
-                    <p className="text-[11px] text-muted-foreground">
-                      Advanced Clash of Clans analysis
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="p-5">
-                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <h3 className="text-lg font-bold">
-                      AI War Intelligence
-                    </h3>
-
-                    <p className="mt-1 max-w-xl text-xs leading-5 text-muted-foreground">
-                      Analyze your own clan or get a
-                      dedicated tactical analysis of your
-                      current war opponent.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-2 sm:flex-row">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        void analyzeAI("clan")
-                      }
-                      disabled={aiLoading}
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-primary px-5 text-sm font-bold text-primary-foreground transition hover:brightness-110 disabled:opacity-60"
-                    >
-                      <BrainCircuit
-                        className={
-                          aiLoading &&
-                          aiMode === "clan"
-                            ? "size-4 animate-pulse"
-                            : "size-4"
-                        }
-                      />
-
-                      {aiLoading &&
-                      aiMode === "clan"
-                        ? "Analyzing..."
-                        : "Analyze Clan"}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        void analyzeAI("opponent")
-                      }
-                      disabled={
-                        aiLoading ||
-                        !warOpponent.name
-                      }
-                      className="inline-flex h-11 items-center justify-center gap-2 rounded-xl border border-red-400/30 bg-red-400/10 px-5 text-sm font-bold text-red-200 transition hover:bg-red-400/20 disabled:opacity-40"
-                    >
-                      <Swords
-                        className={
-                          aiLoading &&
-                          aiMode === "opponent"
-                            ? "size-4 animate-pulse"
-                            : "size-4"
-                        }
-                      />
-
-                      {aiLoading &&
-                      aiMode === "opponent"
-                        ? "Analyzing..."
-                        : "Analyze Opponent"}
-                    </button>
-                  </div>
-                </div>
-
-                {aiError && (
-                  <div className="mt-5 flex gap-3 rounded-xl border border-red-400/20 bg-red-400/10 p-4">
-                    <AlertTriangle className="size-5 shrink-0 text-red-300" />
-
-                    <div>
-                      <p className="text-sm font-bold text-red-200">
-                        AI Coach could not respond
-                      </p>
-
-                      <p className="mt-1 text-xs text-red-100/70">
-                        {aiError}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {aiAnswer && (
-                  <div className="mt-5 space-y-4">
-                    <div className="rounded-2xl border border-sky-400/20 bg-sky-400/[.05] p-5">
-                      <div className="flex items-center gap-2">
-                        {aiMode === "opponent" ? (
-                          <Swords className="size-5 text-red-300" />
-                        ) : (
-                          <BrainCircuit className="size-5 text-sky-300" />
-                        )}
-
-                        <h3 className="font-bold">
-                          {aiMode === "opponent"
-                            ? "ENEMY ANALYSIS"
-                            : "CLASH IQ AI ANALYSIS"}
-                        </h3>
-                      </div>
-
-                      <div className="mt-4 whitespace-pre-wrap text-sm leading-6 text-slate-200">
-                        {aiAnswer}
-                      </div>
-                    </div>
-
-                    {aiMode === "opponent" && (
-                      <div className="rounded-2xl border border-red-400/20 bg-gradient-to-br from-red-400/[.07] to-sky-400/[.05] p-5">
-                        <div className="flex items-center gap-3">
-                          <div className="grid size-11 place-items-center rounded-xl bg-red-400/10 text-red-300">
-                            <Swords className="size-5" />
-                          </div>
-
-                          <div>
-                            <h3 className="font-bold">
-                              ENEMY WAR ANALYSIS
-                            </h3>
-
-                            <p className="text-[11px] text-muted-foreground">
-                              Tactical opponent assessment
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="mt-5">
-                          <EnemyAnalysisIntro
-                            war={war}
-                          />
-                        </div>
-
-                        <div className="mt-5 rounded-xl border border-white/10 bg-black/10 p-4">
-                          <div className="flex items-center gap-2">
-                            <ShieldAlert className="size-4 text-amber-300" />
-
-                            <p className="text-xs font-bold uppercase tracking-[.14em] text-amber-200">
-                              AI War Intelligence
-                            </p>
-                          </div>
-
-                          <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                            The AI has analyzed the
-                            opponent's available war data,
-                            including threats, attack
-                            performance, weaknesses and
-                            recommended target priorities
-                            when enough Clash data is
-                            available.
-                          </p>
-                        </div>
-
-                        <Link
-                          href="/war-center"
-                          className="mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-white"
-                        >
-                          Open War Center
-                          <ArrowRight className="size-3.5" />
-                        </Link>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+                        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
               <Stat
                 icon={ShieldAlert}
                 label="Clan Level"
