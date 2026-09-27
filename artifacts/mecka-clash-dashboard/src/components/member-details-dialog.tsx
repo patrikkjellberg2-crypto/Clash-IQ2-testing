@@ -232,11 +232,30 @@ export function MemberDetailsOverlay() {
       const fallbackName = tagged?.textContent?.trim().split('\\n')[0] || '';
       const name = explicitName || linkedName || fallbackName || 'Unknown player';
 
-      setSelected(
+      const baseMember =
         member && typeof member === 'object'
           ? { ...(member as Dict), clan: clan ?? (member as Dict).clan }
-          : { tag, name, clan },
-      );
+          : { tag, name, clan };
+
+      // Dashboard roster data is intentionally lightweight. Fetch the
+      // dedicated player endpoint when a card opens so live rankings and
+      // other player intelligence are merged into the card.
+      setSelected(baseMember);
+
+      void fetch(`/api/clash/player/${encodeURIComponent(tag)}`)
+        .then(async (response) => {
+          if (!response.ok) return null;
+          return response.json();
+        })
+        .then((details) => {
+          if (!details || typeof details !== 'object') return;
+          setSelected((current) =>
+            current ? { ...current, ...(details as Dict), tag } : current,
+          );
+        })
+        .catch(() => {
+          // The roster card remains usable if live enrichment is unavailable.
+        });
     };
 
     document.addEventListener('click', handleClick, true);
