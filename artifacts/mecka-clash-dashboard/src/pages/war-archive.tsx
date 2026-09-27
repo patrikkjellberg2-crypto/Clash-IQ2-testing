@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import { ArrowLeft, RefreshCw, Trophy, WifiOff } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
+import { publishWarChatMessage } from '@/lib/war-chat';
 import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import {
   WARS_EVENT,
@@ -189,6 +190,28 @@ function WarCard({ war }: { war: ServerWar }) {
 
       {open && (
         <div className="border-t border-white/5 p-4">
+          <div className="mb-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() =>
+                publishWarChatMessage({
+                  source: 'war-log',
+                  title: `War Log · vs ${war.opponentName || 'Unknown'}`,
+                  body:
+                    `⚔️ WAR RESULT\\n\\n` +
+                    `Our clan: ${war.clanName || 'ClashIQ'}\\n` +
+                    `Opponent: ${war.opponentName || 'Unknown'}\\n` +
+                    `Score: ${war.clanStars} – ${war.opponentStars}\\n` +
+                    `Destruction: ${war.clanDestruction.toFixed(1)}% – ${war.opponentDestruction.toFixed(1)}%\\n` +
+                    `Result: ${outcome === 'live' ? 'In war' : outcome.toUpperCase()}`,
+                })
+              }
+              className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-emerald-200 hover:bg-emerald-400/15"
+            >
+              <Trophy className="h-3.5 w-3.5" />
+              Publish to War Chat
+            </button>
+          </div>
           {members.length === 0 ? (
             <p className="text-sm text-slate-500">
               Only the result was saved for this war (from the official war log). Wars
