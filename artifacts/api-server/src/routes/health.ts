@@ -8,4 +8,24 @@ router.get("/healthz", (_req, res) => {
   res.json(data);
 });
 
+/**
+ * Diagnostic endpoint (no secrets leaked).
+ * Helps confirm whether required AI / Clash env vars are present
+ * in the running process — useful when Render UI shows a key but
+ * the service still reports "not configured".
+ */
+router.get("/healthz/config", (_req, res) => {
+  res.json({
+    status: "ok",
+    env: {
+      GEMINI_API_KEY: Boolean(process.env.GEMINI_API_KEY?.trim()),
+      GEMINI_MODEL: process.env.GEMINI_MODEL || "gemini-3.8-flash (default)",
+      CLASH_API_TOKEN: Boolean(process.env.CLASH_API_TOKEN?.trim()),
+      CLASH_API_BASE_URL: process.env.CLASH_API_BASE_URL || "https://cocproxy.royaleapi.dev/v1 (default)",
+      MECKA_API_KEY: Boolean(process.env.MECKA_API_KEY?.trim()),
+      NODE_ENV: process.env.NODE_ENV || null,
+    },
+  });
+});
+
 export default router;
