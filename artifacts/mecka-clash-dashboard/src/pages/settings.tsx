@@ -346,23 +346,26 @@ export default function SettingsPage() {
                 </SettingRow>
               </Section>
 
-              <Section icon={Shield} eyebrow="04 • Privacy" title="Security">
+              <Section icon={Shield} eyebrow="04 • Privacy & Data" title="Security">
                 <div className="space-y-3">
-                  <div className="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.025] p-4">
-                    <LockKeyhole className="mt-0.5 h-5 w-5 text-emerald-300" />
-                    <div>
+                  <div className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.025] p-4">
+                    <LockKeyhole className="mt-0.5 h-5 w-5 shrink-0 text-emerald-300" />
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-black text-white">API credentials stay server-side</p>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">Clash and AI credentials are not displayed in the app interface.</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">Clash and AI credentials are never exposed in the app interface.</p>
                     </div>
+                    <span className="shrink-0 rounded-full border border-emerald-400/20 bg-emerald-400/[0.06] px-2 py-1 text-[8px] font-black uppercase tracking-wider text-emerald-300">Protected</span>
                   </div>
-                  <div className="flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.025] p-4">
-                    <Database className="mt-0.5 h-5 w-5 text-blue-300" />
-                    <div>
+                  <div className="flex items-center gap-3 rounded-2xl border border-white/5 bg-white/[0.025] p-4">
+                    <Database className="mt-0.5 h-5 w-5 shrink-0 text-blue-300" />
+                    <div className="min-w-0 flex-1">
                       <p className="text-xs font-black text-white">Persistent war data</p>
                       <p className="mt-1 text-xs leading-5 text-slate-500">Archived war and raid data is stored by the Clash IQ backend.</p>
                     </div>
+                    <span className="shrink-0 rounded-full border border-blue-400/20 bg-blue-400/[0.06] px-2 py-1 text-[8px] font-black uppercase tracking-wider text-blue-300">Stored</span>
                   </div>
                 </div>
+                <p className="mt-3 text-[10px] leading-5 text-slate-600">These are security and data-status indicators, not user-editable settings.</p>
               </Section>
             </div>
 
