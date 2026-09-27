@@ -1290,6 +1290,43 @@ router.get(
       }
 
       const archivedHistory = await getPlayerWarHistory(clanTag, tag, 50);
+      const recentActivityWars = archivedHistory.slice(0, 10);
+      const participatedWars = recentActivityWars.filter((war) => war.attacks.length > 0).length;
+      const possibleAttacks = recentActivityWars.reduce(
+        (sum, war) => sum + (war.teamSize ? 2 : 2),
+        0,
+      );
+      const usedAttacks = recentActivityWars.reduce(
+        (sum, war) => sum + war.attacks.length,
+        0,
+      );
+      const warParticipationRate = recentActivityWars.length
+        ? Math.round((participatedWars / recentActivityWars.length) * 100)
+        : 0;
+      const attackUtilizationRate = possibleAttacks
+        ? Math.round(Math.min(100, (usedAttacks / possibleAttacks) * 100))
+        : 0;
+      const activityScore = Math.round(
+        warParticipationRate * 0.45 + attackUtilizationRate * 0.55,
+      );
+      const activityLabel =
+        activityScore >= 85 ? "Very active" :
+        activityScore >= 65 ? "Active" :
+        activityScore >= 40 ? "Occasionally active" :
+        "Low activity";
+
+      const activity = {
+        score: activityScore,
+        label: activityLabel,
+        windowWars: recentActivityWars.length,
+        participatedWars,
+        participationRate: warParticipationRate,
+        attacksUsed: usedAttacks,
+        attacksPossible: possibleAttacks,
+        attackUtilizationRate,
+        basis: "last 10 completed wars",
+      };
+
       const clashOfStatsHistory = await fetchClashOfStatsHistory(tag);
       if (archivedHistory.length > 0) {
         const allAttacks = archivedHistory.flatMap((war) => war.attacks);
@@ -1321,6 +1358,7 @@ router.get(
             })),
           },
           clashOfStatsHistory,
+          activity,
         });
         return;
       }
