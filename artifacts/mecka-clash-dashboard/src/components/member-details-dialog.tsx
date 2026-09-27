@@ -8,7 +8,10 @@ const str = (value: unknown, fallback = '—') => typeof value === 'string' ? va
 const num = (value: unknown, fallback = 0) => typeof value === 'number' ? value : fallback;
 const label = (value: unknown, fallback = '—') => str(value, fallback);
 const compact = (value: number) => new Intl.NumberFormat('en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(value);
-const rankingNumber = (value: unknown) => typeof value === 'number' && value > 0 ? value : null;
+const rankingNumber = (value: unknown) => {
+  const n = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(n) && n > 0 ? n : null;
+};
 const initials = (name: string) => name.split(/\s+/).slice(0, 2).map((p) => p[0]).join('').toUpperCase() || 'MC';
 
 export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; onClose: () => void }) {
@@ -22,8 +25,14 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const activity = asDict(member.activity);
   const rankings = asDict(member.rankings);
   const homeVillageRanking = asDict(rankings.homeVillage);
+  const legendStatistics = asDict(member.legendStatistics);
+  const currentSeason = asDict(legendStatistics.currentSeason);
+  const bestSeason = asDict(legendStatistics.bestSeason);
   const rankingLocation = asDict(rankings.location);
-  const worldRank = rankingNumber(homeVillageRanking.globalRank);
+  const worldRank =
+    rankingNumber(homeVillageRanking.globalRank) ??
+    rankingNumber(currentSeason.rank) ??
+    rankingNumber(bestSeason.rank);
   const countryRank = rankingNumber(homeVillageRanking.localRank);
   const countryName = str(rankingLocation.name, 'Country');
   const countryCode = str(rankingLocation.countryCode, '');
