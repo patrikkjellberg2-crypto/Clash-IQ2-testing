@@ -1416,6 +1416,18 @@ router.get(
         };
       }
 
+      // ClashKing provides the player's current global and country ranking
+      // directly, including the country associated with the player profile.
+      const rankingsResult = await fetchOptionalClashKingResource(
+        `/v2/player/${encodedTag}/rankings`,
+        null,
+        req.log,
+      );
+      const rankings =
+        rankingsResult.data && !Array.isArray(rankingsResult.data)
+          ? rankingsResult.data
+          : null;
+
       const archivedHistory = await getPlayerWarHistory(clanTag, tag, 50);
       const recentActivityWars = archivedHistory.slice(0, 10);
       const participatedWars = recentActivityWars.filter((war) => war.attacks.length > 0).length;
@@ -1486,6 +1498,7 @@ router.get(
           },
           clashOfStatsHistory,
           activity,
+          rankings,
         });
         return;
       }
@@ -1654,6 +1667,7 @@ router.get(
             wars.slice(0, 20),
         },
         clashOfStatsHistory,
+        rankings,
       });
     } catch (error) {
       req.log.warn(
