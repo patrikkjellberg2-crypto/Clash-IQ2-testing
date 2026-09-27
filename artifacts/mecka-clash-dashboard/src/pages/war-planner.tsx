@@ -1470,7 +1470,19 @@ function OpponentAttackHistory({
                             </div>
 
                             <p className="mt-2 truncate text-xs font-bold">
-                              {opponentName} → {defenderName}
+                              <span
+                                data-player-tag={str(opponent.tag)}
+                                className="cursor-pointer hover:text-amber-300"
+                              >
+                                {opponentName}
+                              </span>
+                              {' → '}
+                              <span
+                                data-player-tag={str(defender?.tag)}
+                                className="cursor-pointer hover:text-amber-300"
+                              >
+                                {defenderName}
+                              </span>
                             </p>
                             <p className="mt-1 font-data text-[10px] text-muted-foreground">
                               {stars}/3 stars · {destruction}% destruction
