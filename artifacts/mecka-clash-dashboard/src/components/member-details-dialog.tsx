@@ -158,6 +158,10 @@ export function MemberDetailsOverlay() {
         return str(candidate.tag, '').toUpperCase() === tag.toUpperCase();
       });
 
+      const clan = dashboard.clan && typeof dashboard.clan === 'object'
+        ? dashboard.clan as Dict
+        : null;
+
       const explicitName = tagged?.getAttribute('data-player-name') || '';
       const linkedName = link?.querySelector('p, span')?.textContent?.trim() || '';
       const fallbackName = tagged?.textContent?.trim().split('\\n')[0] || '';
@@ -165,8 +169,8 @@ export function MemberDetailsOverlay() {
 
       setSelected(
         member && typeof member === 'object'
-          ? member as Dict
-          : { tag, name },
+          ? { ...(member as Dict), clan: clan ?? (member as Dict).clan }
+          : { tag, name, clan },
       );
     };
 
