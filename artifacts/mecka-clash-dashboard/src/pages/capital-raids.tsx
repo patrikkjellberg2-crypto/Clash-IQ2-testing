@@ -152,7 +152,12 @@ export default function CapitalRaidsPage() {
                         {String(m.name ?? "?").slice(0, 2).toUpperCase()}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold">{s(m.name)}</p>
+                        <p
+                          data-player-tag={s(m.tag)}
+                          className="cursor-pointer truncate text-sm font-bold hover:text-amber-300"
+                        >
+                          {s(m.name)}
+                        </p>
                         <p className="text-[10px] text-slate-600">{s(m.tag)} · {n(m.attacks)}/{n(m.attackLimit) + n(m.bonusAttackLimit)} attacks</p>
                       </div>
                       <div className="text-right">
