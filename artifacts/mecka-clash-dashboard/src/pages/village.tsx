@@ -651,6 +651,26 @@ export default function VillagePage() {
               <h1 className="mt-2 text-2xl font-black tracking-tight md:text-3xl">
                 Village Import
               </h1>
+              {village && (
+                <section className="mt-4 rounded-2xl border border-amber-400/20 bg-amber-400/[0.05] p-4 shadow-lg">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-300">Imported village</p>
+                      <h2 className="mt-1 truncate text-xl font-black md:text-2xl">
+                        {String(village.name || village.playerName || village.player?.name || 'Unnamed village')}
+                      </h2>
+                      <p className="mt-1 text-xs font-mono text-slate-500">
+                        {String(village.tag || village.playerTag || 'Player tag not included in export')}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-right">
+                      <p className="text-[9px] font-black uppercase tracking-[0.15em] text-slate-500">Data export</p>
+                      <p className="mt-1 text-sm font-bold text-slate-200">Active village</p>
+                    </div>
+                  </div>
+                </section>
+              )}
+
               <p className="mt-1 max-w-2xl text-sm text-slate-500">
                 Buildings, defenses, traps, walls and active upgrade timers are not available
                 from the official Clash API. Import your in-game Data Export to see them here.
