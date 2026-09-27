@@ -18,6 +18,13 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const attacks = Array.isArray(member.attacks) ? member.attacks.map(asDict) : [];
   const activity = asDict(member.activity);
   const activityScore = num(activity.score, -1);
+  const clan = asDict(member.clan);
+  const clanBadgeUrls = asDict(clan.badgeUrls);
+  const leagueIconUrls = asDict(league.iconUrls);
+  const builderLeagueIconUrls = asDict(builderLeague.iconUrls);
+  const clanBadgeUrl = str(clanBadgeUrls.medium, str(clanBadgeUrls.large, str(clanBadgeUrls.small, "")));
+  const leagueIconUrl = str(leagueIconUrls.medium, str(leagueIconUrls.small, str(leagueIconUrls.tiny, "")));
+  const builderLeagueIconUrl = str(builderLeagueIconUrls.medium, str(builderLeagueIconUrls.small, str(builderLeagueIconUrls.tiny, "")));
   const stars = attacks.reduce((sum, attack) => sum + num(attack.stars), 0);
   const destruction = attacks.length ? Math.round(attacks.reduce((sum, attack) => sum + num(attack.destructionPercentage), 0) / attacks.length) : 0;
 
@@ -26,12 +33,66 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
       <section className="max-h-[90dvh] w-full max-w-[620px] overflow-y-auto rounded-t-3xl border border-card-border bg-card shadow-2xl sm:rounded-3xl">
         <header className="sticky top-0 z-10 flex items-start justify-between border-b border-border/70 bg-card/95 p-5 backdrop-blur">
           <div className="flex min-w-0 items-center gap-3">
-            <div className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary/10 font-display text-sm font-bold text-primary">{initials(name)}</div>
-            <div className="min-w-0"><p className="truncate font-display text-xl font-bold tracking-[-.04em]">{name}</p><p className="mt-1 font-data text-xs text-muted-foreground">{str(member.tag)} · #{num(member.clanRank)} in clan</p></div>
+            <div className="relative grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl border border-primary/20 bg-primary/10">
+              {clanBadgeUrl ? (
+                <img
+                  src={clanBadgeUrl}
+                  alt=""
+                  className="size-11 object-contain drop-shadow-[0_4px_10px_rgba(0,0,0,.35)]"
+                  loading="lazy"
+                  onError={(event) => { event.currentTarget.style.display = "none"; }}
+                />
+              ) : (
+                <span className="font-display text-sm font-bold text-primary">{initials(name)}</span>
+              )}
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <p className="truncate font-display text-xl font-bold tracking-[-.04em]">{name}</p>
+                {leagueIconUrl && (
+                  <img
+                    src={leagueIconUrl}
+                    alt=""
+                    className="size-7 shrink-0 object-contain"
+                    loading="lazy"
+                    onError={(event) => { event.currentTarget.style.display = "none"; }}
+                  />
+                )}
+              </div>
+              <div className="mt-1 flex flex-wrap items-center gap-2 font-data text-xs text-muted-foreground">
+                <span>{str(member.tag)}</span>
+                <span>·</span>
+                <span>#{num(member.clanRank)} in clan</span>
+                <span>·</span>
+                <span className="text-primary">TH {num(member.townHallLevel, num(member.townhallLevel))}</span>
+              </div>
+            </div>
           </div>
           <button type="button" onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground hover:border-primary/40 hover:text-primary" aria-label="Close player card"><X className="size-4" /></button>
         </header>
         <div className="grid gap-3 p-5 sm:grid-cols-2">
+          {(clanBadgeUrl || leagueIconUrl || builderLeagueIconUrl) && (
+            <div className="rounded-2xl border border-primary/15 bg-primary/[0.035] p-4 sm:col-span-2">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[.12em] text-primary">Player identity</p>
+                  <p className="mt-1 text-sm font-semibold">{label(clan.name, "Clan member")}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  {leagueIconUrl && (
+                    <div className="grid size-12 place-items-center rounded-xl bg-black/20">
+                      <img src={leagueIconUrl} alt="" className="size-9 object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                    </div>
+                  )}
+                  {builderLeagueIconUrl && (
+                    <div className="grid size-12 place-items-center rounded-xl bg-black/20">
+                      <img src={builderLeagueIconUrl} alt="" className="size-9 object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Trophy className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Trophies</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.trophies))}</p><p className="mt-1 text-xs text-muted-foreground">{label(league.name, 'Unranked')}</p></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Crown className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Experience</span></div><p className="mt-2 font-data text-2xl font-bold">Lv {num(member.expLevel)}</p><p className="mt-1 text-xs text-muted-foreground">Town Hall {num(member.townHallLevel, num(member.townhallLevel))}</p></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Gift className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Donations</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.donations))}</p><p className="mt-1 text-xs text-muted-foreground">mottagna {compact(num(member.donationsReceived))}</p></div>
