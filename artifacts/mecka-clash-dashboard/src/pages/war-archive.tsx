@@ -221,7 +221,10 @@ function WarCard({ war }: { war: ServerWar }) {
             <div className="space-y-2">
               {members.map(m => (
                 <div key={m.tag} className="rounded-xl border border-white/5 bg-white/[0.02] p-3">
-                  <p className="text-sm font-bold">
+                  <p
+                    data-player-tag={m.tag}
+                    className="cursor-pointer text-sm font-bold hover:text-amber-300"
+                  >
                     #{m.mapPosition} {m.name}{' '}
                     <span className="text-xs font-semibold text-slate-500">
                       TH{m.townhallLevel}
