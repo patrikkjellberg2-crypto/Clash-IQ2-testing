@@ -3019,24 +3019,6 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
                   </p>
 
                   <div className="mt-6 flex flex-wrap gap-3">
-                    <button
-                      type="button"
-                      onClick={() => void generateAIPlan()}
-                      disabled={
-                        aiGenerating ||
-                        clanMembers.length === 0 ||
-                        opponentMembers.length === 0
-                      }
-                      className="inline-flex h-12 items-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 px-5 text-sm font-black text-black shadow-[0_8px_30px_rgba(245,158,11,.22)] transition hover:brightness-110 disabled:opacity-50"
-                    >
-                      {aiGenerating ? (
-                        <RefreshCw className="size-4 animate-spin" />
-                      ) : (
-                        <Brain className="size-4" />
-                      )}
-                      {aiGenerating ? 'Analyzing…' : 'AI War Analysis'}
-                    </button>
-
                     <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 text-xs font-bold text-white/65">
                       <Swords className="size-4 text-blue-300" />
                       {clanStars} — {opponentStars}
