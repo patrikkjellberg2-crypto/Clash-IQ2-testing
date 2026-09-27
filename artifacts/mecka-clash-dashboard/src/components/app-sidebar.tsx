@@ -31,6 +31,7 @@ const navigation = [
   { label: "War Planner", href: "/war-planner", icon: Shield, section: "COMMAND" },
   { label: "Capital Raids", href: "/capital-raids", icon: Castle, section: "COMMAND" },
   { label: "Members", href: "/members", icon: Users, section: "COMMAND" },
+  { label: "Member Activity", href: "/activity", icon: Activity, section: "COMMAND" },
   { label: "AI Coach", href: "/ai-coach", icon: BrainCircuit, section: "INTELLIGENCE" },
   { label: "Statistics", href: "/statistics", icon: BarChart3, section: "INTELLIGENCE" },
   { label: "War Archive", href: "/war-archive", icon: Trophy, section: "INTELLIGENCE" },
