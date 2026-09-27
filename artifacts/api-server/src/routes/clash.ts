@@ -1142,6 +1142,9 @@ router.get(
       clan.memberList = members;
     }
 
+    // Backfill completed member-rich wars before Player Cards read the archive.
+    await recoverHistoricalWars(clanTag, req.log, 15);
+
     const dashboard = {
       clan,
       members,
@@ -1181,7 +1184,7 @@ router.get(
 
     // Save this war (and the war log) to the database, without slowing
     // down or breaking the response that was just sent.
-    void snapshotCurrentWar(clanTag, dashboard.currentWar, req.log);
+    void snapshotCurrentWar(clanTag, rawCurrentWar, req.log);
     void snapshotWarlog(clanTag, warlog, req.log);
   },
 );
