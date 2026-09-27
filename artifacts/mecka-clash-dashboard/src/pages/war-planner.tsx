@@ -2957,11 +2957,6 @@ ${remaining > 0 ? `⚠️ ${remaining} player${remaining === 1 ? '' : 's'} still
             {/* HERO */}
             <section className="relative mb-5 overflow-hidden rounded-[28px] border border-amber-400/20 bg-[#06111b] shadow-[0_25px_90px_rgba(0,0,0,.45)]">
               <div className="absolute inset-0">
-                <img
-                  src="/clashiq-hero-barbarian.png"
-                  alt=""
-                  className="absolute right-0 top-0 h-full w-[55%] object-cover object-left opacity-35"
-                />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#06111b] via-[#06111b]/90 to-transparent" />
                 <div className="absolute inset-0 bg-[linear-gradient(120deg,transparent_0%,rgba(245,158,11,.06)_55%,transparent_100%)]" />
               </div>
