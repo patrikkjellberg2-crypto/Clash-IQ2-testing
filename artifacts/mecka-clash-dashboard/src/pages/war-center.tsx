@@ -767,7 +767,12 @@ export default function WarCenterPage() {
                                   {initials(label(item.defender.name, 'MC'))}
                                 </div>
                                 <div>
-                                  <p className="max-w-[170px] truncate text-sm font-bold">{label(item.defender.name, 'Unknown member')}</p>
+                                  <p
+                                    data-player-tag={str(item.defender.tag)}
+                                    className="max-w-[170px] cursor-pointer truncate text-sm font-bold hover:text-primary"
+                                  >
+                                    {label(item.defender.name, 'Unknown member')}
+                                  </p>
                                   <p className="font-data text-[10px] text-muted-foreground">#{String(num(item.defender.mapPosition, index + 1)).padStart(2, '0')}</p>
                                 </div>
                               </div>
