@@ -15,6 +15,7 @@ import CapitalRaidsPage from '@/pages/capital-raids';
 import AICoachPage from '@/pages/ai-coach';
 import StatisticsPage from '@/pages/statistics';
 import SettingsPage from '@/pages/settings';
+import BuilderBasePage from '@/pages/builder-base';
 
 import {
   Route,
@@ -52,6 +53,11 @@ function Router() {
         <Route
           path="/capital-raids"
           component={CapitalRaidsPage}
+        />
+
+        <Route
+          path="/builder-base"
+          component={BuilderBasePage}
         />
 
         <Route
