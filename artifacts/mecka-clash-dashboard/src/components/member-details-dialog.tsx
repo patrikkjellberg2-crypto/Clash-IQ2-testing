@@ -14,6 +14,7 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   if (!member) return null;
   const name = label(member.name, 'Unknown player');
   const league = asDict(member.league);
+  const rankedLeague = asDict(member.leagueTier);
   const builderLeague = asDict(member.builderBaseLeague);
   const attacks = Array.isArray(member.attacks) ? member.attacks.map(asDict) : [];
   const activity = asDict(member.activity);
@@ -21,9 +22,11 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const clan = asDict(member.clan);
   const clanBadgeUrls = asDict(clan.badgeUrls);
   const leagueIconUrls = asDict(league.iconUrls);
+  const rankedLeagueIconUrls = asDict(rankedLeague.iconUrls);
   const builderLeagueIconUrls = asDict(builderLeague.iconUrls);
   const clanBadgeUrl = str(clanBadgeUrls.medium, str(clanBadgeUrls.large, str(clanBadgeUrls.small, "")));
   const leagueIconUrl = str(leagueIconUrls.medium, str(leagueIconUrls.small, str(leagueIconUrls.tiny, "")));
+  const rankedLeagueIconUrl = str(rankedLeagueIconUrls.medium, str(rankedLeagueIconUrls.small, str(rankedLeagueIconUrls.tiny, "")));
   const builderLeagueIconUrl = str(builderLeagueIconUrls.medium, str(builderLeagueIconUrls.small, str(builderLeagueIconUrls.tiny, "")));
   const stars = attacks.reduce((sum, attack) => sum + num(attack.stars), 0);
   const destruction = attacks.length ? Math.round(attacks.reduce((sum, attack) => sum + num(attack.destructionPercentage), 0) / attacks.length) : 0;
@@ -71,7 +74,7 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
           <button type="button" onClick={onClose} className="grid size-9 shrink-0 place-items-center rounded-xl border border-border text-muted-foreground hover:border-primary/40 hover:text-primary" aria-label="Close player card"><X className="size-4" /></button>
         </header>
         <div className="grid gap-3 p-5 sm:grid-cols-2">
-          {(clanBadgeUrl || leagueIconUrl || builderLeagueIconUrl) && (
+          {(clanBadgeUrl || leagueIconUrl || rankedLeagueIconUrl || builderLeagueIconUrl) && (
             <div className="rounded-2xl border border-primary/15 bg-primary/[0.035] p-4 sm:col-span-2">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -94,6 +97,7 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
             </div>
           )}
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Trophy className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Trophies</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.trophies))}</p><p className="mt-1 text-xs text-muted-foreground">{label(league.name, 'Unranked')}</p></div>
+          <div className="rounded-2xl border border-primary/15 bg-primary/[0.04] p-4"><div className="flex items-center gap-2 text-primary"><Trophy className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Ranked League</span></div><div className="mt-2 flex items-center gap-3">{rankedLeagueIconUrl ? <img src={rankedLeagueIconUrl} alt="" className="size-10 object-contain" loading="lazy" onError={(event) => { event.currentTarget.style.display = "none"; }} /> : null}<div><p className="font-data text-lg font-bold">{label(rankedLeague.name, "Unranked")}</p><p className="mt-1 text-xs text-muted-foreground">Current Ranked Battles league</p></div></div></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Crown className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Experience</span></div><p className="mt-2 font-data text-2xl font-bold">Lv {num(member.expLevel)}</p><p className="mt-1 text-xs text-muted-foreground">Town Hall {num(member.townHallLevel, num(member.townhallLevel))}</p></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><Gift className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Donations</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.donations))}</p><p className="mt-1 text-xs text-muted-foreground">mottagna {compact(num(member.donationsReceived))}</p></div>
           <div className="rounded-2xl bg-secondary/60 p-4"><div className="flex items-center gap-2 text-primary"><UserRound className="size-4" /><span className="text-[10px] font-bold uppercase tracking-[.12em]">Builder Base</span></div><p className="mt-2 font-data text-2xl font-bold">{compact(num(member.builderBaseTrophies))}</p><p className="mt-1 text-xs text-muted-foreground">{label(builderLeague.name, 'No league')}</p></div>
