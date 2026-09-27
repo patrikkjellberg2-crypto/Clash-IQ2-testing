@@ -778,7 +778,12 @@ export default function WarCenterPage() {
                               </div>
                             </td>
                             <td className="px-3 py-3 font-data text-xs font-bold">{num(item.defender.townhallLevel)}</td>
-                            <td className="px-3 py-3 text-sm font-bold">{label(item.attacker.name, 'Unknown attacker')}</td>
+                            <td
+                              data-player-tag={str(item.attacker.tag)}
+                              className="cursor-pointer px-3 py-3 text-sm font-bold hover:text-primary"
+                            >
+                              {label(item.attacker.name, 'Unknown attacker')}
+                            </td>
                             <td className="px-3 py-3 font-data text-xs font-bold">{starsAgainstUs}</td>
                             <td className="px-3 py-3 font-data text-xs font-bold">{destructionAgainstUs}%</td>
                             <td className="px-5 py-3 text-right">
