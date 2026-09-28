@@ -43,7 +43,7 @@ a{color:#d8b15a}
 <button id="connect">Find player</button>
 <div id="result" class="result" hidden></div>
 <p id="linked" class="muted" hidden></p>
-<p style="margin-top:28px"><a href="/auth/logout">Sign out</a></p>
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:28px"><a href="/" style="display:inline-block;background:#d8b15a;color:#111;text-decoration:none;border-radius:10px;padding:13px 18px;font-weight:700">← Back to Clash IQ</a><a href="/auth/logout" style="display:inline-block;padding:13px 18px">Sign out</a></div>
 </div></div></main>
 <script>
 (async()=>{
@@ -65,6 +65,7 @@ a{color:#d8b15a}
       tagInput.value=data.player.tag;
       tagInput.disabled=true;
       button.textContent='Player linked';
+   setTimeout(()=>{ window.location.href='/'; }, 900);
       button.disabled=true;
       linked.hidden=false;
       linked.textContent='✓ Your Clash of Clans player is permanently linked to this Clash IQ account.';
