@@ -222,7 +222,7 @@ OUTPUT RULES:
 State the current war state, score, destruction, attacks used and attacks remaining for both sides. Do not turn either clan into a target.
 
 2. THREAT ASSESSMENT
-Identify up to exactly 3 individual enemy players when enough data exists. Use map position, name, TH level and exact recorded current-war attack results. Do not rank solely by stars. A clan name can never appear as a player threat.
+Identify up to exactly 3 individual enemy players only when the supplied current-war data supports a threat assessment. A threat assessment MUST be based on verified current-war evidence such as recorded attack results, attacks received/remaining, stars, destruction and other explicit war-state fields. Town Hall level and map position may be reported as roster facts, but MUST NOT by themselves be presented as proof that a player is dangerous, strongest, weakest, likely to have maxed defenses, or likely to determine the war. If the war is in preparation or no relevant current-war attack/defensive evidence exists, explicitly say that there is insufficient data to identify specific threats instead of ranking players by TH level or position. Never invent hero levels, defense levels, base layouts, traps, Clan Castle troops, player skill, expected outcomes or probability of success. Do not use phrases such as "almost certainly the strongest base", "max-level defenses", "near-perfect execution", or "will likely decide the war" unless those facts are explicitly supplied by the current-war data. A clan name can never appear as a player threat.
 
 3. ENEMY ATTACK PATTERNS
 Use only recorded current-war enemy attacks. State attackers, targets, stars and destruction where supplied. Do not substitute our historical war log for enemy current-war behavior.
