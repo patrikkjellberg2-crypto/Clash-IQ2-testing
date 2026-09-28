@@ -423,6 +423,54 @@ function hasUnsupportedPreparationThreatRanking(answer: string, data: Dict) {
   const threatWords = /(biggest threat|primary threat|most concerning|most dangerous|strongest opponent|strongest enemy|top threat|major threat)/i;
   return threatWords.test(section) && names.some((name: string) => section.toLowerCase().includes(name.toLowerCase()));
 }
+function buildPreparationOpponentResponse(data: Dict) {
+  const war = data?.currentWar;
+  if (!war || !war.clan || !war.opponent) return null;
+
+  const clanTag = normalizeTag(String(data?.clanTag || DEFAULT_CLAN_TAG));
+  const ourSide = normalizeTag(String(war.clan.tag || "")) === clanTag ? war.clan : war.opponent;
+  const enemySide = ourSide === war.clan ? war.opponent : war.clan;
+  const state = String(war.state || "unknown").toLowerCase();
+  const enemyAttacks = number(enemySide?.attacks);
+  const noThreatEvidence = state === "preparation" || enemyAttacks === 0;
+  if (!noThreatEvidence) return null;
+
+  const teamSize = number(war.teamSize, Math.max(
+    Array.isArray(ourSide.members) ? ourSide.members.length : 0,
+    Array.isArray(enemySide.members) ? enemySide.members.length : 0,
+  ));
+  const attacksPerMember = number(war.attacksPerMember, 2);
+  const maxAttacks = teamSize * attacksPerMember;
+
+  return [
+    "1. ENEMY WAR SUMMARY",
+    `War state: ${state}. Our side: ${number(ourSide.stars)}★, ${number(ourSide.destructionPercentage)}% destruction, ${number(ourSide.attacks)} attacks used, ${Math.max(0, maxAttacks - number(ourSide.attacks))} remaining. Enemy side: ${number(enemySide.stars)}★, ${number(enemySide.destructionPercentage)}% destruction, ${enemyAttacks} attacks used, ${Math.max(0, maxAttacks - enemyAttacks)} remaining.`,
+    "",
+    "2. THREAT ASSESSMENT",
+    "Insufficient verified current-war data to identify specific enemy threats. The war is still in preparation or no enemy attacks have been recorded yet. Town Hall level and map position are roster facts only and are not sufficient evidence of threat.",
+    "",
+    "3. ENEMY ATTACK PATTERNS",
+    "No verified enemy attack pattern is available yet because no current-war enemy attacks have been recorded.",
+    "",
+    "4. OUR POSITION",
+    `Our side has ${number(ourSide.stars)}★ and ${number(ourSide.destructionPercentage)}% destruction with ${number(ourSide.attacks)} attacks used. The war is not yet providing enough enemy activity to assess individual threats.`,
+    "",
+    "5. TARGET PRIORITIES",
+    "No specific enemy target can be recommended reliably from the current-war data yet. Town Hall level or map position alone is insufficient.",
+    "",
+    "6. WAR PLAN",
+    "Use the preparation phase to review the enemy roster. Re-run the analysis after verified current-war attacks or other relevant war results are recorded.",
+    "",
+    "7. BIGGEST RISK",
+    "The main verified risk is the lack of current-war enemy activity, which means there is not yet enough evidence to make player-level threat assessments.",
+    "",
+    "8. NEXT 3 ACTIONS",
+    "1. Wait for verified current-war attack results before ranking enemy threats.",
+    "2. Review the enemy attack results and targets once they are recorded.",
+    "3. Re-run AI Coach after new current-war data is available."
+  ].join("\n");
+}
+
 function enforcePreparationThreatAssessment(answer: string, data: Dict) {
   const war = data?.currentWar;
   if (!war || !war.clan || !war.opponent) return answer;
