@@ -436,14 +436,14 @@ function enforcePreparationThreatAssessment(answer: string, data: Dict) {
   if (!noThreatEvidence) return answer;
 
   const text = String(answer || "");
-  const startMatch = text.match(/(?:^|\\n)\\s*2\\. THREAT ASSESSMENT\\s*/i);
-  const endMatch = text.match(/(?:^|\\n)\\s*3\\. ENEMY ATTACK PATTERNS\\s*/i);
+  const startMatch = text.match(/^\\s*2\\. THREAT ASSESSMENT\\s*/im);
+  const endMatch = text.match(/^\\s*3\\. ENEMY ATTACK PATTERNS\\s*/im);
   if (!startMatch || !endMatch || endMatch.index == null) return answer;
 
   const start = startMatch.index + startMatch[0].length;
   const end = endMatch.index;
   const safeSection = "Insufficient verified current-war data to identify specific enemy threats. The war is still in preparation or no enemy attacks have been recorded yet. Town Hall level and map position are roster facts only and are not sufficient evidence of threat.";
-  return text.slice(0, start) + safeSection + "\\n\\n" + text.slice(end);
+  return text.slice(0, start) + safeSection + "\n\n" + text.slice(end);
 }
 
 function hasRequiredOpponentSections(answer: string) {
@@ -554,7 +554,7 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
       }
     }
 
-    if (mode === "opponent" && (hasInternalReasoningLeak(answer) || !hasRequiredOpponentSections(answer) || hasUnsupportedPreparationThreatRanking(answer, data))) {
+    if (mode === "opponent") answer = enforcePreparationThreatAssessment(answer, data);\n\n    if (mode === "opponent" && (hasInternalReasoningLeak(answer) || !hasRequiredOpponentSections(answer) || hasUnsupportedPreparationThreatRanking(answer, data))) {
       return res.status(502).json({
         error: "AI Coach returned an invalid final format. Please run the analysis again.",
         code: "AI_INVALID_FINAL_FORMAT",
