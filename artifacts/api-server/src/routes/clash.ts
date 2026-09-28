@@ -1539,7 +1539,35 @@ router.get(
       };
 
       const archivedHistory = await getPlayerWarHistory(clanTag, tag, 50);
-      const recentActivityWars = archivedHistory.slice(0, 10);
+
+      // ClashKing is the durable public history source for player war attacks.
+      // Use it as a fallback when the local Clash IQ archive has not been
+      // warmed yet, so Personal Dashboard does not incorrectly show zeroes.
+      let clashKingAttackItems: ClashRecord[] = [];
+      if (archivedHistory.length === 0) {
+        const attackResult = await fetchOptionalClashKingResource(
+          "/v2/player/" + encodedTag + "/war/attacks?limit=500",
+          [],
+          req.log,
+        );
+        clashKingAttackItems = listItems(attackResult.data);
+      }
+
+      const fallbackWarMap = new Map<string, ClashRecord[]>();
+      for (const attack of clashKingAttackItems) {
+        const warId = String(attack.war_id ?? attack.warId ?? attack.warEndTime ?? "").trim();
+        if (!warId) continue;
+        const list = fallbackWarMap.get(warId) ?? [];
+        list.push(attack);
+        fallbackWarMap.set(warId, list);
+      }
+
+      const recentActivityWars = archivedHistory.length > 0
+        ? archivedHistory.slice(0, 10)
+        : Array.from(fallbackWarMap.entries()).slice(0, 10).map(([warId, attacks]) => ({
+            endTime: attacks[0]?.warEndTime ?? warId,
+            attacks,
+          }));
       const participatedWars = recentActivityWars.filter((war) => war.attacks.length > 0).length;
       const possibleAttacks = recentActivityWars.reduce(
         (sum, war) => sum + (war.teamSize ? 2 : 2),
@@ -1577,6 +1605,40 @@ router.get(
       };
 
       const clashOfStatsHistory = await fetchClashOfStatsHistory(tag);
+      if (archivedHistory.length === 0 && clashKingAttackItems.length > 0) {
+        const allAttacks = clashKingAttackItems;
+        const totalAttacks = allAttacks.length;
+        const totalStars = allAttacks.reduce((sum, attack) => sum + Number(attack.stars ?? 0), 0);
+        const totalDestruction = allAttacks.reduce((sum, attack) => sum + Number(attack.destructionPercentage ?? 0), 0);
+        const threeStarAttacks = allAttacks.filter((attack) => Number(attack.stars ?? 0) >= 3).length;
+        const oneStarOrLess = allAttacks.filter((attack) => Number(attack.stars ?? 0) <= 1).length;
+        const maxDestruction = allAttacks.reduce((max, attack) => Math.max(max, Number(attack.destructionPercentage ?? 0)), 0);
+        res.json({
+          ...player,
+          historicalWarStats: {
+            wars: fallbackWarMap.size,
+            totalAttacks,
+            totalStars,
+            averageStarsPerAttack: totalAttacks ? totalStars / totalAttacks : 0,
+            averageDestruction: totalAttacks ? totalDestruction / totalAttacks : 0,
+            maxDestruction,
+            threeStarAttacks,
+            oneStarOrLess,
+            missedWars: 0,
+            recentWars: Array.from(fallbackWarMap.entries()).slice(0, 20).map(([warId, attacks]) => ({
+              endTime: attacks[0]?.warEndTime ?? warId,
+              result: null,
+              opponentName: null,
+              attacks,
+            })),
+          },
+          clashOfStatsHistory,
+          activity,
+          rankings,
+        });
+        return;
+      }
+
       if (archivedHistory.length > 0) {
         const allAttacks = archivedHistory.flatMap((war) => war.attacks);
         const totalAttacks = allAttacks.length;
