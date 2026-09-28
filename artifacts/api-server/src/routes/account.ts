@@ -66,6 +66,10 @@ input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px 
 <a href="https://clash-iq-builder-base-test.onrender.com/" class="secondary">Open app</a>
 <a href="/auth/logout" class="secondary">Sign out</a>
 </div>
+<div class="result" style="margin-top:18px">
+<strong>Plan</strong>
+<div class="muted" id="plan">Free · Active</div>
+</div>
 <div id="liveStatus" class="muted" style="margin-top:16px">Loading live Clash data…</div>
 </section>
 </div></main>
@@ -130,6 +134,24 @@ input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px 
  function normalize(v){const raw=String(v||"").trim().toUpperCase();return raw.startsWith("#")?raw:"#"+raw;}
 })();
 </script></body></html>`);
+});
+
+router.get("/api/account/subscription", async (req, res): Promise<void> => {
+  const session = getAuthenticatedSession(req);
+  if (!session) { res.status(401).json({ authenticated: false }); return; }
+  const result = await pool.query(
+    `SELECT plan, status, updated_at FROM clash_iq_accounts WHERE google_sub = $1 LIMIT 1`,
+    [session.sub],
+  );
+  const row = result.rows[0];
+  res.json({
+    authenticated: true,
+    subscription: {
+      plan: row?.plan ?? "free",
+      status: row?.status ?? "active",
+      updatedAt: row?.updated_at ?? null,
+    },
+  });
 });
 
 router.get("/api/account", async (req, res): Promise<void> => {
