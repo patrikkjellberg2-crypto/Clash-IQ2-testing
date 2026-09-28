@@ -171,7 +171,7 @@ function Stat({
   gold?: boolean;
 }) {
   return (
-    <article className="premium-card rounded-2xl p-4">
+    <article className="premium-card stat-glow group rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:border-sky-400/35">
       <div
         className={`grid size-10 place-items-center rounded-xl ${
           gold
@@ -208,20 +208,21 @@ function WarCard({
   const opponent = d(war.opponent);
 
   return (
-    <article className="premium-card overflow-hidden rounded-2xl">
-      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-        <h2 className="text-lg font-bold">
-          Current War
-        </h2>
+    <article className="premium-card war-command-card overflow-hidden rounded-2xl">
+      <div className="flex items-center justify-between border-b border-white/10 bg-white/[.015] px-5 py-4">
+        <div>
+          <p className="section-kicker">Live battlefield</p>
+          <h2 className="mt-1 text-lg font-black tracking-tight">Current War</h2>
+        </div>
 
-        <span className="rounded-full bg-amber-400/20 px-4 py-2 text-[12px] font-black uppercase tracking-[.12em] text-amber-300">
+        <span className="rounded-full border border-amber-300/25 bg-amber-400/10 px-4 py-2 text-[12px] font-black uppercase tracking-[.16em] text-amber-300 shadow-[0_0_20px_rgba(245,190,60,.08)]">
           {s(war.state, "Unknown")}
         </span>
       </div>
 
       <div className="space-y-4 p-4">
         <WarTimer currentWar={war} />
-        <div className="grid min-h-[235px] place-items-center p-1">
+        <div className="grid min-h-[235px] place-items-center rounded-2xl border border-white/[.06] bg-black/10 p-4">
           <div className="grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
           <div>
             <div className="mx-auto grid size-16 place-items-center rounded-2xl border-2 border-amber-400 bg-amber-500/10 text-2xl font-bold text-amber-300">
@@ -619,22 +620,24 @@ export default function DashboardPage() {
           </header>
 
           <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-7">
-            <section className="hero-banner premium-card relative overflow-hidden rounded-2xl">
+            <section className="hero-banner premium-card relative overflow-hidden rounded-[1.35rem] border-white/15">
               <div className="hero-glow" />
 
               <div className="relative min-h-[220px] md:min-h-[300px]">
                 <img
                   src="/clash-iq-war-banner.webp"
                   alt="Clash IQ — Plan, Analyze, Improve, Win"
-                  className="absolute inset-0 h-full w-full object-cover object-center"
+                  className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
                 />
 
-                <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-[#06111f] via-[#06111f]/70 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#06111f]/90 via-[#06111f]/35 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#06111f] via-[#06111f]/65 to-transparent" />
 
                 <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 md:p-7">
-                  <p className="text-[10px] font-bold uppercase tracking-[.2em] text-sky-300">
-                    Clan Command Center
-                  </p>
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.8)]" />
+                    <p className="text-[10px] font-black uppercase tracking-[.22em] text-sky-300">Clan Command Center</p>
+                  </div>
 
                   <div className="flex flex-wrap items-end justify-between gap-3">
                     <div>
@@ -661,7 +664,7 @@ export default function DashboardPage() {
               </div>
             </section>
 
-                        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
+                        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
               <Stat
                 icon={ShieldAlert}
                 label="Clan Level"
@@ -794,7 +797,10 @@ export default function DashboardPage() {
             <section className="premium-card overflow-hidden rounded-2xl">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
                 <div>
-                  <h2 className="font-bold">Most Active Members</h2>
+                  <div>
+                    <p className="section-kicker">Member pulse</p>
+                    <h2 className="mt-1 font-black tracking-tight">Most Active Members</h2>
+                  </div>
                   <p className="text-xs text-muted-foreground">War activity · last 10 completed wars</p>
                 </div>
                 <Link
@@ -819,10 +825,11 @@ export default function DashboardPage() {
                         );
                         setSelected(member ?? { tag: player.playerTag, name: player.playerName });
                       }}
-                      className="rounded-2xl border border-white/10 bg-white/[.03] p-4 text-left transition hover:border-sky-400/30 hover:bg-white/[.05]"
+                      className="group relative rounded-2xl border border-white/[.08] bg-gradient-to-br from-white/[.055] to-white/[.015] p-4 text-left transition duration-300 hover:-translate-y-0.5 hover:border-sky-400/35 hover:shadow-[0_12px_30px_rgba(0,0,0,.22)]"
                     >
+                      <span className="absolute right-3 top-3 text-[9px] font-black text-white/20">#{index + 1}</span>
                       <div className="flex items-center justify-between gap-2">
-                        <span className="grid size-9 place-items-center rounded-xl bg-sky-400/10 text-xs font-bold text-sky-200">
+                        <span className="grid size-9 place-items-center rounded-xl border border-sky-300/10 bg-sky-400/10 text-xs font-bold text-sky-200">
                           {initials(name)}
                         </span>
                         <span className="font-data text-lg font-black text-emerald-300">{score}%</span>
@@ -843,9 +850,10 @@ export default function DashboardPage() {
             <section className="grid gap-5 xl:grid-cols-[1.05fr_1fr_.72fr]">
               <article className="premium-card overflow-hidden rounded-2xl">
                 <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
-                  <h2 className="font-bold">
-                    Top Members
-                  </h2>
+                  <div>
+                    <p className="section-kicker">Roster</p>
+                    <h2 className="mt-1 font-black">Top Members</h2>
+                  </div>
 
                   <Link
                     href="/members"
@@ -925,10 +933,12 @@ export default function DashboardPage() {
               </article>
 
               <article className="premium-card overflow-hidden rounded-2xl">
-                <div className="border-b border-white/10 px-5 py-4">
-                  <h2 className="font-bold">
-                    Latest War Log
-                  </h2>
+                <div className="flex items-center justify-between border-b border-white/10 bg-white/[.015] px-5 py-4">
+                  <div>
+                    <p className="section-kicker">Battle history</p>
+                    <h2 className="mt-1 font-black">Latest War Log</h2>
+                  </div>
+                  <ArrowRight className="size-4 text-white/25" />
                 </div>
 
                 <div className="divide-y divide-white/5">
@@ -956,7 +966,7 @@ export default function DashboardPage() {
                         <Link
                           key={i}
                           href={`/war-archive?war=${encodeURIComponent(warId)}`}
-                          className="flex items-center gap-3 px-5 py-3 transition hover:bg-white/[.03]"
+                          className="group flex items-center gap-3 px-5 py-3 transition hover:bg-white/[.04]"
                         >
                           <span
                             className={`grid size-8 place-items-center rounded-lg ${
@@ -1004,10 +1014,9 @@ export default function DashboardPage() {
               </article>
 
               <article className="premium-card overflow-hidden rounded-2xl">
-                <div className="border-b border-white/10 px-5 py-4">
-                  <h2 className="font-bold">
-                    Quick Actions
-                  </h2>
+                <div className="border-b border-white/10 bg-white/[.015] px-5 py-4">
+                  <p className="section-kicker">Command deck</p>
+                  <h2 className="mt-1 font-black">Quick Actions</h2>
                 </div>
 
                 <div className="space-y-2 p-4">
