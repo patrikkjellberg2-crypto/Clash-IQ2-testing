@@ -1,0 +1,1 @@
+{"name":"clash-iq-website","private":true,"type":"module","scripts":{"start":"node server.js"}}
