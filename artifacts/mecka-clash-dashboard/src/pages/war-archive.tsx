@@ -143,8 +143,14 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
   );
 }
 
-function WarCard({ war }: { war: ServerWar }) {
-  const [open, setOpen] = useState(false);
+function WarCard({
+  war,
+  defaultOpen = false,
+}: {
+  war: ServerWar;
+  defaultOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(defaultOpen);
   const outcome = outcomeOf(war);
 
   const oppByTag = useMemo(() => {
@@ -264,6 +270,7 @@ export default function WarArchivePage() {
   const [players, setPlayers] = useState<PlayerStat[]>([]);
   const [loading, setLoading] = useState(true);
   const [offline, setOffline] = useState(false);
+  const [openWarId, setOpenWarId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -293,6 +300,11 @@ export default function WarArchivePage() {
     window.addEventListener(WARS_EVENT, onLocalChange);
     return () => window.removeEventListener(WARS_EVENT, onLocalChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const warId = new URLSearchParams(window.location.search).get('war');
+    setOpenWarId(warId);
   }, []);
 
   const sorted = useMemo(
@@ -451,7 +463,13 @@ export default function WarArchivePage() {
                   used.
                 </p>
               ) : (
-                sorted.map(w => <WarCard key={w.id} war={w} />)
+                sorted.map(w => (
+                  <WarCard
+                    key={w.id}
+                    war={w}
+                    defaultOpen={w.id === openWarId}
+                  />
+                ))
               )}
             </section>
           </div>
