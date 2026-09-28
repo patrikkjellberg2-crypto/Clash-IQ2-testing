@@ -24,6 +24,20 @@ const s = (value: unknown, fallback = '') =>
   typeof value === 'string' ? value : fallback;
 
 type Mode = 'clan' | 'opponent' | 'question';
+type WarTestScenario = {
+  id: string;
+  label: string;
+  expected: string;
+};
+
+const WAR_TEST_SCENARIOS: WarTestScenario[] = [
+  { id: 'no-attacks', label: '01 · No attacks', expected: 'No individual enemy should be called an active threat.' },
+  { id: 'active-th18', label: '02 · Active TH18 threat', expected: 'rudy should be identified from his recorded 3-star/100% attack.' },
+  { id: 'lower-th-outperforms', label: '03 · TH15 outperforms TH18', expected: 'Flamingo should receive more threat attention because of recorded performance.' },
+  { id: 'remaining-attacks', label: '04 · Remaining attack risk', expected: 'Mention unused enemy attack capacity without treating inactive players as active attackers.' },
+  { id: 'near-finished', label: '05 · Nearly decided', expected: 'Focus on the concrete board state and avoid inventing a dramatic threat.' },
+];
+
 
 export default function AICoachPage() {
   const {
@@ -56,6 +70,13 @@ export default function AICoachPage() {
 
   const [loading, setLoading] =
     useState(false);
+  const [testExpected, setTestExpected] =
+    useState('');
+
+  const isWarTest =
+    typeof window !== 'undefined' &&
+    window.location.hostname === 'clash-iq-builder-base-test.onrender.com';
+
 
   const resultRef = useRef<HTMLElement | null>(null);
 
@@ -142,6 +163,67 @@ export default function AICoachPage() {
           block: 'start',
         });
       }, 50);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const runWarTest = async (scenario: WarTestScenario) => {
+    if (loading) return;
+
+    setMode('opponent');
+    setLoading(true);
+    setAnswer('');
+    setError('');
+    setTestExpected(scenario.expected);
+
+    try {
+      const response = await fetch('/api/ai/war-test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          scenario: scenario.id,
+          question: 'Identify the current enemy threat. Use only recorded attacks and current war state. If there is no active threat, say so clearly.',
+        }),
+      });
+
+      const raw = await response.text();
+      let result: {
+        answer?: string;
+        expected?: string;
+        error?: string;
+      } = {};
+
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        throw new Error(
+          `War test returned an invalid response (${response.status}).`,
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          result.error ||
+            `War test failed (${response.status}).`,
+        );
+      }
+
+      setTestExpected(result.expected || scenario.expected);
+      setAnswer(result.answer || 'No test analysis was returned.');
+      window.setTimeout(() => {
+        resultRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+      }, 50);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'War test could not complete.',
+      );
     } finally {
       setLoading(false);
     }
@@ -384,6 +466,42 @@ export default function AICoachPage() {
                     </span>
                   </button>
                 </div>
+
+                {isWarTest && (
+                  <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-400/[.04] p-4">
+                    <div className="flex items-center gap-2">
+                      <Swords className="size-4 text-red-300" />
+                      <div>
+                        <p className="text-[9px] font-black uppercase tracking-[.16em] text-red-200">
+                          War Intelligence Test Lab
+                        </p>
+                        <p className="mt-1 text-[10px] leading-5 text-white/40">
+                          Synthetic war data · test deployment only
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 grid gap-2">
+                      {WAR_TEST_SCENARIOS.map((scenario) => (
+                        <button
+                          key={scenario.id}
+                          type="button"
+                          onClick={() => void runWarTest(scenario)}
+                          disabled={loading}
+                          className="rounded-xl border border-white/[.07] bg-white/[.02] px-3 py-2.5 text-left transition hover:border-red-300/30 hover:bg-red-300/[.05] disabled:opacity-50"
+                        >
+                          <span className="block text-[11px] font-bold text-white/80">
+                            {scenario.label}
+                          </span>
+                          <span className="mt-1 block text-[10px] leading-4 text-white/35">
+                            {scenario.expected}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <label className="mt-5 block text-[9px] font-black uppercase tracking-[.16em] text-white/40">
                   Mission Brief
                 </label>
@@ -506,6 +624,18 @@ export default function AICoachPage() {
                 </div>
 
                 <div className="p-5">
+
+                  {isWarTest && testExpected && !error && (
+                    <div className="mb-4 rounded-xl border border-red-400/15 bg-red-400/[.04] p-3">
+                      <p className="text-[8px] font-black uppercase tracking-[.16em] text-red-200/70">
+                        Test expectation
+                      </p>
+                      <p className="mt-1 text-xs leading-5 text-white/60">
+                        {testExpected}
+                      </p>
+                    </div>
+                  )}
+
                   {error && (
                     <div className="rounded-xl border border-red-400/20 bg-red-400/[.08] p-4 text-sm leading-6 text-red-200">
                       {error}
