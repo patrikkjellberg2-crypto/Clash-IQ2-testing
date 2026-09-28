@@ -40,7 +40,6 @@ function ensureTable() {
     ready = (async () => {
       await pool.query("CREATE TABLE IF NOT EXISTS clan_music_tracks (id BIGSERIAL PRIMARY KEY, clan_tag TEXT NOT NULL, title TEXT NOT NULL, url TEXT NOT NULL, added_by TEXT NOT NULL DEFAULT 'Clan member', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
       await pool.query("CREATE INDEX IF NOT EXISTS clan_music_tracks_clan_idx ON clan_music_tracks (clan_tag, created_at DESC)");
-      await pool.query("CREATE TABLE IF NOT EXISTS clan_music_playlists (clan_tag TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT 'Clan Playlist', url TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
     })().catch((error) => { ready = null; throw error; });
   }
   return ready;
