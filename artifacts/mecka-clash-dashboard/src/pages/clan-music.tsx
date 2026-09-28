@@ -17,7 +17,7 @@ export default function ClanMusicPage() {
   const { data } = useGetClashDashboard();
   const dashboard = data as unknown as Dict | undefined;
   const clan = d(dashboard?.clan);
-  const clanTag = s(dashboard?.clanTag);
+  const clanTag = s(dashboard?.clanTag, s(clan.tag));
   const clanName = s(clan.name, "ClashIQ Clan");
   const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
