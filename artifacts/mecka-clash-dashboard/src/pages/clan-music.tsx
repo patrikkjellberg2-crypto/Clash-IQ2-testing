@@ -194,9 +194,14 @@ export default function ClanMusicPage() {
                 <div className="ml-auto flex gap-2">
                   <button type="button" disabled={!tracks.length} onClick={() => { setSelectedIndex(0); setPlayerOpen(true); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white disabled:opacity-30">Open playlist</button>
                   {youtubePlaylistUrl && (
-                    <a href={youtubePlaylistUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white">
-                      <ExternalLink className="size-4" /> Öppna YouTube
-                    </a>
+                    <>
+                      <a href={youtubePlaylistUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white">
+                        <ExternalLink className="size-4" /> Öppna YouTube
+                      </a>
+                      <a href={youtubePlaylistUrl.replace("https://www.youtube.com/", "https://music.youtube.com/")} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white">
+                        <Headphones className="size-4" /> YouTube Music
+                      </a>
+                    </>
                   )}
                   <button
                     type="button"
