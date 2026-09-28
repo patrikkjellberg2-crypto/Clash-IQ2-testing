@@ -62,8 +62,8 @@ input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px 
 <div class="stat"><div class="label">Village local rank</div><div class="value" id="localRank">–</div></div>
 </div>
 <div class="actions">
-<a href="/" class="secondary">← Back to Clash IQ</a>
-<a href="/" class="secondary">Open app</a>
+<a href="https://clash-iq-website-test-web.onrender.com/" class="secondary">← Back to Clash IQ</a>
+<a href="https://clash-iq-builder-base-test.onrender.com/" class="secondary">Open app</a>
 <a href="/auth/logout" class="secondary">Sign out</a>
 </div>
 <div id="liveStatus" class="muted" style="margin-top:16px">Loading live Clash data…</div>
