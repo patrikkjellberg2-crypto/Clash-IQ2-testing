@@ -38,35 +38,35 @@ let ready: Promise<void> | null = null;
 function ensureTable() {
   if (!ready) {
     ready = (async () => {
-      await pool.query("CREATE TABLE IF NOT EXISTS clan_music_tracks (id BIGSERIAL PRIMARY KEY, clan_tag TEXT NOT NULL, title TEXT NOT NULL, url TEXT NOT NULL, added_by TEXT NOT NULL DEFAULT $$Clan member$$, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+      await pool.query("CREATE TABLE IF NOT EXISTS clan_music_tracks (id BIGSERIAL PRIMARY KEY, clan_tag TEXT NOT NULL, title TEXT NOT NULL, url TEXT NOT NULL, added_by TEXT NOT NULL DEFAULT 'Clan member', created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
       await pool.query("CREATE INDEX IF NOT EXISTS clan_music_tracks_clan_idx ON clan_music_tracks (clan_tag, created_at DESC)");
-      await pool.query("CREATE TABLE IF NOT EXISTS clan_music_playlists (clan_tag TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT $$Clan Playlist$$, url TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+      await pool.query("CREATE TABLE IF NOT EXISTS clan_music_playlists (clan_tag TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT 'Clan Playlist', url TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
     })().catch((error) => { ready = null; throw error; });
   }
   return ready;
 }
 
-router.get("/clash/music/playlist", async (req, res): Promise<void> => {
+router.get("/clash/music/export", async (req, res): Promise<void> => {
   try {
     const clanTag = normalizeTag(req.query.clanTag);
     if (!clanTag) { res.status(400).json({ error: "clanTag is required" }); return; }
     await ensureTable();
-    const { rows } = await pool.query("SELECT clan_tag AS \"clanTag\", title, url, updated_at AS \"updatedAt\" FROM clan_music_playlists WHERE clan_tag = $1 LIMIT 1", [clanTag]);
-    res.json({ playlist: rows[0] ?? null });
-  } catch (error) { req.log.error({ err: error }, "Failed to load clan playlist"); res.status(503).json({ error: "Clan playlist is temporarily unavailable." }); }
-});
-
-router.put("/clash/music/playlist", async (req, res): Promise<void> => {
-  try {
-    const clanTag = normalizeTag(req.body?.clanTag);
-    const title = cleanText(req.body?.title, 160) || "Clan Playlist";
-    const url = cleanText(req.body?.url, 500);
-    if (!clanTag || !url) { res.status(400).json({ error: "clanTag and url are required" }); return; }
-    if (!isMusicUrl(url) || !/[?&]list=/.test(url)) { res.status(400).json({ error: "Enter a YouTube or YouTube Music playlist link" }); return; }
-    await ensureTable();
-    const { rows } = await pool.query("INSERT INTO clan_music_playlists (clan_tag, title, url) VALUES ($1, $2, $3) ON CONFLICT (clan_tag) DO UPDATE SET title = EXCLUDED.title, url = EXCLUDED.url, updated_at = NOW() RETURNING clan_tag AS \"clanTag\", title, url, updated_at AS \"updatedAt\"", [clanTag, title, url]);
-    res.json({ playlist: rows[0] });
-  } catch (error) { req.log.error({ err: error }, "Failed to save clan playlist"); res.status(503).json({ error: "The clan playlist could not be saved." }); }
+    const { rows } = await pool.query(
+      "SELECT title, url, added_by AS \"addedBy\" FROM clan_music_tracks WHERE clan_tag = $1 ORDER BY created_at ASC, id ASC LIMIT 500",
+      [clanTag]
+    );
+    const lines = [
+      `Clash IQ — ${clanTag} Clan Playlist`,
+      "",
+      ...rows.map((row: { title: string; url: string; addedBy: string }) => `${row.title} — ${row.url} (added by ${row.addedBy})`)
+    ];
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="clash-iq-clan-playlist.txt"`);
+    res.send(lines.join("\n"));
+  } catch (error) {
+    req.log.error({ err: error }, "Failed to export clan music");
+    res.status(503).json({ error: "The clan playlist could not be downloaded." });
+  }
 });
 
 router.get("/clash/music", async (req, res): Promise<void> => {
