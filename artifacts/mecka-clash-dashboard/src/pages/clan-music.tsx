@@ -79,7 +79,7 @@ export default function ClanMusicPage() {
   }
 
   const canAdd = useMemo(() => Boolean(clanTag && title.trim() && url.trim()), [clanTag, title, url]);
-  const canSavePlaylist = useMemo(() => Boolean(clanTag && playlistUrl.trim()), [clanTag, playlistUrl]);
+  const canSavePlaylist = useMemo(() => Boolean(clanTag && playlistUrl.trim() && /[?&]list=/.test(playlistUrl.trim())), [clanTag, playlistUrl]);
 
   async function addTrack() {
     if (!canAdd || saving) return;
@@ -116,7 +116,7 @@ export default function ClanMusicPage() {
               <p className="text-[9px] font-black uppercase tracking-[.22em] text-red-300">Clan / Music</p>
               <h1 className="mt-1 font-display text-3xl font-black tracking-[-.05em]">Clan Music</h1>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-white/45">
-                A shared music shelf for {clanName}. Add YouTube or YouTube Music links and every clan member can see the playlist.
+                Add music to the clan playlist and give everyone in {clanName} one shared place for your music. You can add individual YouTube/YouTube Music tracks below, or save the clan's complete playlist so everyone can open it.
               </p>
             </div>
           </header>
@@ -137,7 +137,7 @@ export default function ClanMusicPage() {
               </div>
               <div className="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_.7fr_auto]">
                 <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Song title" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-red-300/40" />
-                <input value={url} onChange={e => setUrl(e.target.value)} placeholder="Paste YouTube Music link" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-red-300/40" />
+                <input value={url} onChange={e => setUrl(e.target.value)} placeholder="Paste YouTube / YouTube Music song link" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-red-300/40" />
                 <input value={addedBy} onChange={e => setAddedBy(e.target.value)} placeholder="Your name" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-red-300/40" />
                 <button type="button" disabled={!canAdd || saving} onClick={addTrack} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-400 px-4 py-3 text-sm font-black text-black disabled:cursor-not-allowed disabled:opacity-30">
                   <Plus className="size-4" /> {saving ? "Adding…" : "Add"}
@@ -160,7 +160,7 @@ export default function ClanMusicPage() {
               </div>
               <div className="mt-4 grid gap-3 md:grid-cols-[.8fr_1.4fr_auto]">
                 <input value={playlistTitle} onChange={e => setPlaylistTitle(e.target.value)} placeholder="Playlist name" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-amber-300/40" />
-                <input value={playlistUrl} onChange={e => setPlaylistUrl(e.target.value)} placeholder="Paste YouTube playlist link" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-amber-300/40" />
+                <input value={playlistUrl} onChange={e => setPlaylistUrl(e.target.value)} placeholder="Paste full YouTube / YouTube Music playlist link" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-amber-300/40" />
                 <button type="button" disabled={!canSavePlaylist || playlistSaving} onClick={savePlaylist} className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-300 px-4 py-3 text-sm font-black text-black disabled:cursor-not-allowed disabled:opacity-30">
                   <Save className="size-4" /> {playlistSaving ? "Saving…" : "Save playlist"}
                 </button>
