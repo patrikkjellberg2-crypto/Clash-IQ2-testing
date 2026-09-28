@@ -1,10 +1,12 @@
 import { type ReactNode } from 'react';
-import { useLocation } from 'wouter';
+import { ArrowLeft } from 'lucide-react';
+import { useLocation, useSetLocation } from 'wouter';
 
 const BANNER_SRC = '/clash-iq-war-banner.webp';
 
 export function ClashIQPageBanner({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+  const setLocation = useSetLocation();
 
   // Overview owns its hero. Every other page gets the same banner.
   // Members and Capital Raids render the banner directly inside their main area.
@@ -15,6 +17,21 @@ export function ClashIQPageBanner({ children }: { children: ReactNode }) {
 
   return (
     <div className="clashiq-global-banner-page min-h-[100dvh] overflow-x-hidden bg-[#07090d] text-white">
+      <button
+        type="button"
+        aria-label="Go back"
+        title="Back"
+        onClick={() => {
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            setLocation('/');
+          }
+        }}
+        className="fixed left-16 top-4 z-40 grid size-10 place-items-center rounded-xl border border-white/10 bg-[#07090d]/90 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+      >
+        <ArrowLeft className="size-4" />
+      </button>
       <style>{`
         .clashiq-global-banner-page main {
           margin-top: 0 !important;
