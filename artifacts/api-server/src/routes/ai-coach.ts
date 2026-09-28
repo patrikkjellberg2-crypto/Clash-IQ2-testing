@@ -509,7 +509,9 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
     const prompt = buildPrompt(data, mode, question);
     if (prompt.length > MAX_PROMPT_CHARS) throw new Error(`AI war data exceeded the safety limit (${prompt.length} characters).`);
 
-    let answer = await callOpenRouter(prompt);\n\n    if (mode === "opponent") answer = enforcePreparationThreatAssessment(answer, data);
+    let answer = await callOpenRouter(prompt);
+
+    if (mode === "opponent") answer = enforcePreparationThreatAssessment(answer, data);
 
     if (hasMalformedRepetition(answer)) {
       const repairPrompt = [
