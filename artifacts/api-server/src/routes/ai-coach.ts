@@ -423,6 +423,29 @@ function hasUnsupportedPreparationThreatRanking(answer: string, data: Dict) {
   const threatWords = /(biggest threat|primary threat|most concerning|most dangerous|strongest opponent|strongest enemy|top threat|major threat)/i;
   return threatWords.test(section) && names.some((name: string) => section.toLowerCase().includes(name.toLowerCase()));
 }
+function enforcePreparationThreatAssessment(answer: string, data: Dict) {
+  const war = data?.currentWar;
+  if (!war || !war.clan || !war.opponent) return answer;
+
+  const clanTag = normalizeTag(String(data?.clanTag || DEFAULT_CLAN_TAG));
+  const ourSide = normalizeTag(String(war.clan.tag || "")) === clanTag ? war.clan : war.opponent;
+  const enemySide = ourSide === war.clan ? war.opponent : war.clan;
+  const state = String(war.state || "").toLowerCase();
+  const enemyAttacks = number(enemySide?.attacks);
+  const noThreatEvidence = state === "preparation" || enemyAttacks === 0;
+  if (!noThreatEvidence) return answer;
+
+  const text = String(answer || "");
+  const startMatch = text.match(/(?:^|\\n)\\s*2\\. THREAT ASSESSMENT\\s*/i);
+  const endMatch = text.match(/(?:^|\\n)\\s*3\\. ENEMY ATTACK PATTERNS\\s*/i);
+  if (!startMatch || !endMatch || endMatch.index == null) return answer;
+
+  const start = startMatch.index + startMatch[0].length;
+  const end = endMatch.index;
+  const safeSection = "Insufficient verified current-war data to identify specific enemy threats. The war is still in preparation or no enemy attacks have been recorded yet. Town Hall level and map position are roster facts only and are not sufficient evidence of threat.";
+  return text.slice(0, start) + safeSection + "\\n\\n" + text.slice(end);
+}
+
 function hasRequiredOpponentSections(answer: string) {
   const text = String(answer || "").trim();
   const required = [
@@ -486,7 +509,7 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
     const prompt = buildPrompt(data, mode, question);
     if (prompt.length > MAX_PROMPT_CHARS) throw new Error(`AI war data exceeded the safety limit (${prompt.length} characters).`);
 
-    let answer = await callOpenRouter(prompt);
+    let answer = await callOpenRouter(prompt);\n\n    if (mode === "opponent") answer = enforcePreparationThreatAssessment(answer, data);
 
     if (hasMalformedRepetition(answer)) {
       const repairPrompt = [
