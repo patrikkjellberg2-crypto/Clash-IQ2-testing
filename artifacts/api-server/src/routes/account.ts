@@ -29,6 +29,14 @@ a.secondary{background:#1b1e24;color:#f5f1e8;border:1px solid #30343b}
 .result{margin-top:18px;padding:16px;border-radius:12px;background:#0b0d10;border:1px solid #272a30}
 input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px solid #363941;border-radius:10px;padding:13px;margin:10px 0}
 .hidden{display:none}.success{border-color:#6f8f4e}.error{border-color:#8f4e4e}
+.subscription{margin-top:20px;background:#0d0f13;border:1px solid #2b2f36;border-radius:18px;padding:22px}
+.sub-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start;margin-bottom:18px}
+.current-plan{padding:9px 12px;border:1px solid #6e5522;background:#19150d;color:#e4c36a;border-radius:999px;font-weight:800;white-space:nowrap}
+.plans{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.plan-card{background:#090b0e;border:1px solid #292d34;border-radius:15px;padding:17px;display:flex;flex-direction:column}
+.plan-card.active{border-color:#b28a38;box-shadow:0 0 0 1px #b28a3822 inset}
+.plan-top{display:flex;justify-content:space-between;gap:8px;align-items:center}.plan-top span{font-size:12px;letter-spacing:.09em;color:#d8b15a;font-weight:900}.plan-top b{font-size:21px}.plan-card p{color:#9ca3af;min-height:42px;font-size:13px;line-height:1.45}.plan-card ul{padding-left:18px;color:#d1d5db;font-size:13px;line-height:1.8;flex:1}.plan-button{border:1px solid #b28a38;background:#d8b15a;color:#111}.plan-button.secondary{background:#1b1e24;color:#f5f1e8;border-color:#30343b}
+@media(max-width:1050px){.plans{grid-template-columns:1fr 1fr}}@media(max-width:560px){.sub-head{flex-direction:column}.plans{grid-template-columns:1fr}}
 @media(max-width:760px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style></head>
 <body><main>
@@ -66,10 +74,15 @@ input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px 
 <a href="https://clash-iq-builder-base-test.onrender.com/" class="secondary">Open app</a>
 <a href="/auth/logout" class="secondary">Sign out</a>
 </div>
-<div class="result" style="margin-top:18px">
-<strong>Plan</strong>
-<div class="muted" id="plan">Free · Active</div>
-</div>
+<section class="subscription" id="subscription">
+<div class="sub-head"><div><div class="muted">CLASH IQ · SUBSCRIPTION</div><h2 style="margin:6px 0">Choose your plan</h2><p class="muted" style="margin:0">Start free, or unlock more personal and clan features when you need them.</p></div><div class="current-plan" id="plan">Free · Active</div></div>
+<div class="plans">
+<div class="plan-card active" data-plan="free"><div class="plan-top"><span>FREE</span><b>$0</b></div><p>Core Clash IQ features for every player.</p><ul><li>Clan dashboard</li><li>Player Card</li><li>War history</li><li>Progress</li></ul><button class="plan-button secondary" data-plan-action="free">Current plan</button></div>
+<div class="plan-card" data-plan="premium"><div class="plan-top"><span>PREMIUM</span><b>$2.99</b></div><p>Deeper tools for individual players.</p><ul><li>Everything in Free</li><li>Advanced personal analytics</li><li>Deeper history</li><li>More progress insights</li></ul><button class="plan-button" data-plan-action="premium">Choose Premium</button></div>
+<div class="plan-card" data-plan="clan_premium"><div class="plan-top"><span>CLAN PREMIUM</span><b>$14.99</b></div><p>Advanced Clash IQ features for the whole clan.</p><ul><li>Clan-wide advanced analytics</li><li>Deeper clan history</li><li>Advanced war insights</li><li>Clan-focused tools</li></ul><button class="plan-button" data-plan-action="clan_premium">Choose Clan Premium</button></div>
+<div class="plan-card" data-plan="leader_premium"><div class="plan-top"><span>LEADER</span><b>$4.99</b></div><p>Optional AI-powered tools for the clan leader.</p><ul><li>AI Coach access</li><li>AI war tools</li><li>Leader-focused insights</li><li>Designed for clan leadership</li></ul><button class="plan-button" data-plan-action="leader_premium">Choose Leader Premium</button></div>
+</div><div id="planMessage" class="result hidden"></div>
+</section>
 <div id="liveStatus" class="muted" style="margin-top:16px">Loading live Clash data…</div>
 </section>
 </div></main>
