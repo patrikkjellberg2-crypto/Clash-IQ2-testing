@@ -210,21 +210,23 @@ async function createYoutubePlaylist(accessToken: string, title: string, clanTag
   return String(payload.id);
 }
 
-async function playlistContainsVideoIds(accessToken: string, playlistId: string) {
-  const ids = new Set<string>();
+async function listYoutubePlaylistItems(accessToken: string, playlistId: string) {
+  const items: Array<{ id: string; videoId: string; position: number }> = [];
   let pageToken = "";
   for (let page = 0; page < 20; page++) {
-    const query = new URLSearchParams({ part: "contentDetails", maxResults: "50", playlistId });
+    const query = new URLSearchParams({ part: "snippet,contentDetails", maxResults: "50", playlistId });
     if (pageToken) query.set("pageToken", pageToken);
     const payload = await youtubeRequest(accessToken, `/playlistItems?${query.toString()}`);
     for (const item of Array.isArray(payload?.items) ? payload.items : []) {
-      const id = item?.contentDetails?.videoId;
-      if (typeof id === "string" && id) ids.add(id);
+      const id = typeof item?.id === "string" ? item.id : "";
+      const videoId = typeof item?.contentDetails?.videoId === "string" ? item.contentDetails.videoId : "";
+      const position = Number(item?.snippet?.position);
+      if (id && videoId && Number.isFinite(position)) items.push({ id, videoId, position });
     }
     pageToken = typeof payload?.nextPageToken === "string" ? payload.nextPageToken : "";
     if (!pageToken) break;
   }
-  return ids;
+  return items;
 }
 
 let ready: Promise<void> | null = null;
@@ -355,23 +357,51 @@ router.post("/clash/music/youtube/sync", async (req, res): Promise<void> => {
       connection = { ...connection, playlistId };
     }
 
-    let existing: Set<string>;
+    const desiredVideoIds: string[] = [];
+    const desiredSet = new Set<string>();
+    let skipped = 0;
+    for (const track of tracks) {
+      const videoId = youtubeVideoId(track.url);
+      if (!videoId || desiredSet.has(videoId)) {
+        skipped++;
+        continue;
+      }
+      desiredSet.add(videoId);
+      desiredVideoIds.push(videoId);
+    }
+
+    let playlistItems: Array<{ id: string; videoId: string; position: number }>;
     try {
-      existing = await playlistContainsVideoIds(accessToken, playlistId);
+      playlistItems = await listYoutubePlaylistItems(accessToken, playlistId);
     } catch (error) {
       const reason = (error as Error & { reason?: string }).reason;
       if (reason !== "playlistNotFound") throw error;
       playlistId = await createYoutubePlaylist(accessToken, playlistTitle || `Clash IQ — ${clanTag}`, clanTag);
       await saveConnection(connection.connectionId, connection.refreshToken, playlistId);
       connection = { ...connection, playlistId };
-      existing = new Set();
+      playlistItems = [];
+    }
+
+    const currentByVideo = new Map<string, { id: string; videoId: string; position: number }>();
+    for (const item of playlistItems) {
+      if (!currentByVideo.has(item.videoId)) currentByVideo.set(item.videoId, item);
     }
 
     let added = 0;
-    let skipped = 0;
-    for (const track of tracks) {
-      const videoId = youtubeVideoId(track.url);
-      if (!videoId || existing.has(videoId)) { skipped++; continue; }
+    let removed = 0;
+    let reordered = 0;
+
+    // Clash IQ is the master playlist: remove videos that are no longer in the clan playlist.
+    for (const item of playlistItems) {
+      if (!desiredSet.has(item.videoId)) {
+        await youtubeRequest(accessToken, `/playlistItems?id=${encodeURIComponent(item.id)}`, { method: "DELETE" });
+        removed++;
+      }
+    }
+
+    // Add any clan songs that are missing from YouTube.
+    for (const videoId of desiredVideoIds) {
+      if (currentByVideo.has(videoId)) continue;
       try {
         await youtubeRequest(accessToken, "/playlistItems?part=snippet", {
           method: "POST",
@@ -383,7 +413,6 @@ router.post("/clash/music/youtube/sync", async (req, res): Promise<void> => {
             },
           }),
         });
-        existing.add(videoId);
         added++;
       } catch (error) {
         const reason = (error as Error & { reason?: string }).reason;
@@ -395,13 +424,41 @@ router.post("/clash/music/youtube/sync", async (req, res): Promise<void> => {
       }
     }
 
+    // Re-read after additions/removals so we can make YouTube match the Clash IQ order.
+    playlistItems = await listYoutubePlaylistItems(accessToken, playlistId);
+    const currentOrdered = new Map<string, { id: string; videoId: string; position: number }>();
+    for (const item of playlistItems) {
+      if (!currentOrdered.has(item.videoId)) currentOrdered.set(item.videoId, item);
+    }
+
+    for (let position = 0; position < desiredVideoIds.length; position++) {
+      const videoId = desiredVideoIds[position];
+      const item = currentOrdered.get(videoId);
+      if (!item || item.position === position) continue;
+      await youtubeRequest(accessToken, "/playlistItems?part=snippet", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: item.id,
+          snippet: {
+            playlistId,
+            position,
+            resourceId: { kind: "youtube#video", videoId },
+          },
+        }),
+      });
+      reordered++;
+    }
+
     accessToken = "";
     res.json({
       ok: true,
       playlistUrl: `https://www.youtube.com/playlist?list=${encodeURIComponent(playlistId)}`,
       added,
+      removed,
+      reordered,
       skipped,
-      total: tracks.length,
+      total: desiredVideoIds.length,
     });
   } catch (error) {
     req.log.error({ err: error }, "Failed to sync clan music to YouTube");
