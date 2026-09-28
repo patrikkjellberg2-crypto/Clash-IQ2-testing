@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -61,6 +61,12 @@ export default function ClanMusicPage() {
 
   const playlist = playlistQuery.data ?? null;
   const tracks = query.data ?? [];
+
+  useEffect(() => {
+    if (!playlist) return;
+    setPlaylistTitle(playlist.title);
+    setPlaylistUrl(playlist.url);
+  }, [playlist?.title, playlist?.url]);
 
   async function savePlaylist() {
     if (!clanTag || !playlistUrl.trim() || playlistSaving) return;
