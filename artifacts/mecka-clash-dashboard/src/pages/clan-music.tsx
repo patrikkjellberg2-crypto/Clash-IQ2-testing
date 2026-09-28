@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useGetClashDashboard } from "@workspace/api-client-react";
-import { Plus, Trash2, ExternalLink, Headphones, Download, Youtube, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Headphones, Youtube, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => (v && typeof v === "object" ? v as Dict : {});
@@ -23,6 +23,11 @@ export default function ClanMusicPage() {
   const [message, setMessage] = useState("");
   const [playerOpen, setPlayerOpen] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [youtubeConnected, setYoutubeConnected] = useState(false);
+  const [youtubeConfigured, setYoutubeConfigured] = useState(false);
+  const [youtubePlaylistUrl, setYoutubePlaylistUrl] = useState<string | null>(null);
+  const [youtubeSaving, setYoutubeSaving] = useState(false);
+  const [youtubeMessage, setYoutubeMessage] = useState("");
 
   const query = useQuery({
     queryKey: ["clan-music", clanTag],
@@ -36,6 +41,32 @@ export default function ClanMusicPage() {
   });
 
   const tracks = query.data ?? [];
+
+  useEffect(() => {
+    fetch("/api/clash/music/youtube/status")
+      .then(r => r.ok ? r.json() : null)
+      .then(body => {
+        if (!body) return;
+        setYoutubeConfigured(Boolean(body.configured));
+        setYoutubeConnected(Boolean(body.connected));
+        setYoutubePlaylistUrl(typeof body.playlistUrl === "string" ? body.playlistUrl : null);
+      })
+      .catch(() => undefined);
+
+    const params = new URLSearchParams(window.location.search);
+    const youtubeState = params.get("youtube");
+    if (youtubeState === "connected") {
+      setYoutubeConnected(true);
+      setYoutubeMessage("YouTube-kontot är anslutet.");
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (youtubeState === "denied") {
+      setYoutubeMessage("YouTube-anslutningen avbröts.");
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (youtubeState === "error") {
+      setYoutubeMessage("YouTube-anslutningen misslyckades. Försök igen.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const canAdd = useMemo(() => Boolean(clanTag && url.trim()), [clanTag, url]);
 
@@ -83,19 +114,37 @@ export default function ClanMusicPage() {
     if (r.ok) await queryClient.invalidateQueries({ queryKey: ["clan-music", clanTag] });
   }
 
-  async function downloadPlaylist() {
-    if (!clanTag) return;
-    const r = await fetch(`/api/clash/music/export?clanTag=${encodeURIComponent(clanTag)}`);
-    if (!r.ok) return;
-    const blob = await r.blob();
-    const href = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = href;
-    a.download = "clash-iq-clan-playlist.txt";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(href);
+  function connectYoutube() {
+    window.location.href = "/api/clash/music/youtube/auth";
+  }
+
+  async function saveToYoutube() {
+    if (!clanTag || !tracks.length || youtubeSaving) return;
+    setYoutubeSaving(true);
+    setYoutubeMessage("");
+    try {
+      const r = await fetch("/api/clash/music/youtube/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clanTag,
+          playlistTitle: `${clanName} — Clan Playlist`,
+        }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (r.status === 401 && body.needsAuth) {
+        connectYoutube();
+        return;
+      }
+      if (!r.ok) throw new Error(body.error || "Kunde inte spara spellistan till YouTube.");
+      setYoutubeConnected(true);
+      setYoutubePlaylistUrl(typeof body.playlistUrl === "string" ? body.playlistUrl : null);
+      setYoutubeMessage(`Klart — ${body.added ?? 0} låtar lades till i din YouTube-spellista.`);
+    } catch (error) {
+      setYoutubeMessage(error instanceof Error ? error.message : "Kunde inte spara spellistan till YouTube.");
+    } finally {
+      setYoutubeSaving(false);
+    }
   }
 
   return (
@@ -144,7 +193,20 @@ export default function ClanMusicPage() {
                 </div>
                 <div className="ml-auto flex gap-2">
                   <button type="button" disabled={!tracks.length} onClick={() => { setSelectedIndex(0); setPlayerOpen(true); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white disabled:opacity-30">Open playlist</button>
-                  <button type="button" onClick={downloadPlaylist} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white"><Download className="size-4" /> Download</button>
+                  {youtubePlaylistUrl && (
+                    <a href={youtubePlaylistUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white">
+                      <ExternalLink className="size-4" /> Öppna YouTube
+                    </a>
+                  )}
+                  <button
+                    type="button"
+                    disabled={!tracks.length || youtubeSaving || !youtubeConfigured}
+                    onClick={youtubeConnected ? saveToYoutube : connectYoutube}
+                    className="inline-flex items-center gap-2 rounded-lg bg-red-500 px-3 py-2 text-xs font-black text-white hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-30"
+                  >
+                    <Youtube className="size-4" />
+                    {!youtubeConfigured ? "YouTube ej konfigurerat" : youtubeSaving ? "Sparar…" : youtubeConnected ? "Spara till YouTube" : "Anslut YouTube"}
+                  </button>
                 </div>
               </div>
               <div className="space-y-2">
@@ -199,9 +261,12 @@ export default function ClanMusicPage() {
               </section>
             )}
 
-            <p className="text-center text-[10px] text-white/20">
-              Clash IQ stores the shared song list. Download exports the song titles and YouTube links; playback stays in each member's YouTube app.
-            </p>
+            <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4 text-center">
+              <p className="text-[11px] leading-5 text-white/35">
+                Spara spellistan till ditt eget YouTube-konto. Första gången ansluter du Google/YouTube, därefter kan Clash IQ synka klanens låtar till samma privata YouTube-spellista.
+              </p>
+              {youtubeMessage && <p className="mt-2 text-[11px] font-bold text-amber-300">{youtubeMessage}</p>}
+            </div>
           </div>
         </main>
       </div>
