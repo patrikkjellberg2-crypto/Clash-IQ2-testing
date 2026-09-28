@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useGetClashDashboard } from "@workspace/api-client-react";
-import { Plus, Trash2, ExternalLink, Headphones, Download, Youtube } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Headphones, Download, Youtube, Play, X, ChevronLeft, ChevronRight } from "lucide-react";
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => (v && typeof v === "object" ? v as Dict : {});
@@ -20,6 +20,9 @@ export default function ClanMusicPage() {
   const [url, setUrl] = useState("");
   const [addedBy, setAddedBy] = useState("");
   const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [playerOpen, setPlayerOpen] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const query = useQuery({
     queryKey: ["clan-music", clanTag],
@@ -36,9 +39,25 @@ export default function ClanMusicPage() {
 
   const canAdd = useMemo(() => Boolean(clanTag && url.trim()), [clanTag, url]);
 
+  function youtubeEmbedUrl(value: string) {
+    try {
+      const u = new URL(value);
+      if (u.hostname.includes("youtu.be")) return `https://www.youtube.com/embed/${u.pathname.slice(1).split("/")[0]}?autoplay=1`;
+      const id = u.searchParams.get("v");
+      if (id) return `https://www.youtube.com/embed/${id}?autoplay=1`;
+    } catch {}
+    return "";
+  }
+
+  function openTrack(index: number) {
+    setSelectedIndex(index);
+    setPlayerOpen(true);
+  }
+
   async function addTrack() {
     if (!canAdd || saving) return;
     setSaving(true);
+    setMessage("");
     try {
       const r = await fetch("/api/clash/music", {
         method: "POST",
@@ -50,7 +69,10 @@ export default function ClanMusicPage() {
         throw new Error(body.error || "Could not add song");
       }
       setUrl("");
+      setMessage("Song added to the clan playlist.");
       await queryClient.invalidateQueries({ queryKey: ["clan-music", clanTag] });
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "Could not add song.");
     } finally {
       setSaving(false);
     }
@@ -105,11 +127,12 @@ export default function ClanMusicPage() {
                   <input value={url} onChange={e => setUrl(e.target.value)} placeholder="Paste YouTube / YouTube Music song link" className="w-full rounded-xl border border-white/10 bg-black/20 py-3 pl-10 pr-3 text-sm outline-none placeholder:text-white/25 focus:border-red-300/40" />
                 </div>
                 <input value={addedBy} onChange={e => setAddedBy(e.target.value)} placeholder="Your name (optional)" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-red-300/40" />
-                <button type="button" disabled={!canAdd || saving} onClick={addTrack} className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-400 px-4 py-3 text-sm font-black text-black disabled:cursor-not-allowed disabled:opacity-30">
+                <button type="button" disabled={!canAdd || saving} onClick={addTrack} className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-black text-black transition-all ${canAdd && !saving ? "bg-amber-300 hover:bg-amber-200 active:scale-[.98] shadow-[0_0_18px_rgba(252,211,77,.14)]" : "bg-amber-300/20 text-white/25 cursor-not-allowed"}`}>
                   <Plus className="size-4" /> {saving ? "Reading…" : "Add song"}
                 </button>
               </div>
               <p className="mt-3 text-[11px] text-white/30">YouTube supplies the title automatically. The song is then added to the clan's shared list.</p>
+              {message && <p className="mt-2 text-[11px] font-bold text-amber-300">{message}</p>}
             </section>
 
             <section id="clan-playlist" className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
@@ -120,23 +143,23 @@ export default function ClanMusicPage() {
                   <p className="text-xs text-white/30">{tracks.length} songs · shared with the clan</p>
                 </div>
                 <div className="ml-auto flex gap-2">
-                  <a href="#clan-playlist" className="rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60">Open playlist</a>
+                  <button type="button" disabled={!tracks.length} onClick={() => { setSelectedIndex(0); setPlayerOpen(true); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white disabled:opacity-30">Open playlist</button>
                   <button type="button" onClick={downloadPlaylist} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white"><Download className="size-4" /> Download</button>
                 </div>
               </div>
               <div className="space-y-2">
                 {tracks.map((track, index) => (
-                  <div key={track.id} className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] p-3">
+                  <div key={track.id} role="button" tabIndex={0} onClick={() => openTrack(index)} onKeyDown={e => { if (e.key === "Enter" || e.key === " ") openTrack(index); }} className="group flex cursor-pointer items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] p-3 transition hover:border-amber-300/20 hover:bg-white/[.04]">
                     <span className="w-6 text-center text-xs font-mono text-white/20">{index + 1}</span>
-                    <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-red-500/10 text-red-300"><Youtube className="size-4" /></div>
+                    <div className="grid size-9 shrink-0 place-items-center rounded-lg bg-red-500/10 text-red-300"><Play className="size-4" /></div>
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold">{track.title}</p>
                       <p className="truncate text-[10px] text-white/30">Added by {track.addedBy}</p>
                     </div>
-                    <a href={track.url} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-lg bg-white/[.03] text-white/40 hover:text-white" aria-label="Open on YouTube">
+                    <a href={track.url} target="_blank" rel="noreferrer" onClick={e => e.stopPropagation()} className="grid size-9 place-items-center rounded-lg bg-white/[.03] text-white/40 hover:text-white" aria-label="Open on YouTube">
                       <ExternalLink className="size-4" />
                     </a>
-                    <button type="button" onClick={() => removeTrack(track.id)} className="grid size-9 place-items-center rounded-lg bg-white/[.03] text-white/30 hover:text-red-300" aria-label={`Remove ${track.title}`}>
+                    <button type="button" onClick={e => { e.stopPropagation(); removeTrack(track.id); }} className="grid size-9 place-items-center rounded-lg bg-white/[.03] text-white/30 hover:text-red-300" aria-label={`Remove ${track.title}`}>
                       <Trash2 className="size-4" />
                     </button>
                   </div>
@@ -150,6 +173,31 @@ export default function ClanMusicPage() {
                 )}
               </div>
             </section>
+
+            {playerOpen && tracks.length > 0 && (
+              <section className="rounded-2xl border border-amber-300/15 bg-[#050b12] p-5 shadow-2xl">
+                <div className="mb-4 flex items-center gap-3">
+                  <Play className="size-5 text-amber-300" />
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[9px] font-black uppercase tracking-[.18em] text-amber-300/70">Clan player</p>
+                    <h2 className="truncate font-black">{tracks[selectedIndex]?.title}</h2>
+                  </div>
+                  <button type="button" onClick={() => setPlayerOpen(false)} className="grid size-9 place-items-center rounded-lg border border-white/10 text-white/50 hover:text-white"><X className="size-4" /></button>
+                </div>
+                {youtubeEmbedUrl(tracks[selectedIndex]?.url ?? "") ? (
+                  <div className="overflow-hidden rounded-xl border border-white/10 bg-black aspect-video">
+                    <iframe title={tracks[selectedIndex]?.title ?? "Clan player"} src={youtubeEmbedUrl(tracks[selectedIndex]?.url ?? "")} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                  </div>
+                ) : (
+                  <a href={tracks[selectedIndex]?.url} target="_blank" rel="noreferrer" className="flex items-center justify-center rounded-xl border border-white/10 p-8 text-sm font-bold text-amber-300">Open this song on YouTube</a>
+                )}
+                <div className="mt-3 flex items-center justify-between">
+                  <button type="button" disabled={selectedIndex === 0} onClick={() => setSelectedIndex(i => Math.max(0, i - 1))} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 disabled:opacity-20"><ChevronLeft className="size-4" /> Previous</button>
+                  <span className="text-[10px] text-white/25">{selectedIndex + 1} / {tracks.length}</span>
+                  <button type="button" disabled={selectedIndex === tracks.length - 1} onClick={() => setSelectedIndex(i => Math.min(tracks.length - 1, i + 1))} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 disabled:opacity-20">Next <ChevronRight className="size-4" /></button>
+                </div>
+              </section>
+            )}
 
             <p className="text-center text-[10px] text-white/20">
               Clash IQ stores the shared song list. Download exports the song titles and YouTube links; playback stays in each member's YouTube app.
