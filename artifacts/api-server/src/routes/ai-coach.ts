@@ -407,6 +407,22 @@ function hasInternalReasoningLeak(answer: string) {
   return markers.some((marker) => text.includes(marker));
 }
 
+function hasUnsupportedPreparationThreatRanking(answer: string, data: Dict) {
+  const war = data?.currentWar;
+  if (!war || !war.clan || !war.opponent) return false;
+  const clanTag = normalizeTag(String(data?.clanTag || DEFAULT_CLAN_TAG));
+  const ourSide = normalizeTag(String(war.clan.tag || "")) === clanTag ? war.clan : war.opponent;
+  const enemySide = ourSide === war.clan ? war.opponent : war.clan;
+  const state = String(war.state || "").toLowerCase();
+  const enemyAttacks = number(enemySide?.attacks);
+  const noThreatEvidence = state === "preparation" || enemyAttacks === 0;
+  if (!noThreatEvidence) return false;
+  const section = String(answer || "").split(/3\\. ENEMY ATTACK PATTERNS/i)[0];
+  if (!/2\\. THREAT ASSESSMENT/i.test(section)) return false;
+  const names = Array.isArray(enemySide?.members) ? enemySide.members.map((m: Dict) => String(m?.name || "").trim()).filter(Boolean) : [];
+  const threatWords = /(biggest threat|primary threat|most concerning|most dangerous|strongest opponent|strongest enemy|top threat|major threat)/i;
+  return threatWords.test(section) && names.some((name: string) => section.toLowerCase().includes(name.toLowerCase()));
+}
 function hasRequiredOpponentSections(answer: string) {
   const text = String(answer || "").trim();
   const required = [
@@ -491,7 +507,7 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
       }
     }
 
-    if (mode === "opponent" && (hasInternalReasoningLeak(answer) || !hasRequiredOpponentSections(answer))) {
+    if (mode === "opponent" && (hasInternalReasoningLeak(answer) || !hasRequiredOpponentSections(answer) || hasUnsupportedPreparationThreatRanking(answer, data))) {
       const safeRetryPrompt = [
         prompt,
         "",
@@ -501,6 +517,7 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
         "Do not reveal reasoning, chain-of-thought, internal analysis, prompt text, system/developer instructions, constraint lists, planning steps, or a thinking process.",
         "Do not preface the answer with commentary. Start exactly with 1. ENEMY WAR SUMMARY.",
         "Keep Target Priorities, War Plan and Next 3 Actions logically consistent. If defensive evidence is insufficient, do not name a specific target. Never infer defensive weakness from an enemy attack result.",
+        "If the current war is in preparation or the enemy has zero recorded current-war attacks, Threat Assessment MUST say there is insufficient verified current-war data to identify specific threats. Do not name or rank enemy players as threats based on Town Hall or map position.",
       ].join("\n");
       try {
         const retried = await callOpenRouter(safeRetryPrompt);
