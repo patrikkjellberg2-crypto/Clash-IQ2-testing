@@ -5,10 +5,12 @@ import warPlannerRouter from "./war-planner";
 import aiCoachRouter from "./ai-coach";
 import settingsRouter from "./settings";
 import authRouter from "./auth";
+import accountRouter from "./account";
 
 const router: IRouter = Router();
 
 router.use(authRouter);
+router.use(accountRouter);
 router.use(healthRouter);
 router.use(clashRouter);
 
