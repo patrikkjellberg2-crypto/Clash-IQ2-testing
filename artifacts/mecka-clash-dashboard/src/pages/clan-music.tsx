@@ -12,15 +12,6 @@ const s = (v: unknown, fallback = "") => typeof v === "string" ? v : fallback;
 type Track = { id: number; clanTag: string; title: string; url: string; addedBy: string; createdAt: string };
 type Playlist = { clanTag: string; title: string; url: string; updatedAt: string };
 
-function openMusic(url: string) {
-  const started = Date.now();
-  window.location.href = /Android/i.test(navigator.userAgent)
-    ? `intent://${new URL(url).host}${new URL(url).pathname}${new URL(url).search}#Intent;scheme=https;package=com.google.android.apps.youtube.music;end`
-    : url;
-  window.setTimeout(() => {
-    if (Date.now() - started < 1800) window.location.href = url;
-  }, 1200);
-}
 
 export default function ClanMusicPage() {
   const { data } = useGetClashDashboard();
