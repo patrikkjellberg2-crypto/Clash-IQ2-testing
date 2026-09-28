@@ -75,7 +75,8 @@ export default function AICoachPage() {
 
   const isWarTest =
     typeof window !== 'undefined' &&
-    window.location.hostname === 'clash-iq-builder-base-test.onrender.com';
+    window.location.hostname === 'clash-iq-builder-base-test.onrender.com' ||
+    window.location.hostname === 'clash-iq2-testing.onrender.com';
 
 
   const resultRef = useRef<HTMLElement | null>(null);
