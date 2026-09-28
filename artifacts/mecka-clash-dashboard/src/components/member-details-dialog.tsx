@@ -25,14 +25,10 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const activity = asDict(member.activity);
   const rankings = asDict(member.rankings);
   const homeVillageRanking = asDict(rankings.homeVillage);
-  const legendStatistics = asDict(member.legendStatistics);
-  const currentSeason = asDict(legendStatistics.currentSeason);
-  const bestSeason = asDict(legendStatistics.bestSeason);
   const rankingLocation = asDict(rankings.location);
-  const worldRank =
-    rankingNumber(homeVillageRanking.globalRank) ??
-    rankingNumber(currentSeason.rank) ??
-    rankingNumber(bestSeason.rank);
+  // Only show an actual leaderboard rank supplied by the ranking payload.
+  // Legend season ranks are not used as a substitute for the global leaderboard.
+  const worldRank = rankingNumber(homeVillageRanking.globalRank);
   const countryRank = rankingNumber(homeVillageRanking.localRank);
   const countryName = str(rankingLocation.name, 'Country');
   const countryCode = str(rankingLocation.countryCode, '');
