@@ -3,13 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useGetClashDashboard } from "@workspace/api-client-react";
-import { Music2, Plus, Play, Trash2, ExternalLink, Headphones } from "lucide-react";
+import { Music2, Plus, Trash2, ExternalLink, Headphones, ListMusic, Save, ExternalLink as OpenIcon } from "lucide-react";
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => (v && typeof v === "object" ? v as Dict : {});
 const s = (v: unknown, fallback = "") => typeof v === "string" ? v : fallback;
 
 type Track = { id: number; clanTag: string; title: string; url: string; addedBy: string; createdAt: string };
+type Playlist = { clanTag: string; title: string; url: string; updatedAt: string };
 
 function openMusic(url: string) {
   const started = Date.now();
@@ -32,6 +33,9 @@ export default function ClanMusicPage() {
   const [url, setUrl] = useState("");
   const [addedBy, setAddedBy] = useState("");
   const [saving, setSaving] = useState(false);
+  const [playlistTitle, setPlaylistTitle] = useState("BHABE DHEMONS Playlist");
+  const [playlistUrl, setPlaylistUrl] = useState("");
+  const [playlistSaving, setPlaylistSaving] = useState(false);
 
   const query = useQuery({
     queryKey: ["clan-music", clanTag],
@@ -44,8 +48,41 @@ export default function ClanMusicPage() {
     },
   });
 
+  const playlistQuery = useQuery({
+    queryKey: ["clan-music-playlist", clanTag],
+    enabled: Boolean(clanTag),
+    queryFn: async (): Promise<Playlist | null> => {
+      const r = await fetch(`/api/clash/music/playlist?clanTag=${encodeURIComponent(clanTag)}`);
+      if (!r.ok) throw new Error("Could not load playlist");
+      const body = await r.json();
+      return body?.playlist ?? null;
+    },
+  });
+
+  const playlist = playlistQuery.data ?? null;
   const tracks = query.data ?? [];
+
+  async function savePlaylist() {
+    if (!clanTag || !playlistUrl.trim() || playlistSaving) return;
+    setPlaylistSaving(true);
+    try {
+      const r = await fetch("/api/clash/music/playlist", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clanTag, title: playlistTitle.trim() || "Clan Playlist", url: playlistUrl.trim() }),
+      });
+      if (!r.ok) {
+        const body = await r.json().catch(() => ({}));
+        throw new Error(body.error || "Could not save playlist");
+      }
+      await queryClient.invalidateQueries({ queryKey: ["clan-music-playlist", clanTag] });
+    } finally {
+      setPlaylistSaving(false);
+    }
+  }
+
   const canAdd = useMemo(() => Boolean(clanTag && title.trim() && url.trim()), [clanTag, title, url]);
+  const canSavePlaylist = useMemo(() => Boolean(clanTag && playlistUrl.trim()), [clanTag, playlistUrl]);
 
   async function addTrack() {
     if (!canAdd || saving) return;
@@ -95,10 +132,10 @@ export default function ClanMusicPage() {
                   <p className="text-[9px] font-black uppercase tracking-[.18em] text-red-300/80">BHABE DHEMONS</p>
                   <h2 className="text-xl font-black">War Playlist</h2>
                 </div>
-                {tracks.length > 0 && (
-                  <button type="button" onClick={() => openMusic(tracks[0].url)} className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-black hover:bg-white/90">
-                    <Play className="size-4 fill-current" /> Play
-                  </button>
+                {playlist && (
+                  <a href={playlist.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-black text-black hover:bg-white/90">
+                    <OpenIcon className="size-4" /> Open playlist
+                  </a>
                 )}
               </div>
               <div className="mt-5 grid gap-3 md:grid-cols-[1fr_1fr_.7fr_auto]">
@@ -109,6 +146,29 @@ export default function ClanMusicPage() {
                   <Plus className="size-4" /> {saving ? "Adding…" : "Add"}
                 </button>
               </div>
+            </section>
+
+            <section className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
+              <div className="flex flex-wrap items-center gap-3">
+                <div className="grid size-10 place-items-center rounded-xl bg-amber-400/10 text-amber-300"><ListMusic className="size-5" /></div>
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-black">Clan playlist</h2>
+                  <p className="text-xs text-white/30">Save one shared YouTube / YouTube Music playlist for the whole clan.</p>
+                </div>
+                {playlist && (
+                  <a href={playlist.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 py-2 text-xs font-black text-white hover:bg-white/[.08]">
+                    <OpenIcon className="size-4" /> Open
+                  </a>
+                )}
+              </div>
+              <div className="mt-4 grid gap-3 md:grid-cols-[.8fr_1.4fr_auto]">
+                <input value={playlistTitle} onChange={e => setPlaylistTitle(e.target.value)} placeholder="Playlist name" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-amber-300/40" />
+                <input value={playlistUrl} onChange={e => setPlaylistUrl(e.target.value)} placeholder="Paste YouTube playlist link" className="rounded-xl border border-white/10 bg-black/20 px-3 py-3 text-sm outline-none placeholder:text-white/25 focus:border-amber-300/40" />
+                <button type="button" disabled={!canSavePlaylist || playlistSaving} onClick={savePlaylist} className="inline-flex items-center justify-center gap-2 rounded-xl bg-amber-300 px-4 py-3 text-sm font-black text-black disabled:cursor-not-allowed disabled:opacity-30">
+                  <Save className="size-4" /> {playlistSaving ? "Saving…" : "Save playlist"}
+                </button>
+              </div>
+              {playlist && <p className="mt-3 truncate text-[10px] text-white/25">Saved: {playlist.title}</p>}
             </section>
 
             <section className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
@@ -127,9 +187,6 @@ export default function ClanMusicPage() {
                       <p className="truncate text-sm font-bold">{track.title}</p>
                       <p className="truncate text-[10px] text-white/30">Added by {track.addedBy}</p>
                     </div>
-                    <button type="button" onClick={() => openMusic(track.url)} className="grid size-9 place-items-center rounded-lg bg-white/[.05] text-white hover:bg-white/[.1]" aria-label={`Play ${track.title}`}>
-                      <Play className="size-4 fill-current" />
-                    </button>
                     <a href={track.url} target="_blank" rel="noreferrer" className="grid size-9 place-items-center rounded-lg bg-white/[.03] text-white/40 hover:text-white" aria-label="Open link">
                       <ExternalLink className="size-4" />
                     </a>
@@ -149,7 +206,7 @@ export default function ClanMusicPage() {
             </section>
 
             <p className="text-center text-[10px] text-white/20">
-              Clash IQ stores the playlist links. Playback and Google/YouTube Music login stay with each member's own YouTube Music app.
+              Clash IQ stores the shared playlist and song links. Playback and YouTube login stay with each member's own YouTube app.
             </p>
           </div>
         </main>
