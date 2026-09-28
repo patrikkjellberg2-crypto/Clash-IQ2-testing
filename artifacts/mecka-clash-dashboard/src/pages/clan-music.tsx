@@ -142,7 +142,7 @@ export default function ClanMusicPage() {
       }
       setYoutubeConnected(true);
       setYoutubePlaylistUrl(typeof body.playlistUrl === "string" ? body.playlistUrl : null);
-      setYoutubeMessage(`Klart — ${body.added ?? 0} låtar lades till i din YouTube-spellista.`);
+      setYoutubeMessage(`Synkat — ${body.added ?? 0} tillagda, ${body.removed ?? 0} borttagna och ${body.reordered ?? 0} flyttade.`);
     } catch (error) {
       setYoutubeMessage(error instanceof Error ? error.message : "Kunde inte spara spellistan till YouTube.");
     } finally {
@@ -271,7 +271,7 @@ export default function ClanMusicPage() {
 
             <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4 text-center">
               <p className="text-[11px] leading-5 text-white/35">
-                Spara spellistan till ditt eget YouTube-konto. Första gången ansluter du Google/YouTube, därefter kan Clash IQ synka klanens låtar till samma privata YouTube-spellista.
+                Clash IQ är huvudspellistan. När du väljer Spara till YouTube synkas din privata YouTube-spellista så att den matchar klanens lista — nya låtar läggs till, borttagna låtar tas bort och ordningen uppdateras. Första gången behöver du ansluta Google/YouTube.
               </p>
               {youtubeMessage && <p className="mt-2 text-[11px] font-bold text-amber-300">{youtubeMessage}</p>}
             </div>
