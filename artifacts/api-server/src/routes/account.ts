@@ -226,6 +226,36 @@ input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px 
    setTimeout(()=>location.reload(),700);
   }catch(e){box.classList.add("error");box.textContent=e.message||"Could not link the player.";$("connectButton").disabled=false;}
  };
+ const subscriptionPlans={free:{label:"Free",action:"Current plan"},premium:{label:"Premium",action:"Choose Premium"},clan_premium:{label:"Clan Premium",action:"Choose Clan Premium"},leader_premium:{label:"Leader Premium",action:"Choose Leader Premium"}};
+ async function loadSubscription(){
+  try{
+   const r=await fetch("/api/account/subscription",{credentials:"same-origin"}),data=await r.json();
+   if(!r.ok)return;
+   const plan=data.subscription?.plan||"free",meta=subscriptionPlans[plan]||subscriptionPlans.free;
+   $("plan").textContent=meta.label+" · "+(data.subscription?.status||"active");
+   document.querySelectorAll(".plan-card").forEach(card=>{
+    const active=card.dataset.plan===plan;card.classList.toggle("active",active);
+    const b=card.querySelector("[data-plan-action]");
+    if(b){b.textContent=active?"Current plan":(subscriptionPlans[card.dataset.plan]?.action||"Choose plan");b.classList.toggle("secondary",active);}
+   });
+  }catch(e){}
+ }
+ await loadSubscription();
+ document.querySelectorAll("[data-plan-action]").forEach(button=>{
+  button.addEventListener("click",async()=>{
+   const selected=button.dataset.planAction,box=$("planMessage");
+   box.classList.remove("hidden","success","error");
+   if(selected==="free"){box.classList.add("success");box.textContent="Free is the core Clash IQ plan.";return;}
+   button.disabled=true;box.textContent="Updating your test plan…";
+   try{
+    const r=await fetch("/api/account/subscription",{method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",body:JSON.stringify({plan:selected})});
+    const data=await r.json();if(!r.ok)throw new Error(data.message||"Could not update plan.");
+    box.classList.add("success");box.textContent="✓ Test plan changed to "+(subscriptionPlans[selected]?.label||selected)+". No payment was taken.";
+    await loadSubscription();
+   }catch(e){box.classList.add("error");box.textContent=e.message||"Could not update plan.";}
+   finally{button.disabled=false;}
+  });
+ });
  function normalize(v){const raw=String(v||"").trim().toUpperCase();return raw.startsWith("#")?raw:"#"+raw;}
 })();
 </script></body></html>`);
@@ -247,6 +277,20 @@ router.get("/api/account/subscription", async (req, res): Promise<void> => {
       updatedAt: row?.updated_at ?? null,
     },
   });
+});
+
+router.post("/api/account/subscription", async (req, res): Promise<void> => {
+  const session = getAuthenticatedSession(req);
+  if (!session) { res.status(401).json({ message: "You must be signed in." }); return; }
+  const allowedPlans = new Set(["free", "premium", "clan_premium", "leader_premium"]);
+  const plan = String(req.body?.plan ?? "").trim().toLowerCase();
+  if (!allowedPlans.has(plan)) { res.status(400).json({ message: "Invalid Clash IQ plan." }); return; }
+  const result = await pool.query(
+    "INSERT INTO clash_iq_accounts (google_sub, email, plan, status, updated_at) VALUES ($1, $2, $3, 'active', now()) ON CONFLICT (google_sub) DO UPDATE SET email=EXCLUDED.email, plan=EXCLUDED.plan, status='active', updated_at=now() RETURNING plan, status, updated_at",
+    [session.sub, session.email, plan],
+  );
+  const row = result.rows[0];
+  res.json({ updated: true, subscription: { plan: row.plan, status: row.status, updatedAt: row.updated_at } });
 });
 
 router.get("/api/account", async (req, res): Promise<void> => {
