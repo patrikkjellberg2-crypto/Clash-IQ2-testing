@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useGetClashDashboard } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { MemberDetailsDialog } from "@/components/member-details-dialog";
@@ -214,7 +214,7 @@ function WarCard({
           Current War
         </h2>
 
-        <span className="rounded-full bg-amber-400/20 px-3 py-1 text-[10px] font-bold text-amber-300">
+        <span className="rounded-full bg-amber-400/20 px-4 py-2 text-[12px] font-black uppercase tracking-[.12em] text-amber-300">
           {s(war.state, "Unknown")}
         </span>
       </div>
@@ -222,7 +222,7 @@ function WarCard({
       <div className="space-y-4 p-4">
         <WarTimer currentWar={war} />
         <div className="grid min-h-[235px] place-items-center p-1">
-        <div className="grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
+          <div className="grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
           <div>
             <div className="mx-auto grid size-16 place-items-center rounded-2xl border-2 border-amber-400 bg-amber-500/10 text-2xl font-bold text-amber-300">
               {n(own.clanLevel)}
@@ -272,7 +272,7 @@ function WarCard({
               %
             </p>
           </div>
-        </div>
+          </div>
         </div>
       </div>
     </article>
