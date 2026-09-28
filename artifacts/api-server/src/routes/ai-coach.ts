@@ -661,7 +661,7 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
 
 router.post("/ai/war-test", async (req, res) => {
   try {
-    const testHost = String(req.get("host") || "").toLowerCase().includes("clash-iq-builder-base-test.onrender.com");
+    const testHost = String(req.get("host") || "").toLowerCase().includes("clash-iq-builder-base-test.onrender.com") || String(req.get("host") || "").toLowerCase().includes("clash-iq2-testing.onrender.com");
     if (process.env.CLASHIQ_TEST_MODE !== "true" && !testHost) {
       return res.status(404).json({ error: "Not found" });
     }
