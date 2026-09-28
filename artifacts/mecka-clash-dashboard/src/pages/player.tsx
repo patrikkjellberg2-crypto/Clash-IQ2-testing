@@ -261,6 +261,7 @@ export default function PlayerPage() {
 
   const rankings = asDict(player?.rankings);
   const homeVillageRanking = asDict(rankings.homeVillage);
+  const builderBaseRanking = asDict(rankings.builderBase);
   const rankingLocation = asDict(rankings.location);
   const countryName = str(
     rankingLocation.name,
@@ -272,6 +273,8 @@ export default function PlayerPage() {
   );
   const worldRank = num(homeVillageRanking.globalRank);
   const countryRank = num(homeVillageRanking.localRank);
+  const builderWorldRank = num(builderBaseRanking.globalRank);
+  const builderCountryRank = num(builderBaseRanking.localRank);
 
   const localRank = num(
     member.clanRank,
@@ -500,7 +503,7 @@ export default function PlayerPage() {
                       </span>
                     </div>
 
-                    {(worldRank > 0 || countryRank > 0) && (
+                    {(worldRank > 0 || countryRank > 0 || builderWorldRank > 0 || builderCountryRank > 0) && (
                       <div className="mt-3 flex flex-wrap gap-2">
                         {worldRank > 0 && (
                           <span className="rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 py-1.5 text-xs font-black text-amber-200">
@@ -511,6 +514,18 @@ export default function PlayerPage() {
                         {countryRank > 0 && (
                           <span className="rounded-lg border border-emerald-400/15 bg-emerald-400/[0.05] px-3 py-1.5 text-xs font-black text-emerald-200">
                             {countryFlag(countryCode)} {countryName} #{countryRank.toLocaleString('en-US')}
+                          </span>
+                        )}
+
+                        {builderWorldRank > 0 && (
+                          <span className="rounded-lg border border-blue-400/20 bg-blue-400/[0.06] px-3 py-1.5 text-xs font-black text-blue-200">
+                            🔨 Builder World #{builderWorldRank.toLocaleString('en-US')}
+                          </span>
+                        )}
+
+                        {builderCountryRank > 0 && (
+                          <span className="rounded-lg border border-cyan-400/15 bg-cyan-400/[0.05] px-3 py-1.5 text-xs font-black text-cyan-200">
+                            {countryFlag(countryCode)} {countryName} BH #{builderCountryRank.toLocaleString('en-US')}
                           </span>
                         )}
                       </div>
