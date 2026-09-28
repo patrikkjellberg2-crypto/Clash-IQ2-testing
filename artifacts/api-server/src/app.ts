@@ -4,6 +4,8 @@ import fs from "node:fs";
 import cors from "cors";
 import pinoHttp from "pino-http";
 import router from "./routes";
+import authRouter from "./routes/auth";
+import accountRouter from "./routes/account";
 import { logger } from "./lib/logger";
 import { buildSecurity, corsOptionsDelegate, sameOriginOnly } from "./middlewares/security";
 
@@ -45,6 +47,11 @@ app.use("/api/ai", sameOriginOnly, security.aiPerMinute, security.aiPerDay, secu
 // Write endpoints (e.g. war planner assignments).
 app.use("/api", security.writes);
 app.use("/api/clash/war-planner", sameOriginOnly);
+
+// Public authentication/account routes must live at the site root so the
+// standalone Clash IQ website can use /auth/google and /account.
+app.use(authRouter);
+app.use(accountRouter);
 
 app.use("/api", router);
 
