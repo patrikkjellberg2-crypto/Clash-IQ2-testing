@@ -98,6 +98,30 @@ function readCookie(req: any, name: string): string | undefined {
   return undefined;
 }
 
+export type ClashIqSession = {
+  sub: string;
+  email: string;
+  name: string;
+  picture: string | null;
+  exp: number;
+};
+
+export function getAuthenticatedSession(req: any): ClashIqSession | null {
+  const config = getConfig();
+  if (!config || !config.testEmail) return null;
+
+  const session = unpack<ClashIqSession>(
+    readCookie(req, COOKIE_NAME),
+    config.sessionSecret,
+  );
+
+  if (!session || session.exp < Date.now() || session.email !== config.testEmail) {
+    return null;
+  }
+
+  return session;
+}
+
 function safeReturnTo(value: unknown): string {
   if (typeof value !== "string" || !value) return DEFAULT_REDIRECT;
   try {
@@ -243,15 +267,9 @@ router.get("/api/me", (req, res): void => {
     return;
   }
 
-  const session = unpack<{
-    sub: string;
-    email: string;
-    name: string;
-    picture: string | null;
-    exp: number;
-  }>(readCookie(req, COOKIE_NAME), config.sessionSecret);
+  const session = getAuthenticatedSession(req);
 
-  if (!session || session.exp < Date.now() || session.email !== config.testEmail) {
+  if (!session) {
     res.json({ authenticated: false, configured: true });
     return;
   }
