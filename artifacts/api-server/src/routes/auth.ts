@@ -5,7 +5,7 @@ const router: IRouter = Router();
 
 const COOKIE_NAME = "clashiq_session";
 const STATE_COOKIE = "clashiq_oauth_state";
-const DEFAULT_REDIRECT = "/";
+const DEFAULT_REDIRECT = "/account";
 const SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 type GoogleUser = {
