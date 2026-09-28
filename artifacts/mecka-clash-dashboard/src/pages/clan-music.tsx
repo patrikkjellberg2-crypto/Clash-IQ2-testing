@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AppSidebar } from "@/components/app-sidebar";
 import { useGetClashDashboard } from "@workspace/api-client-react";
-import { Plus, Trash2, ExternalLink, Headphones, ListMusic, Download, Youtube } from "lucide-react";
+import { Plus, Trash2, ExternalLink, Headphones, Download, Youtube } from "lucide-react";
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => (v && typeof v === "object" ? v as Dict : {});
