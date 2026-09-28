@@ -22,13 +22,25 @@ function isMusicUrl(value: string) {
   } catch { return false; }
 }
 
+async function getYoutubeTitle(url: string) {
+  try {
+    const endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`;
+    const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
+    if (!response.ok) return "";
+    const body = await response.json() as { title?: unknown };
+    return cleanText(body.title, 160);
+  } catch {
+    return "";
+  }
+}
+
 let ready: Promise<void> | null = null;
 function ensureTable() {
   if (!ready) {
     ready = (async () => {
       await pool.query("CREATE TABLE IF NOT EXISTS clan_music_tracks (id BIGSERIAL PRIMARY KEY, clan_tag TEXT NOT NULL, title TEXT NOT NULL, url TEXT NOT NULL, added_by TEXT NOT NULL DEFAULT $$Clan member$$, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
       await pool.query("CREATE INDEX IF NOT EXISTS clan_music_tracks_clan_idx ON clan_music_tracks (clan_tag, created_at DESC)");
-      await pool.query("CREATE TABLE IF NOT EXISTS clan_music_playlists (clan_tag TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT $Clan Playlist$, url TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
+      await pool.query("CREATE TABLE IF NOT EXISTS clan_music_playlists (clan_tag TEXT PRIMARY KEY, title TEXT NOT NULL DEFAULT $$Clan Playlist$$, url TEXT NOT NULL, updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW())");
     })().catch((error) => { ready = null; throw error; });
   }
   return ready;
@@ -70,15 +82,15 @@ router.get("/clash/music", async (req, res): Promise<void> => {
 router.post("/clash/music", async (req, res): Promise<void> => {
   try {
     const clanTag = normalizeTag(req.body?.clanTag);
-    const title = cleanText(req.body?.title, 160);
     const url = cleanText(req.body?.url, 500);
     const addedBy = cleanText(req.body?.addedBy, 80) || "Clan member";
-    if (!clanTag || !title || !url) { res.status(400).json({ error: "clanTag, title and url are required" }); return; }
+    if (!clanTag || !url) { res.status(400).json({ error: "clanTag and url are required" }); return; }
     if (!isMusicUrl(url)) { res.status(400).json({ error: "Only YouTube or YouTube Music links are allowed" }); return; }
+    const title = await getYoutubeTitle(url);
+    if (!title) { res.status(400).json({ error: "Could not read the YouTube song title. Check that the link is a public video." }); return; }
     await ensureTable();
     const { rows } = await pool.query("INSERT INTO clan_music_tracks (clan_tag, title, url, added_by) VALUES ($1, $2, $3, $4) RETURNING id, clan_tag AS \"clanTag\", title, url, added_by AS \"addedBy\", created_at AS \"createdAt\"", [clanTag, title, url, addedBy]);
-    const row = rows[0];
-    res.status(201).json(row as unknown as Track);
+    res.status(201).json(rows[0] as unknown as Track);
   } catch (error) { req.log.error({ err: error }, "Failed to add clan music"); res.status(503).json({ error: "The song could not be added." }); }
 });
 
