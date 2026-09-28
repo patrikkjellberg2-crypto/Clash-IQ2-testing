@@ -229,18 +229,18 @@ export default function WarTimer({
               ClashIQ War Timer
             </p>
 
-            <p className="mt-1 text-lg font-black uppercase tracking-tight text-white">
+            <p className="mt-1 text-2xl font-black uppercase leading-none tracking-tight text-white md:text-3xl">
               {isPreparation ? 'Preparation Day' : 'War Day'}
             </p>
 
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-[.16em] text-white/40">
+            <p className="mt-2 text-[10px] font-black uppercase tracking-[.18em] text-white/40">
               {isPreparation ? 'War starts in' : 'War ends in'}
             </p>
           </div>
         </div>
 
         <div className="sm:text-right">
-          <p className="font-mono text-3xl font-black tracking-tight text-white md:text-4xl">
+          <p className="font-mono text-4xl font-black tracking-tight text-white md:text-5xl">
             {countdown}
           </p>
 
