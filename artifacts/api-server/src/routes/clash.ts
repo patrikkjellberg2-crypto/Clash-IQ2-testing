@@ -487,6 +487,37 @@ async function fetchOptionalResource(
   }
 }
 
+/**
+ * Official Supercell ranking endpoints are used as a fallback when ClashKing
+ * has no stored rank for a player. We only accept an exact leaderboard match;
+ * no rank is ever calculated or guessed locally.
+ */
+async function fetchOfficialPlayerRank(
+  path: string,
+  tag: string,
+  log: { warn: (obj: object, message: string) => void },
+): Promise<number | null> {
+  const result = await fetchOptionalResource(
+    `${path}?limit=200`,
+    [],
+    log,
+  );
+
+  const items = listItems(result.data);
+  const match = items.find(
+    (item) =>
+      normalizeAttackerTag(String(item.tag ?? "")) ===
+      normalizeAttackerTag(tag),
+  );
+
+  const value =
+    typeof match?.rank === "number"
+      ? match.rank
+      : Number(match?.rank);
+
+  return Number.isFinite(value) && value > 0 ? value : null;
+}
+
 /* -------------------------------------------------------------------------- */
 /* Legacy clan-cache compatibility                                             */
 /* -------------------------------------------------------------------------- */
@@ -1413,7 +1444,9 @@ router.get(
       }
 
       // ClashKing provides the player's current global and country ranking
-      // directly, including the country associated with the player profile.
+      // directly. If a rank is missing, fall back to the official Supercell
+      // leaderboard endpoints and accept only an exact player match. This keeps
+      // ranking data authoritative and avoids any locally calculated guesses.
       const rankingsResult = await fetchOptionalClashKingResource(
         `/v2/player/${encodedTag}/rankings`,
         null,
@@ -1424,9 +1457,6 @@ router.get(
           ? rankingsResult.data
           : null;
 
-      // Normalize ClashKing ranking values at the API boundary. Some cached
-      // responses can serialize numeric ranks as strings; Player Cards should
-      // receive one stable shape regardless of the upstream representation.
       const rankingValue = (value: unknown): number | null => {
         const n = typeof value === "number" ? value : Number(value);
         return Number.isFinite(n) && n > 0 ? n : null;
@@ -1445,28 +1475,68 @@ router.get(
           ? rawRankings.location as ClashRecord
           : null;
 
-      const rankings = rawRankings
-        ? {
-            tag: String(rawRankings.tag ?? tag),
-            homeVillage: {
-              trophies: rankingValue(rawHomeRanking?.trophies),
-              globalRank: rankingValue(rawHomeRanking?.globalRank),
-              localRank: rankingValue(rawHomeRanking?.localRank),
-            },
-            builderBase: {
-              trophies: rankingValue(rawBuilderRanking?.trophies),
-              globalRank: rankingValue(rawBuilderRanking?.globalRank),
-              localRank: rankingValue(rawBuilderRanking?.localRank),
-            },
-            location: {
-              id: rankingValue(rawLocation?.id),
-              name: String(rawLocation?.name ?? ""),
-              isCountry: Boolean(rawLocation?.isCountry),
-              countryCode: String(rawLocation?.countryCode ?? ""),
-              localizedName: String(rawLocation?.localizedName ?? ""),
-            },
-          }
-        : null;
+      const playerLocation =
+        player.location && typeof player.location === "object"
+          ? player.location as ClashRecord
+          : null;
+      const locationId = rankingValue(playerLocation?.id);
+      const needsHomeGlobal = rankingValue(rawHomeRanking?.globalRank) === null;
+      const needsHomeLocal = rankingValue(rawHomeRanking?.localRank) === null;
+      const needsBuilderGlobal = rankingValue(rawBuilderRanking?.globalRank) === null;
+      const needsBuilderLocal = rankingValue(rawBuilderRanking?.localRank) === null;
+
+      const [officialHomeGlobal, officialHomeLocal, officialBuilderGlobal, officialBuilderLocal] =
+        await Promise.all([
+          needsHomeGlobal
+            ? fetchOfficialPlayerRank(
+                "/locations/global/rankings/players",
+                tag,
+                req.log,
+              )
+            : Promise.resolve(null),
+          needsHomeLocal && locationId !== null
+            ? fetchOfficialPlayerRank(
+                `/locations/${locationId}/rankings/players`,
+                tag,
+                req.log,
+              )
+            : Promise.resolve(null),
+          needsBuilderGlobal
+            ? fetchOfficialPlayerRank(
+                "/locations/global/rankings/players-builder-base",
+                tag,
+                req.log,
+              )
+            : Promise.resolve(null),
+          needsBuilderLocal && locationId !== null
+            ? fetchOfficialPlayerRank(
+                `/locations/${locationId}/rankings/players-builder-base`,
+                tag,
+                req.log,
+              )
+            : Promise.resolve(null),
+        ]);
+
+      const rankings = {
+        tag: String(rawRankings?.tag ?? tag),
+        homeVillage: {
+          trophies: rankingValue(rawHomeRanking?.trophies),
+          globalRank: rankingValue(rawHomeRanking?.globalRank) ?? officialHomeGlobal,
+          localRank: rankingValue(rawHomeRanking?.localRank) ?? officialHomeLocal,
+        },
+        builderBase: {
+          trophies: rankingValue(rawBuilderRanking?.trophies),
+          globalRank: rankingValue(rawBuilderRanking?.globalRank) ?? officialBuilderGlobal,
+          localRank: rankingValue(rawBuilderRanking?.localRank) ?? officialBuilderLocal,
+        },
+        location: {
+          id: rankingValue(rawLocation?.id) ?? locationId,
+          name: String(rawLocation?.name ?? playerLocation?.name ?? ""),
+          isCountry: Boolean(rawLocation?.isCountry ?? playerLocation?.isCountry),
+          countryCode: String(rawLocation?.countryCode ?? playerLocation?.countryCode ?? ""),
+          localizedName: String(rawLocation?.localizedName ?? playerLocation?.localizedName ?? ""),
+        },
+      };
 
       const archivedHistory = await getPlayerWarHistory(clanTag, tag, 50);
       const recentActivityWars = archivedHistory.slice(0, 10);
