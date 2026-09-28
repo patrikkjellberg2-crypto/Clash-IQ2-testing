@@ -98,6 +98,241 @@ async function clashFetch(path: string, fallback: any = null) {
   return await fetchClashKingFallback(path);
 }
 
+
+type WarTestScenario = {
+  id: string;
+  label: string;
+  expected: string;
+  currentWar: Dict;
+};
+
+const WAR_TEST_SCENARIOS: WarTestScenario[] = [
+  {
+    id: "no-attacks",
+    label: "01 · No attacks",
+    expected: "No individual enemy should be called an active threat.",
+    currentWar: {
+      state: "inWar",
+      teamSize: 5,
+      attacksPerMember: 2,
+      clan: {
+        tag: "#2Q0Q82C9R",
+        name: "BHABE DHEMONS",
+        stars: 8,
+        destructionPercentage: 72.4,
+        attacks: 4,
+        members: [
+          { mapPosition: 1, name: "Alpha", townhallLevel: 18, attacks: [] },
+          { mapPosition: 2, name: "Bravo", townhallLevel: 17, attacks: [] },
+          { mapPosition: 3, name: "Charlie", townhallLevel: 17, attacks: [] },
+          { mapPosition: 4, name: "Delta", townhallLevel: 16, attacks: [] },
+          { mapPosition: 5, name: "Echo", townhallLevel: 15, attacks: [] },
+        ],
+      },
+      opponent: {
+        tag: "#TESTENEMY1",
+        name: "Test Opponent",
+        stars: 7,
+        destructionPercentage: 69.1,
+        attacks: 0,
+        members: [
+          { mapPosition: 1, name: "rudy", townhallLevel: 18, attacks: [] },
+          { mapPosition: 2, name: "Jc Jan", townhallLevel: 18, attacks: [] },
+          { mapPosition: 3, name: "Weak_new", townhallLevel: 17, attacks: [] },
+          { mapPosition: 4, name: "Flamingo", townhallLevel: 15, attacks: [] },
+          { mapPosition: 5, name: "nas", townhallLevel: 15, attacks: [] },
+        ],
+      },
+    },
+  },
+  {
+    id: "active-th18",
+    label: "02 · Active TH18 threat",
+    expected: "rudy should be identified from his recorded 3-star/100% attack, not merely his TH18 level.",
+    currentWar: {
+      state: "inWar",
+      teamSize: 5,
+      attacksPerMember: 2,
+      clan: {
+        tag: "#2Q0Q82C9R",
+        name: "BHABE DHEMONS",
+        stars: 7,
+        destructionPercentage: 65,
+        attacks: 5,
+        members: [
+          { mapPosition: 1, name: "Alpha", townhallLevel: 18, attacks: [] },
+          { mapPosition: 2, name: "Bravo", townhallLevel: 17, attacks: [] },
+          { mapPosition: 3, name: "Charlie", townhallLevel: 17, attacks: [] },
+          { mapPosition: 4, name: "Delta", townhallLevel: 16, attacks: [] },
+          { mapPosition: 5, name: "Echo", townhallLevel: 15, attacks: [] },
+        ],
+      },
+      opponent: {
+        tag: "#TESTENEMY1",
+        name: "Test Opponent",
+        stars: 9,
+        destructionPercentage: 88.2,
+        attacks: 5,
+        members: [
+          { mapPosition: 1, name: "rudy", townhallLevel: 18, attacks: [
+            { defender: { mapPosition: 1 }, stars: 3, destructionPercentage: 100 },
+          ] },
+          { mapPosition: 2, name: "Jc Jan", townhallLevel: 18, attacks: [
+            { defender: { mapPosition: 2 }, stars: 1, destructionPercentage: 63 },
+          ] },
+          { mapPosition: 3, name: "Weak_new", townhallLevel: 17, attacks: [
+            { defender: { mapPosition: 3 }, stars: 2, destructionPercentage: 78 },
+          ] },
+          { mapPosition: 4, name: "Flamingo", townhallLevel: 15, attacks: [] },
+          { mapPosition: 5, name: "nas", townhallLevel: 15, attacks: [] },
+        ],
+      },
+    },
+  },
+  {
+    id: "lower-th-outperforms",
+    label: "03 · TH15 outperforms TH18",
+    expected: "Flamingo should receive more threat attention than the inactive TH18 players because Flamingo has the strongest recorded attack.",
+    currentWar: {
+      state: "inWar",
+      teamSize: 5,
+      attacksPerMember: 2,
+      clan: {
+        tag: "#2Q0Q82C9R",
+        name: "BHABE DHEMONS",
+        stars: 9,
+        destructionPercentage: 81,
+        attacks: 6,
+        members: [
+          { mapPosition: 1, name: "Alpha", townhallLevel: 18, attacks: [] },
+          { mapPosition: 2, name: "Bravo", townhallLevel: 17, attacks: [] },
+          { mapPosition: 3, name: "Charlie", townhallLevel: 17, attacks: [] },
+          { mapPosition: 4, name: "Delta", townhallLevel: 16, attacks: [] },
+          { mapPosition: 5, name: "Echo", townhallLevel: 15, attacks: [] },
+        ],
+      },
+      opponent: {
+        tag: "#TESTENEMY1",
+        name: "Test Opponent",
+        stars: 8,
+        destructionPercentage: 79.5,
+        attacks: 6,
+        members: [
+          { mapPosition: 1, name: "rudy", townhallLevel: 18, attacks: [] },
+          { mapPosition: 2, name: "Jc Jan", townhallLevel: 18, attacks: [] },
+          { mapPosition: 3, name: "Weak_new", townhallLevel: 17, attacks: [
+            { defender: { mapPosition: 3 }, stars: 1, destructionPercentage: 55 },
+          ] },
+          { mapPosition: 4, name: "Flamingo", townhallLevel: 15, attacks: [
+            { defender: { mapPosition: 4 }, stars: 3, destructionPercentage: 100 },
+            { defender: { mapPosition: 5 }, stars: 3, destructionPercentage: 100 },
+          ] },
+          { mapPosition: 5, name: "nas", townhallLevel: 15, attacks: [] },
+        ],
+      },
+    },
+  },
+  {
+    id: "remaining-attacks",
+    label: "04 · Remaining attack risk",
+    expected: "Threat assessment should mention the enemy has substantial unused attack capacity; inactive players are potential future threats, not active attackers.",
+    currentWar: {
+      state: "inWar",
+      teamSize: 5,
+      attacksPerMember: 2,
+      clan: {
+        tag: "#2Q0Q82C9R",
+        name: "BHABE DHEMONS",
+        stars: 10,
+        destructionPercentage: 86,
+        attacks: 8,
+        members: [
+          { mapPosition: 1, name: "Alpha", townhallLevel: 18, attacks: [
+            { defender: { mapPosition: 1 }, stars: 3, destructionPercentage: 100 },
+          ] },
+          { mapPosition: 2, name: "Bravo", townhallLevel: 17, attacks: [] },
+          { mapPosition: 3, name: "Charlie", townhallLevel: 17, attacks: [] },
+          { mapPosition: 4, name: "Delta", townhallLevel: 16, attacks: [] },
+          { mapPosition: 5, name: "Echo", townhallLevel: 15, attacks: [] },
+        ],
+      },
+      opponent: {
+        tag: "#TESTENEMY1",
+        name: "Test Opponent",
+        stars: 7,
+        destructionPercentage: 70,
+        attacks: 2,
+        members: [
+          { mapPosition: 1, name: "rudy", townhallLevel: 18, attacks: [] },
+          { mapPosition: 2, name: "Jc Jan", townhallLevel: 18, attacks: [] },
+          { mapPosition: 3, name: "Weak_new", townhallLevel: 17, attacks: [] },
+          { mapPosition: 4, name: "Flamingo", townhallLevel: 15, attacks: [
+            { defender: { mapPosition: 4 }, stars: 2, destructionPercentage: 74 },
+          ] },
+          { mapPosition: 5, name: "nas", townhallLevel: 15, attacks: [] },
+        ],
+      },
+    },
+  },
+  {
+    id: "near-finished",
+    label: "05 · Nearly decided",
+    expected: "AI should focus on the concrete board state and not invent a dramatic threat when the enemy has no attacks remaining.",
+    currentWar: {
+      state: "inWar",
+      teamSize: 5,
+      attacksPerMember: 2,
+      clan: {
+        tag: "#2Q0Q82C9R",
+        name: "BHABE DHEMONS",
+        stars: 14,
+        destructionPercentage: 96.8,
+        attacks: 9,
+        members: [
+          { mapPosition: 1, name: "Alpha", townhallLevel: 18, attacks: [] },
+          { mapPosition: 2, name: "Bravo", townhallLevel: 17, attacks: [] },
+          { mapPosition: 3, name: "Charlie", townhallLevel: 17, attacks: [] },
+          { mapPosition: 4, name: "Delta", townhallLevel: 16, attacks: [] },
+          { mapPosition: 5, name: "Echo", townhallLevel: 15, attacks: [] },
+        ],
+      },
+      opponent: {
+        tag: "#TESTENEMY1",
+        name: "Test Opponent",
+        stars: 9,
+        destructionPercentage: 82.3,
+        attacks: 10,
+        members: [
+          { mapPosition: 1, name: "rudy", townhallLevel: 18, attacks: [
+            { defender: { mapPosition: 1 }, stars: 2, destructionPercentage: 74 },
+            { defender: { mapPosition: 2 }, stars: 1, destructionPercentage: 57 },
+          ] },
+          { mapPosition: 2, name: "Jc Jan", townhallLevel: 18, attacks: [
+            { defender: { mapPosition: 2 }, stars: 2, destructionPercentage: 82 },
+            { defender: { mapPosition: 3 }, stars: 1, destructionPercentage: 48 },
+          ] },
+          { mapPosition: 3, name: "Weak_new", townhallLevel: 17, attacks: [
+            { defender: { mapPosition: 3 }, stars: 2, destructionPercentage: 76 },
+            { defender: { mapPosition: 4 }, stars: 1, destructionPercentage: 51 },
+          ] },
+          { mapPosition: 4, name: "Flamingo", townhallLevel: 15, attacks: [
+            { defender: { mapPosition: 4 }, stars: 2, destructionPercentage: 73 },
+            { defender: { mapPosition: 5 }, stars: 1, destructionPercentage: 49 },
+          ] },
+          { mapPosition: 5, name: "nas", townhallLevel: 15, attacks: [
+            { defender: { mapPosition: 5 }, stars: 1, destructionPercentage: 61 },
+            { defender: { mapPosition: 1 }, stars: 0, destructionPercentage: 32 },
+          ] },
+        ],
+      },
+    },
+  },
+];
+
+function getWarTestScenario(id: string) {
+  return WAR_TEST_SCENARIOS.find((scenario) => scenario.id === id) || null;
+}
+
 function number(value: any, fallback = 0) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
@@ -422,6 +657,80 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
     return res.status(500).json({ error: message });
   }
 }
+
+
+router.post("/ai/war-test", async (req, res) => {
+  try {
+    if (process.env.CLASHIQ_TEST_MODE !== "true") {
+      return res.status(404).json({ error: "Not found" });
+    }
+
+    const scenarioId = typeof req.body?.scenario === "string" ? req.body.scenario : "";
+    const scenario = getWarTestScenario(scenarioId);
+    if (!scenario) {
+      return res.status(400).json({
+        error: "Unknown war test scenario.",
+        scenarios: WAR_TEST_SCENARIOS.map(({ id, label, expected }) => ({ id, label, expected })),
+      });
+    }
+
+    const question = typeof req.body?.question === "string"
+      ? req.body.question.slice(0, 1000)
+      : "Identify the current enemy threat. Use only recorded attacks and current war state. If there is no active threat, say so clearly.";
+
+    const data = {
+      clan: {
+        tag: "#2Q0Q82C9R",
+        name: "BHABE DHEMONS",
+        clanLevel: 18,
+        members: scenario.currentWar.clan.members.length,
+        warWins: 0,
+        warLosses: 0,
+        warWinStreak: 0,
+        warLeague: { name: "Test League" },
+        capitalLeague: { name: "Test Capital" },
+        clanPoints: 0,
+        clanCapitalPoints: 0,
+        memberList: scenario.currentWar.clan.members.map((member: Dict) => ({
+          name: member.name,
+          townHallLevel: member.townhallLevel,
+          clanRank: member.mapPosition,
+          trophies: 0,
+          donations: 0,
+          donationsReceived: 0,
+          league: { name: "Test" },
+        })),
+      },
+      clanTag: "#2Q0Q82C9R",
+      currentWar: scenario.currentWar,
+      warlog: [],
+      capital: [],
+    };
+
+    const prompt = buildPrompt(data, "opponent", question);
+    if (prompt.length > MAX_PROMPT_CHARS) {
+      throw new Error(`AI war test data exceeded the safety limit (${prompt.length} characters).`);
+    }
+
+    const answer = await callGemini(prompt);
+    return res.json({
+      scenario: scenario.id,
+      label: scenario.label,
+      expected: scenario.expected,
+      answer,
+    });
+  } catch (error: any) {
+    console.error("AI War Test error:", error);
+    const message = error?.message || "AI War Test failed";
+    if (isBusyError(error)) {
+      return res.status(503).json({
+        error: "The AI is overloaded right now. Please wait a moment and try the scenario again.",
+        detail: message,
+      });
+    }
+    return res.status(500).json({ error: message });
+  }
+});
 
 router.post("/ai/coach", (req, res) => handleCoach(req, res, false));
 router.post("/ai/chatgpt/coach", (req, res) => handleCoach(req, res, true));
