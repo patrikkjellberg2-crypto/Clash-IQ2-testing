@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { FormEvent } from "react";
 import { useGetClashDashboard } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { MemberDetailsDialog } from "@/components/member-details-dialog";
+import WarTimer from "@/components/WarTimer";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   ArrowRight,
@@ -15,7 +15,6 @@ import {
   Gem,
   Medal,
   RefreshCw,
-  Search,
   ShieldAlert,
   Swords,
   Trophy,
@@ -220,7 +219,9 @@ function WarCard({
         </span>
       </div>
 
-      <div className="grid min-h-[235px] place-items-center p-5">
+      <div className="space-y-4 p-4">
+        <WarTimer currentWar={war} />
+        <div className="grid min-h-[235px] place-items-center p-1">
         <div className="grid w-full max-w-xl grid-cols-[1fr_auto_1fr] items-center gap-3 text-center">
           <div>
             <div className="mx-auto grid size-16 place-items-center rounded-2xl border-2 border-amber-400 bg-amber-500/10 text-2xl font-bold text-amber-300">
@@ -271,6 +272,7 @@ function WarCard({
               %
             </p>
           </div>
+        </div>
         </div>
       </div>
     </article>
@@ -459,20 +461,10 @@ function EnemyAnalysisIntro({
 }
 
 export default function DashboardPage() {
-  const [requested, setRequested] =
-    useState<string | undefined>();
-
-  const [input, setInput] = useState("");
-
-  const [searchError, setSearchError] =
-    useState<string | null>(null);
-
   const [selected, setSelected] =
     useState<Dict | null>(null);
 
   const [activityPlayers, setActivityPlayers] = useState<Dict[]>([]);
-
-  const initialized = useRef(false);
 
   const {
     data,
@@ -481,19 +473,16 @@ export default function DashboardPage() {
     refetch,
     isFetching,
     dataUpdatedAt,
-  } = useGetClashDashboard(
-    requested
-      ? { clanTag: requested }
-      : undefined,
-  );
+  } = useGetClashDashboard();
 
   const dash =
     data as unknown as DashboardShape | undefined;
 
   useEffect(() => {
-    if (!requested) return;
+    const activeClanTag = dash?.clanTag;
+    if (!activeClanTag) return;
     let cancelled = false;
-    fetch(`/api/clash/activity?clanTag=${encodeURIComponent(requested)}`)
+    fetch(`/api/clash/activity?clanTag=${encodeURIComponent(activeClanTag)}`)
       .then(response => response.ok ? response.json() : null)
       .then(payload => {
         if (!cancelled && payload && Array.isArray(payload.players)) {
@@ -504,7 +493,7 @@ export default function DashboardPage() {
         if (!cancelled) setActivityPlayers([]);
       });
     return () => { cancelled = true; };
-  }, [requested]);
+  }, [dash?.clanTag]);
 
   const members = useMemo(
     () =>
@@ -515,16 +504,6 @@ export default function DashboardPage() {
       ),
     [dash?.members],
   );
-
-  useEffect(() => {
-    if (
-      dash?.clanTag &&
-      !initialized.current
-    ) {
-      setInput(dash.clanTag);
-      initialized.current = true;
-    }
-  }, [dash?.clanTag]);
 
   if (isLoading) {
     return <Loading />;
@@ -590,34 +569,6 @@ export default function DashboardPage() {
     clan.name,
     "Clash IQ",
   );
-
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-
-    const tag = input
-      .trim()
-      .toUpperCase()
-      .replace(/^#?/, "#");
-
-    if (
-      !/^#[A-Z0-9]{3,15}$/.test(tag)
-    ) {
-      setSearchError(
-        "Enter a valid clan tag, for example #2Q0Q82C9R.",
-      );
-
-      return;
-    }
-
-    setSearchError(null);
-
-    if (tag === dash.clanTag) {
-      void refetch();
-      return;
-    }
-
-    setRequested(tag);
-};
 
   return (
     <div className="clashiq-overview min-h-screen bg-[#07090d] text-white">
@@ -709,41 +660,6 @@ export default function DashboardPage() {
                 </div>
               </div>
             </section>
-
-            <form
-              onSubmit={submit}
-              className="w-full"
-            >
-              <div className="flex w-full items-center gap-3 rounded-2xl border border-sky-300/25 bg-white/[.05] px-4 shadow-[0_10px_30px_rgba(0,0,0,.25)] focus-within:border-amber-300/60">
-                <Search className="size-6 shrink-0 text-slate-400" />
-
-                <input
-                  value={input}
-                  onChange={e =>
-                    setInput(e.target.value)
-                  }
-                  placeholder="Enter clan tag, e.g. #2Q0Q82C9R"
-                  autoCapitalize="characters"
-                  autoCorrect="off"
-                  spellCheck={false}
-                  className="h-16 min-w-0 flex-1 bg-transparent text-lg font-semibold tracking-wide outline-none placeholder:font-normal placeholder:text-slate-500 md:text-xl"
-                />
-
-                <button
-                  type="submit"
-                  aria-label="Search clan"
-                  className="grid size-11 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground transition hover:brightness-110"
-                >
-                  <ArrowRight className="size-5" />
-                </button>
-              </div>
-
-              {searchError && (
-                <p className="mt-2 px-1 text-sm text-red-300">
-                  {searchError}
-                </p>
-              )}
-            </form>
 
                         <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-6">
               <Stat
@@ -1033,10 +949,14 @@ export default function DashboardPage() {
                         ).toLowerCase() ===
                         "won";
 
+                      const warId =
+                        `${dash.clanTag}__${s(opponent.tag)}__${s(w.endTime)}`;
+
                       return (
-                        <div
+                        <Link
                           key={i}
-                          className="flex items-center gap-3 px-5 py-3"
+                          href={`/war-archive?war=${encodeURIComponent(warId)}`}
+                          className="flex items-center gap-3 px-5 py-3 transition hover:bg-white/[.03]"
                         >
                           <span
                             className={`grid size-8 place-items-center rounded-lg ${
@@ -1064,7 +984,7 @@ export default function DashboardPage() {
                             <p className="text-[10px] text-muted-foreground">
                               {dateText(
                                 w.endTime,
-                              )}
+                              )} · Click to open
                             </p>
                           </div>
 
@@ -1077,7 +997,7 @@ export default function DashboardPage() {
                               opponent.stars,
                             )}
                           </p>
-                        </div>
+                        </Link>
                       );
                     })}
                 </div>
