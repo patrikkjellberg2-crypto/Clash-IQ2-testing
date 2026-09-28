@@ -277,7 +277,7 @@ router.get("/clash/music/youtube/callback", async (req, res): Promise<void> => {
   try {
     if (req.query.error) {
       clearCookie(res, STATE_COOKIE);
-      res.redirect("/clan-music?youtube=denied");
+      res.redirect("/music?youtube=denied");
       return;
     }
     const cookies = parseCookies(req.headers.cookie);
@@ -306,11 +306,11 @@ router.get("/clash/music/youtube/callback", async (req, res): Promise<void> => {
     }
     await saveConnection(connectionId, tokens.refresh_token, null);
     clearCookie(res, STATE_COOKIE);
-    res.redirect("/clan-music?youtube=connected");
+    res.redirect("/music?youtube=connected");
   } catch (error) {
     req.log.error({ err: error }, "YouTube OAuth callback failed");
     clearCookie(res, STATE_COOKIE);
-    res.redirect("/clan-music?youtube=error");
+    res.redirect("/music?youtube=error");
   }
 });
 
