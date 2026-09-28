@@ -17,7 +17,7 @@ const PlayerPage = lazy(() => import('@/pages/player'));
 const CapitalRaidsPage = lazy(() => import('@/pages/capital-raids'));
 const AICoachPage = lazy(() => import('@/pages/ai-coach'));
 const StatisticsPage = lazy(() => import('@/pages/statistics'));
-const SettingsPage = lazy(() => import('@/pages/settings'));
+import SettingsPage from '@/pages/settings';
 const VillagePage = lazy(() => import('@/pages/village'));
 const WarArchivePage = lazy(() => import('@/pages/war-archive'));
 const WarChatPage = lazy(() => import('@/pages/war-chat'));
@@ -80,18 +80,9 @@ function Router() {
   );
 }
 
-function RoutedErrorBoundary({
-  children,
-}: {
-  children: ReactNode;
-}) {
+function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   const [location] = useLocation();
-
-  return (
-    <ErrorBoundary resetKey={location}>
-      {children}
-    </ErrorBoundary>
-  );
+  return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
 function ClashIQPreferences() {
@@ -110,18 +101,12 @@ function ClashIQPreferences() {
 
     const handleSettingsChanged = (event: Event) => {
       const detail = (event as CustomEvent<{ compactMode?: boolean; soundEffects?: boolean }>).detail;
-      applySettings({
-        compactMode: Boolean(detail.compactMode),
-        soundEffects: Boolean(detail.soundEffects),
-      });
+      applySettings({ compactMode: Boolean(detail.compactMode), soundEffects: Boolean(detail.soundEffects) });
     };
 
     void fetch('/api/settings', { headers: { Accept: 'application/json' } })
       .then((response) => response.ok ? response.json() : Promise.reject(new Error('settings unavailable')))
-      .then((data) => applySettings({
-        compactMode: Boolean(data.compactMode),
-        soundEffects: Boolean(data.soundEffects),
-      }))
+      .then((data) => applySettings({ compactMode: Boolean(data.compactMode), soundEffects: Boolean(data.soundEffects) }))
       .catch(() => {
         if (!cancelled) applySettings({ compactMode: false, soundEffects: false });
       });
@@ -133,14 +118,12 @@ function ClashIQPreferences() {
           window.AudioContext ||
           (window as typeof window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
         if (!AudioContextCtor) return;
-
         let context = audioContextRef.current;
         if (!context) {
           context = new AudioContextCtor();
           audioContextRef.current = context;
         }
         if (context.state === 'suspended') void context.resume();
-
         const oscillator = context.createOscillator();
         const gain = context.createGain();
         const now = context.currentTime;
@@ -154,9 +137,7 @@ function ClashIQPreferences() {
         gain.connect(context.destination);
         oscillator.start(now);
         oscillator.stop(now + 0.095);
-      } catch {
-        // Audio is optional enhancement; never let it break the UI.
-      }
+      } catch {}
     };
 
     const handleClick = (event: MouseEvent) => {
@@ -187,15 +168,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ClashIQPreferences />
       <TooltipProvider>
-        <WouterRouter
-          base={import.meta.env.BASE_URL.replace(/\/$/, '')}
-        >
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <Router />
         </WouterRouter>
-
         <WarArchiver />
         <MemberDetailsOverlay />
-
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
