@@ -25,10 +25,17 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
   const activity = asDict(member.activity);
   const rankings = asDict(member.rankings);
   const homeVillageRanking = asDict(rankings.homeVillage);
+  const legendStatistics = asDict(member.legendStatistics);
+  const currentSeason = asDict(legendStatistics.currentSeason);
   const rankingLocation = asDict(rankings.location);
-  // Only show an actual leaderboard rank supplied by the ranking payload.
-  // Legend season ranks are not used as a substitute for the global leaderboard.
-  const worldRank = rankingNumber(homeVillageRanking.globalRank);
+  // Prefer the real current global leaderboard rank. If that feed does not
+  // contain a rank, preserve the previous Player Card behavior by showing
+  // the player's current Legend/Ranked season position as a clearly-labelled
+  // fallback. This is not treated as a trophy leaderboard rank.
+  const leaderboardWorldRank = rankingNumber(homeVillageRanking.globalRank);
+  const rankedSeasonWorldRank = rankingNumber(currentSeason.rank);
+  const worldRank = leaderboardWorldRank ?? rankedSeasonWorldRank;
+  const worldRankSource = leaderboardWorldRank !== null ? "leaderboard" : rankedSeasonWorldRank !== null ? "ranked-season" : null;
   const countryRank = rankingNumber(homeVillageRanking.localRank);
   const countryName = str(rankingLocation.name, 'Country');
   const countryCode = str(rankingLocation.countryCode, '');
@@ -150,9 +157,9 @@ export function MemberDetailsDialog({ member, onClose }: { member: Dict | null; 
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {worldRank !== null && (
                   <div className="rounded-xl border border-amber-400/15 bg-black/10 p-3">
-                    <p className="text-xs text-muted-foreground">World Ranking</p>
+                    <p className="text-xs text-muted-foreground">{worldRankSource === "ranked-season" ? "Ranked World Ranking" : "World Ranking"}</p>
                     <p className="mt-1 font-data text-2xl font-black text-amber-200">#{worldRank.toLocaleString('en-US')}</p>
-                    <p className="mt-1 text-[10px] text-muted-foreground">Current Home Village global rank</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">{worldRankSource === "ranked-season" ? "Current Ranked/Legend season position" : "Current Home Village global rank"}</p>
                   </div>
                 )}
                 {countryRank !== null && (
