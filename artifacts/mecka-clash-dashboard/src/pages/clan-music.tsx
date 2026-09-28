@@ -136,7 +136,10 @@ export default function ClanMusicPage() {
         connectYoutube();
         return;
       }
-      if (!r.ok) throw new Error(body.error || "Kunde inte spara spellistan till YouTube.");
+      if (!r.ok) {
+        const detail = typeof body?.error === "string" ? body.error : "Kunde inte spara spellistan till YouTube.";
+        throw new Error(detail);
+      }
       setYoutubeConnected(true);
       setYoutubePlaylistUrl(typeof body.playlistUrl === "string" ? body.playlistUrl : null);
       setYoutubeMessage(`Klart — ${body.added ?? 0} låtar lades till i din YouTube-spellista.`);
