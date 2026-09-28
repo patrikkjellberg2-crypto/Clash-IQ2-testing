@@ -1,4 +1,4 @@
-import { Router, type IRouter } from "express";
+import { Router, type IRouter, type Response } from "express";
 import { createHash, createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
 import { pool } from "@workspace/db";
 
@@ -67,13 +67,13 @@ function parseCookies(header: string | undefined) {
   return result;
 }
 
-function setCookie(res: Parameters<IRouter["get"]>[1] extends never ? never : any, name: string, value: string, maxAge: number) {
+function setCookie(res: Response, name: string, value: string, maxAge: number) {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
   const cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${maxAge}; HttpOnly; SameSite=Lax${secure}`;
   res.append("Set-Cookie", cookie);
 }
 
-function clearCookie(res: any, name: string) {
+function clearCookie(res: Response, name: string) {
   const secure = process.env.NODE_ENV === "production" ? "; Secure" : "";
   res.append("Set-Cookie", `${name}=; Path=/; Max-Age=0; HttpOnly; SameSite=Lax${secure}`);
 }
@@ -336,7 +336,18 @@ router.post("/clash/music/youtube/sync", async (req, res): Promise<void> => {
     const tracks = rows as unknown as Track[];
     if (!tracks.length) { res.status(400).json({ error: "The clan playlist is empty." }); return; }
 
-    let accessToken = await getAccessToken(connection);
+    let accessToken: string;
+    try {
+      accessToken = await getAccessToken(connection);
+    } catch (error) {
+      const reason = (error as Error & { reason?: string }).reason;
+      const message = error instanceof Error ? error.message : "";
+      if (reason === "invalid_grant" || /invalid_grant/i.test(message)) {
+        res.status(401).json({ error: "Your YouTube connection has expired. Connect YouTube again.", needsAuth: true });
+        return;
+      }
+      throw error;
+    }
     let playlistId = connection.playlistId;
     if (!playlistId) {
       playlistId = await createYoutubePlaylist(accessToken, playlistTitle || `Clash IQ — ${clanTag}`, clanTag);
@@ -400,29 +411,6 @@ router.post("/clash/music/youtube/sync", async (req, res): Promise<void> => {
       return;
     }
     res.status(503).json({ error: "The clan playlist could not be saved to YouTube." });
-  }
-});
-
-router.get("/clash/music/export", async (req, res): Promise<void> => {
-  try {
-    const clanTag = normalizeTag(req.query.clanTag);
-    if (!clanTag) { res.status(400).json({ error: "clanTag is required" }); return; }
-    await ensureTables();
-    const { rows } = await pool.query(
-      "SELECT title, url, added_by AS \"addedBy\" FROM clan_music_tracks WHERE clan_tag = $1 ORDER BY created_at ASC, id ASC LIMIT 500",
-      [clanTag],
-    );
-    const lines = [
-      `Clash IQ — ${clanTag} Clan Playlist`,
-      "",
-      ...rows.map((row: { title: string; url: string; addedBy: string }) => `${row.title} — ${row.url} (added by ${row.addedBy})`),
-    ];
-    res.setHeader("Content-Type", "text/plain; charset=utf-8");
-    res.setHeader("Content-Disposition", `attachment; filename="clash-iq-clan-playlist.txt"`);
-    res.send(lines.join("\n"));
-  } catch (error) {
-    req.log.error({ err: error }, "Failed to export clan music");
-    res.status(503).json({ error: "The clan playlist could not be downloaded." });
   }
 });
 
