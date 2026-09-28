@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useGetClashDashboard } from '@workspace/api-client-react';
 import { MemberDetailsDialog } from '@/components/member-details-dialog';
 
 type Dict = Record<string, unknown>;
@@ -10,6 +11,17 @@ type PlayerCardContextValue = {
 
 const PlayerCardContext = createContext<PlayerCardContextValue | null>(null);
 
+const asDict = (value: unknown): Dict =>
+  value && typeof value === 'object' ? value as Dict : {};
+
+const asMembers = (value: unknown): Dict[] =>
+  Array.isArray(value)
+    ? value.map(asDict)
+    : [];
+
+const normalizeTag = (value: unknown) =>
+  String(value || '').trim().toUpperCase();
+
 export function usePlayerCard() {
   const context = useContext(PlayerCardContext);
   if (!context) {
@@ -19,6 +31,7 @@ export function usePlayerCard() {
 }
 
 export function PlayerCardProvider({ children }: { children: ReactNode }) {
+  const { data: dashboardData } = useGetClashDashboard();
   const [player, setPlayer] = useState<Dict | null>(null);
   const [loading, setLoading] = useState(false);
   const requestId = useRef(0);
@@ -30,7 +43,7 @@ export function PlayerCardProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const openPlayerCard = useCallback((rawTag: string, member?: Dict | null) => {
-    const tag = String(rawTag || '').trim().toUpperCase();
+    const tag = normalizeTag(rawTag);
     if (!tag) return;
 
     const id = ++requestId.current;
@@ -63,6 +76,13 @@ export function PlayerCardProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    const dashboard = asDict(dashboardData);
+    const members = asMembers(dashboard.members);
+    const clan = asDict(dashboard.clan);
+
+    const findRosterMember = (tag: string) =>
+      members.find((candidate) => normalizeTag(candidate.tag) === normalizeTag(tag)) || null;
+
     const handleClick = (event: MouseEvent) => {
       const target = event.target;
       if (!(target instanceof Element)) return;
@@ -73,7 +93,9 @@ export function PlayerCardProvider({ children }: { children: ReactNode }) {
         if (tag) {
           event.preventDefault();
           event.stopPropagation();
-          openPlayerCard(tag);
+
+          const member = findRosterMember(tag);
+          openPlayerCard(tag, member ? { ...member, clan } : null);
           return;
         }
       }
@@ -90,12 +112,14 @@ export function PlayerCardProvider({ children }: { children: ReactNode }) {
 
       event.preventDefault();
       event.stopPropagation();
-      openPlayerCard(tag);
+
+      const member = findRosterMember(tag);
+      openPlayerCard(tag, member ? { ...member, clan } : null);
     };
 
     document.addEventListener('click', handleClick, true);
     return () => document.removeEventListener('click', handleClick, true);
-  }, [openPlayerCard]);
+  }, [dashboardData, openPlayerCard]);
 
   const value = useMemo(
     () => ({ openPlayerCard, closePlayerCard }),
