@@ -405,12 +405,25 @@ router.post("/clash/music/youtube/sync", async (req, res): Promise<void> => {
     });
   } catch (error) {
     req.log.error({ err: error }, "Failed to sync clan music to YouTube");
-    const reason = (error as Error & { reason?: string }).reason;
+    const reason = String((error as Error & { reason?: string }).reason || "");
+    const message = error instanceof Error ? error.message : "Unknown YouTube error";
     if (reason === "playlistItemsNotAccessible" || reason === "playlistForbidden") {
-      res.status(403).json({ error: "YouTube did not allow access to the playlist. Reconnect your account and try again." });
+      res.status(403).json({ error: "YouTube did not allow access to the playlist. Reconnect your account and try again.", reason });
       return;
     }
-    res.status(503).json({ error: "The clan playlist could not be saved to YouTube." });
+    if (reason === "youtubeSignupRequired") {
+      res.status(403).json({ error: "This Google account needs a YouTube channel before Clash IQ can create a playlist.", reason });
+      return;
+    }
+    if (reason === "insufficientPermissions" || reason === "forbidden") {
+      res.status(403).json({ error: "YouTube denied playlist access for this account. Reconnect YouTube and approve the requested permission.", reason });
+      return;
+    }
+    if (reason === "quotaExceeded" || reason === "dailyLimitExceeded") {
+      res.status(429).json({ error: "YouTube API quota has been exceeded. Try again later.", reason });
+      return;
+    }
+    res.status(503).json({ error: message.replace(/^YouTube API error:\s*/i, "YouTube: ") || "The clan playlist could not be saved to YouTube.", reason: reason || undefined });
   }
 });
 
