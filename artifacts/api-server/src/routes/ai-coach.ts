@@ -554,7 +554,9 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
       }
     }
 
-    if (mode === "opponent") answer = enforcePreparationThreatAssessment(answer, data);\n\n    if (mode === "opponent" && (hasInternalReasoningLeak(answer) || !hasRequiredOpponentSections(answer) || hasUnsupportedPreparationThreatRanking(answer, data))) {
+    if (mode === "opponent") answer = enforcePreparationThreatAssessment(answer, data);
+
+    if (mode === "opponent" && (hasInternalReasoningLeak(answer) || !hasRequiredOpponentSections(answer) || hasUnsupportedPreparationThreatRanking(answer, data))) {
       return res.status(502).json({
         error: "AI Coach returned an invalid final format. Please run the analysis again.",
         code: "AI_INVALID_FINAL_FORMAT",
