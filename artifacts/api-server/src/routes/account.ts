@@ -23,9 +23,12 @@ main{max-width:1050px;margin:0 auto;padding:32px 18px 60px}
 .muted{color:#9ca3af}.user{display:flex;gap:12px;align-items:center}.avatar{width:48px;height:48px;border-radius:50%;background:#222;object-fit:cover}
 .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
 .stat{background:#0b0d10;border:1px solid #272a30;border-radius:14px;padding:16px}.label{font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:.08em}.value{font-size:25px;font-weight:800;margin-top:6px}
-.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
-a,button{color:#111;background:#d8b15a;border:0;border-radius:10px;padding:11px 15px;font-weight:700;text-decoration:none;cursor:pointer}
-a.secondary{background:#1b1e24;color:#f5f1e8;border:1px solid #30343b}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.account-actions{margin-top:26px;padding-top:22px;border-top:1px solid #2b2f36;justify-content:center}
+a,button{color:#111;background:#d8b15a;border:0;border-radius:10px;padding:12px 17px;font-weight:800;text-decoration:none;cursor:pointer}
+a.secondary{background:#20252d;color:#fff;border:1px solid #566171;box-shadow:0 6px 20px #0005}
+a.account-primary{background:linear-gradient(#f0c95f,#c18b2d);color:#171107;border-color:#d9ad49;box-shadow:0 8px 24px #0007}
+a.account-signout{background:#15191f;color:#dce2ea;border-color:#4a5360}
 .result{margin-top:18px;padding:16px;border-radius:12px;background:#0b0d10;border:1px solid #272a30}
 input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px solid #363941;border-radius:10px;padding:13px;margin:10px 0}
 .hidden{display:none}.success{border-color:#6f8f4e}.error{border-color:#8f4e4e}
@@ -75,11 +78,6 @@ input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px 
 <div class="stat"><div class="label">Avg stars / attack</div><div class="value" id="avgStars">–</div></div>
 <div class="stat"><div class="label">Village world rank</div><div class="value" id="worldRank">–</div></div>
 <div class="stat"><div class="label">Village local rank</div><div class="value" id="localRank">–</div></div>
-</div>
-<div class="actions">
-<a href="https://clash-iq-website-test-web.onrender.com/" class="secondary">← Back to Clash IQ</a>
-<a href="https://clash-iq-builder-base-test.onrender.com/" class="secondary">Open app</a>
-<a href="/auth/logout" class="secondary">Sign out</a>
 </div>
 <section class="subscription" id="subscription">
 <div class="sub-head"><div><div class="muted">CLASH IQ · SUBSCRIPTION CENTER</div><h2 style="margin:6px 0">Choose your Clash IQ plan</h2><p class="muted" style="margin:0">See exactly what each plan unlocks. Free is the full core product — paid plans add depth, clan-wide analytics and optional AI.</p></div><div class="current-plan" id="plan">Free · Active</div></div>
@@ -162,6 +160,11 @@ input{width:100%;box-sizing:border-box;background:#090a0d;color:#fff;border:1px 
 <div class="plan-foot">Plan selection is currently a test UI. No payment is taken and no real entitlement is changed yet. Billing and Google Play entitlement sync will be connected in the next step.</div>
 <div id="planMessage" class="result hidden"></div>
 </section>
+<div class="actions account-actions">
+<a href="https://clash-iq-website-test-web.onrender.com/" class="account-primary">← Back to Clash IQ</a>
+<a href="https://clash-iq-builder-base-test.onrender.com/" class="secondary">Open app</a>
+<a href="/auth/logout" class="account-signout">Sign out</a>
+</div>
 <div id="liveStatus" class="muted" style="margin-top:16px">Loading live Clash data…</div>
 </section>
 </div></main>
