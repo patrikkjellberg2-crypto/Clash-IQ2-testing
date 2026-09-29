@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode, useEffect, useRef } from 'react';
+import React, { lazy, Suspense, type ReactNode, useEffect, useRef } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -9,6 +9,9 @@ import { MemberDetailsOverlay } from '@/components/member-details-dialog';
 import { WarArchiver } from '@/components/war-archiver';
 
 import NotFound from '@/pages/not-found';
+const LoginPage = lazy(() => import('@/pages/login'));
+const ConnectPlayerPage = lazy(() => import('@/pages/connect-player'));
+const AccountAdminPage = lazy(() => import('@/pages/account-admin'));
 const DashboardPage = lazy(() => import('@/pages/dashboard'));
 const WarCenterPage = lazy(() => import('@/pages/war-center'));
 const WarPlannerPage = lazy(() => import('@/pages/war-planner'));
@@ -51,12 +54,12 @@ function PageLoader() {
   );
 }
 
-function Router() {
+function AuthGate({ children }: { children: ReactNode }) { const [location,navigate]=useLocation(); const [ready,setReady]=React.useState(false); useEffect(()=>{fetch('/api/auth/me',{credentials:'include'}).then(r=>{if(!r.ok&&location!=='/login')navigate('/login');else setReady(true)}).catch(()=>{if(location!=='/login')navigate('/login');setReady(true)})},[location,navigate]); if(location==='/login')return <>{children}</>; if(!ready)return <PageLoader/>; return <>{children}</>; }\n\nfunction Router() {
   return (
     <RoutedErrorBoundary>
       <ClashIQPageBanner>
         <Suspense fallback={<PageLoader />}>
-        <Switch>
+        <Switch>\n          <Route path="/login" component={LoginPage} />\n          <Route path="/connect-player" component={ConnectPlayerPage} />
           <Route path="/" component={DashboardPage} />
           <Route path="/war-center" component={WarCenterPage} />
           <Route path="/war-planner" component={WarPlannerPage} />
@@ -65,7 +68,7 @@ function Router() {
           <Route path="/ai-coach" component={AICoachPage} />
           <Route path="/statistics" component={StatisticsPage} />
           <Route path="/settings" component={SettingsPage} />
-          <Route path="/admin" component={AdminPage} />
+          <Route path="/admin-tools" component={AdminPage} />\n          <Route path="/admin" component={AccountAdminPage} />
           <Route path="/village" component={VillagePage} />
           <Route path="/war-archive" component={WarArchivePage} />
           <Route path="/war-chat" component={WarChatPage} />
@@ -171,7 +174,7 @@ function App() {
       <ClashIQPreferences />
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
+          <AuthGate><Router /></AuthGate>
         </WouterRouter>
         <WarArchiver />
         <MemberDetailsOverlay />
