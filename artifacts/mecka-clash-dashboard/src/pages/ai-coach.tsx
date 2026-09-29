@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
+import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import { publishWarChatMessage } from '@/lib/war-chat';
 import {
   ArrowRight,
   BrainCircuit,
+  ArrowLeft,
   RefreshCw,
   Shield,
   Sparkles,
@@ -292,120 +294,20 @@ export default function AICoachPage() {
         />
 
         <main className="min-w-0 flex-1">
-          <header className="sticky top-0 z-20 border-b border-white/[.06] bg-[#030a12]/90 px-4 py-4 backdrop-blur-xl md:px-8">
-            <div className="mx-auto flex max-w-[1400px] items-center gap-3">
-              <div>
-                <p className="text-[8px] font-black uppercase tracking-[.22em] text-[#f4c542]">
-                  Elite Mode / Intelligence
-                </p>
-
-                <h1 className="mt-1 font-display text-xl font-black tracking-[-.04em] md:text-2xl">
-                  AI Coach
-                </h1>
-              </div>
-
-              <div className="ml-auto flex items-center gap-3">
-                <span className="hidden items-center gap-2 text-[8px] font-black uppercase tracking-[.18em] text-[#36d399] sm:flex">
-                  <span className="size-1.5 rounded-full bg-[#36d399] shadow-[0_0_8px_rgba(54,211,153,.8)]" />
-
-                  Live Intelligence
-                </span>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    void refetch()
-                  }
-                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/[.04]"
-                  aria-label="Refresh clan data"
-                >
-                  <RefreshCw
-                    className={
-                      isFetching
-                        ? 'size-4 animate-spin'
-                        : 'size-4'
-                    }
-                  />
-                </button>
-              </div>
-            </div>
-          </header>
-
+          <ClashIQInlineBanner />
+          <button
+            type="button"
+            aria-label="Go back"
+            title="Back"
+            onClick={() => {
+              if (window.history.length > 1) window.history.back();
+              else window.location.href = '/';
+            }}
+            className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+          >
+            <ArrowLeft className="size-4" />
+          </button>
           <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-8">
-            <section className="relative overflow-hidden rounded-3xl border border-[#f4c542]/20 bg-[#030a12] p-6 shadow-[0_20px_80px_rgba(0,0,0,.35)] md:p-8">
-              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_80%_15%,rgba(244,197,66,.14),transparent_32%),radial-gradient(circle_at_10%_90%,rgba(45,140,255,.10),transparent_35%)]" />
-
-              <div className="pointer-events-none absolute inset-0 opacity-[.035] [background-image:linear-gradient(rgba(255,255,255,.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.6)_1px,transparent_1px)] [background-size:32px_32px]" />
-
-              <div className="relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="grid size-14 place-items-center rounded-2xl border border-[#f4c542]/30 bg-[#f4c542]/10">
-                      <BrainCircuit className="size-7 text-[#f4c542]" />
-                    </div>
-
-                    <div>
-                      <p className="text-[9px] font-black uppercase tracking-[.22em] text-[#5da9ff]">
-                        CLASHIQ INTELLIGENCE
-                      </p>
-
-                      <h2 className="mt-1 font-display text-3xl font-black tracking-[-.06em] md:text-5xl">
-                        Command Your War.
-                      </h2>
-                    </div>
-                  </div>
-
-                  <p className="mt-4 max-w-2xl text-sm leading-6 text-white/50">
-                    Turn live Clash data into tactical
-                    decisions. Analyze your clan, study
-                    the enemy and get clear priorities
-                    for the next move.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  <div className="rounded-xl border border-white/[.07] bg-white/[.03] p-3">
-                    <Users className="size-4 text-[#5da9ff]" />
-
-                    <p className="mt-2 text-[8px] font-black uppercase tracking-[.14em] text-white/40">
-                      Clan
-                    </p>
-
-                    <p className="mt-1 max-w-[110px] truncate text-xs font-bold">
-                      {clanName}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-white/[.07] bg-white/[.03] p-3">
-                    <Swords className="size-4 text-red-300" />
-
-                    <p className="mt-2 text-[8px] font-black uppercase tracking-[.14em] text-white/40">
-                      Enemy
-                    </p>
-
-                    <p className="mt-1 max-w-[110px] truncate text-xs font-bold">
-                      {opponentName}
-                    </p>
-                  </div>
-
-                  <div className="hidden rounded-xl border border-white/[.07] bg-white/[.03] p-3 sm:block">
-                    <Trophy className="size-4 text-[#f4c542]" />
-
-                    <p className="mt-2 text-[8px] font-black uppercase tracking-[.14em] text-white/40">
-                      War
-                    </p>
-
-                    <p className="mt-1 text-xs font-bold">
-                      {s(
-                        war.state,
-                        'No active war',
-                      )}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
             <WarTimer currentWar={war} compact />
 
             <section className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
@@ -467,41 +369,6 @@ export default function AICoachPage() {
                     </span>
                   </button>
                 </div>
-
-                {isWarTest && (
-                  <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-400/[.04] p-4">
-                    <div className="flex items-center gap-2">
-                      <Swords className="size-4 text-red-300" />
-                      <div>
-                        <p className="text-[9px] font-black uppercase tracking-[.16em] text-red-200">
-                          War Intelligence Test Lab
-                        </p>
-                        <p className="mt-1 text-[10px] leading-5 text-white/40">
-                          Synthetic war data · test deployment only
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 grid gap-2">
-                      {WAR_TEST_SCENARIOS.map((scenario) => (
-                        <button
-                          key={scenario.id}
-                          type="button"
-                          onClick={() => void runWarTest(scenario)}
-                          disabled={loading}
-                          className="rounded-xl border border-white/[.07] bg-white/[.02] px-3 py-2.5 text-left transition hover:border-red-300/30 hover:bg-red-300/[.05] disabled:opacity-50"
-                        >
-                          <span className="block text-[11px] font-bold text-white/80">
-                            {scenario.label}
-                          </span>
-                          <span className="mt-1 block text-[10px] leading-4 text-white/35">
-                            {scenario.expected}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
                 <label className="mt-5 block text-[9px] font-black uppercase tracking-[.16em] text-white/40">
                   Mission Brief
