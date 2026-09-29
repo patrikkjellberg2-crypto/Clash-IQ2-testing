@@ -105,38 +105,8 @@ export default function CapitalRaidsPage() {
             <Metric icon={Swords} label="Total raids completed" value={totalRaids.toString()} />
           </section>
 
-          <section className="grid gap-5 lg:grid-cols-[.72fr_1.28fr]">
-            <article className="rounded-2xl border border-white/[0.07] bg-[#0b1119] p-5 shadow-xl shadow-black/10">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="font-bold">Raid Season History</h2>
-                  <p className="mt-1 text-[10px] text-slate-600">Archived seasons are kept in the TEST database.</p>
-                </div>
-                <span className="rounded-full border border-amber-400/15 bg-amber-400/[0.05] px-2 py-1 text-[9px] font-black uppercase tracking-[0.14em] text-amber-300">
-                  {seasons.length} tracked
-                </span>
-              </div>
-              <div className="mt-4 space-y-2">
-                {seasons.map((x, i) => (
-                  <button
-                    key={String(x.endTime ?? i)}
-                    onClick={() => setSelected(i)}
-                    className={[
-                      "w-full rounded-xl border p-3 text-left transition",
-                      i === selected
-                        ? "border-amber-400/20 bg-amber-400/[0.08]"
-                        : "border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04]",
-                    ].join(" ")}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs font-bold text-white">{fmt(x.startTime)} – {fmt(x.endTime)}</span>
-                      <span className="font-data text-xs font-bold text-amber-300">{compact(n(x.capitalTotalLoot))}</span>
-                    </div>
-                    <p className="mt-1 text-[10px] text-slate-500">{s(x.state, "completed")} · {n(x.raidsCompleted)} raids</p>
-                  </button>
-                ))}
-              </div>
-            </article>
+          <section className="grid gap-5 lg:grid-cols-1">
+            >
 
             <article className="rounded-2xl border border-white/[0.07] bg-[#0b1119] p-5 shadow-xl shadow-black/10">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
