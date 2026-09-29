@@ -2,7 +2,6 @@ import { useMemo } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import WarTimer from '@/components/WarTimer';
 import {
   ArrowLeft,
