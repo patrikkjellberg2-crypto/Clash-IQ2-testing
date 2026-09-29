@@ -20,6 +20,7 @@ import {
   Volume2,
   Wifi,
   Zap,
+  LogOut,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
@@ -132,6 +133,7 @@ function StatusCard({
 }
 
 export default function SettingsPage() {
+  const [, navigate] = useLocation();
   const [aiEnabled, setAiEnabled] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [warAlerts, setWarAlerts] = useState(true);
@@ -243,6 +245,14 @@ export default function SettingsPage() {
       setNotificationTestMessage(result.message);
     } finally {
       setTestingNotification(false);
+    }
+  }
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
+    } finally {
+      navigate('/login');
     }
   }
 
@@ -406,6 +416,16 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <p className="mt-3 text-[10px] leading-5 text-slate-600">These are security and data-status indicators, not user-editable settings.</p>
+                <div className="mt-5 border-t border-white/5 pt-5">
+                  <button
+                    type="button"
+                    onClick={() => void handleLogout()}
+                    className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-red-400/20 bg-red-400/[0.05] px-4 py-3 text-xs font-black uppercase tracking-wider text-red-300 transition hover:border-red-400/35 hover:bg-red-400/[0.1] hover:text-red-200"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Log out
+                  </button>
+                </div>
               </Section>
             </div>
 
