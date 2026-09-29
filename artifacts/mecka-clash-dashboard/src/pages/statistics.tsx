@@ -68,7 +68,7 @@ const opponentLabel = (war: Dict, own: Dict, enemy: Dict) => {
 
   // CWL season data can arrive as several wars without a populated
   // opponent identity. A multi-star entry is the recognizable CWL shape.
-  if (n(own.stars) > 3) return 'CVL';
+  if (n(own.stars) > 3) return 'CWL';
 
   return 'Unknown opponent';
 };
@@ -219,6 +219,39 @@ export default function StatisticsPage() {
     };
   }, [wars, clanTag]);
 
+  const cwlInsights = useMemo(() => {
+    const anonymous = wars
+      .map(({ war, result }) => ({
+        war,
+        result,
+        own: ownSideOf(war, clanTag),
+        enemy: ownSideOf(war, clanTag) === d(war.clan) ? d(war.opponent) : d(war.clan),
+      }))
+      .filter(item => !s(item.enemy.name).trim() && !s(item.enemy.tag).trim());
+
+    const season = anonymous.slice(0, 7);
+    if (season.length < 3) return null;
+
+    const wins = season.filter(item => item.result === 'WIN').length;
+    const losses = season.filter(item => item.result === 'LOSS').length;
+    const draws = season.filter(item => item.result === 'DRAW').length;
+    const stars = season.reduce((sum, item) => sum + n(item.own.stars), 0);
+    const destruction = season
+      .map(item => validDestruction(item.own.destructionPercentage))
+      .filter((value): value is number => value !== null);
+
+    return {
+      wars: season.length,
+      wins,
+      losses,
+      draws,
+      stars,
+      avgDestruction: destruction.length
+        ? Math.round(destruction.reduce((sum, value) => sum + value, 0) / destruction.length)
+        : null,
+    };
+  }, [wars, clanTag]);
+
   const clanOverview = useMemo(() => {
     const members = arr(dashboard?.members);
     const townHalls = new Map<number, number>();
@@ -365,6 +398,20 @@ export default function StatisticsPage() {
         </div>
       </div>
     </section>
+
+    {cwlInsights ? <section className="mt-5 rounded-2xl border border-amber-400/15 bg-[#0b1119] p-5">
+      <div className="flex items-end justify-between gap-4 border-b border-white/[.06] pb-4">
+        <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">CWL</p><h2 className="mt-1 text-xl font-black">Clan War League</h2></div>
+        <span className="rounded-full border border-amber-400/15 bg-amber-400/[.05] px-3 py-1 text-[9px] font-black uppercase tracking-[.16em] text-amber-300">Season view</span>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Rounds</p><p className="mt-1 text-2xl font-black">{cwlInsights.wars}</p></div>
+        <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">War Stars</p><p className="mt-1 text-2xl font-black text-amber-300">{cwlInsights.stars}★</p></div>
+        <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Record</p><p className="mt-1 text-2xl font-black">{cwlInsights.wins}-{cwlInsights.losses}-{cwlInsights.draws}</p></div>
+        <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Avg. Destruction</p><p className="mt-1 text-2xl font-black">{cwlInsights.avgDestruction == null ? '—' : `${cwlInsights.avgDestruction}%`}</p></div>
+      </div>
+      <p className="mt-3 text-xs text-slate-500">CWL rounds are grouped from the available war history when opponent identity is not supplied.</p>
+    </section> : null}
 
     <section className="mt-5 rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
       <div className="flex items-end justify-between gap-4 border-b border-white/[.06] pb-4">
