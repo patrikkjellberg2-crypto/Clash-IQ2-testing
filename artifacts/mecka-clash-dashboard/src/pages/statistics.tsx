@@ -155,6 +155,79 @@ export default function StatisticsPage() {
     };
   }, [wars, archiveWars, clanTag]);
 
+  const warInsights = useMemo(() => {
+    const ordered = wars.map(({ war, result }) => ({
+      war,
+      result,
+      own: ownSideOf(war, clanTag),
+      enemy: ownSideOf(war, clanTag) === d(war.clan) ? d(war.opponent) : d(war.clan),
+    }));
+
+    let currentWinStreak = 0;
+    for (const item of ordered) {
+      if (item.result !== 'WIN') break;
+      currentWinStreak++;
+    }
+
+    let longestWinStreak = 0;
+    let runningWinStreak = 0;
+    for (const item of [...ordered].reverse()) {
+      if (item.result === 'WIN') {
+        runningWinStreak++;
+        longestWinStreak = Math.max(longestWinStreak, runningWinStreak);
+      } else {
+        runningWinStreak = 0;
+      }
+    }
+
+    const avgStars = ordered.length
+      ? Math.round(ordered.reduce((sum, item) => sum + n(item.own.stars), 0) / ordered.length * 10) / 10
+      : null;
+
+    const bestWar = [...ordered]
+      .sort((a, b) =>
+        n(b.own.stars) - n(a.own.stars) ||
+        validDestruction(b.own.destructionPercentage) - validDestruction(a.own.destructionPercentage),
+      )[0] ?? null;
+
+    const recent = ordered.slice(0, 10);
+    const recentWins = recent.filter(item => item.result === 'WIN').length;
+    const recentLosses = recent.filter(item => item.result === 'LOSS').length;
+    const recentDraws = recent.filter(item => item.result === 'DRAW').length;
+
+    return {
+      currentWinStreak,
+      longestWinStreak,
+      avgStars,
+      bestWar,
+      recent,
+      recentWins,
+      recentLosses,
+      recentDraws,
+    };
+  }, [wars, clanTag]);
+
+  const clanOverview = useMemo(() => {
+    const members = arr(dashboard?.members);
+    const townHalls = new Map<number, number>();
+    let trophies = 0;
+    let donations = 0;
+
+    for (const member of members) {
+      const th = n(member.townHallLevel, 0);
+      if (th > 0) townHalls.set(th, (townHalls.get(th) ?? 0) + 1);
+      trophies += Math.max(0, n(member.trophies));
+      donations += Math.max(0, n(member.donations));
+    }
+
+    return {
+      memberCount: members.length,
+      trophies,
+      donations,
+      townHalls: Array.from(townHalls.entries()).sort((a, b) => b[0] - a[0]),
+    };
+  }, [dashboard?.members]);
+
   const leaderboards = useMemo(() => {
     const fallbackThreeStarMap = new Map<string, { tag: string; name: string; threeStars: number; attacks: number }>();
     for (const war of archiveWars) {
@@ -249,6 +322,53 @@ export default function StatisticsPage() {
       <StatCard icon={Target} label="Three-Star Rate" value={stats.threeStarRate == null ? '—' : `${stats.threeStarRate}%`} detail={stats.attacks ? `${stats.threeStars} of ${stats.attacks} archived attacks with attack-level data` : 'No attack-level data is available in the war archive yet'}/>
       <StatCard icon={TrendingUp} label="Avg. Destruction" value={stats.avgDestruction == null ? '—' : `${stats.avgDestruction}%`} detail={stats.avgDestruction == null ? 'No valid 0–100% destruction values available' : 'Average destruction per completed war'}/>
     </section>
+    <section className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <StatCard icon={Swords} label="Avg. Stars / War" value={warInsights.avgStars == null ? '—' : warInsights.avgStars.toFixed(1)} detail="Our average stars per completed war"/>
+      <StatCard icon={TrendingUp} label="Current Win Streak" value={String(warInsights.currentWinStreak)} detail="Consecutive wins from the latest war"/>
+      <StatCard icon={Trophy} label="Longest Win Streak" value={String(warInsights.longestWinStreak)} detail="Longest winning run in the available log"/>
+      <StatCard icon={Target} label="Recent 10" value={warInsights.recent.length ? `${warInsights.recentWins}/${warInsights.recent.length}` : '—'} detail={warInsights.recent.length ? `${warInsights.recentWins}W · ${warInsights.recentLosses}L · ${warInsights.recentDraws}D` : 'No recent wars available'}/>
+    </section>
+    <section className="mt-5 grid gap-5 lg:grid-cols-2">
+      <div className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Peak Performance</p>
+        <h2 className="mt-1 text-xl font-black">Best War</h2>
+        {warInsights.bestWar ? <div className="mt-4 rounded-xl border border-white/[.06] bg-white/[.02] p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0"><p className="truncate text-lg font-black">vs {s(warInsights.bestWar.enemy.name, 'Unknown opponent')}</p><p className="mt-1 text-xs text-slate-500">{warInsights.bestWar.result} · {Math.round(Math.max(0, Math.min(100, n(warInsights.bestWar.own.destructionPercentage))))}% destruction</p></div>
+            <p className="shrink-0 text-2xl font-black text-amber-300">{n(warInsights.bestWar.own.stars)}★</p>
+          </div>
+        </div> : <p className="mt-4 text-sm text-slate-500">No completed wars available yet.</p>}
+      </div>
+
+      <div className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Recent Form</p>
+        <h2 className="mt-1 text-xl font-black">Last 10 Wars</h2>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {warInsights.recent.length ? warInsights.recent.map((item, index) => (
+            <div key={`${warTime(item.war)}-${index}`} className="grid min-w-[70px] place-items-center rounded-xl border border-white/[.06] bg-white/[.02] px-3 py-2">
+              <span className={`text-[9px] font-black tracking-[.16em] ${item.result === 'WIN' ? 'text-emerald-300' : item.result === 'LOSS' ? 'text-rose-300' : 'text-amber-300'}`}>{item.result}</span>
+              <span className="mt-1 text-sm font-black">{n(item.own.stars)}★</span>
+            </div>
+          )) : <p className="text-sm text-slate-500">No recent wars available yet.</p>}
+        </div>
+      </div>
+    </section>
+
+    <section className="mt-5 rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
+      <div className="flex items-end justify-between gap-4 border-b border-white/[.06] pb-4">
+        <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Clan Overview</p><h2 className="mt-1 text-xl font-black">Roster Snapshot</h2></div>
+        <span className="rounded-full border border-white/[.08] bg-white/[.02] px-3 py-1 text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{clanOverview.memberCount} members</span>
+      </div>
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Members</p><p className="mt-1 text-2xl font-black">{clanOverview.memberCount}</p></div>
+        <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Total Trophies</p><p className="mt-1 text-2xl font-black">{clanOverview.trophies.toLocaleString()}</p></div>
+        <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4"><p className="text-[9px] font-black uppercase tracking-[.16em] text-slate-500">Total Donations</p><p className="mt-1 text-2xl font-black">{clanOverview.donations.toLocaleString()}</p></div>
+      </div>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {clanOverview.townHalls.map(([th, count]) => <span key={th} className="rounded-lg border border-white/[.06] bg-white/[.02] px-3 py-2 text-xs font-bold text-slate-300">TH{th} <span className="text-amber-300">× {count}</span></span>)}
+      </div>
+    </section>
+
     <section className="mt-5 grid gap-5 lg:grid-cols-2">
       <div className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
         <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Attack Leaders</p>
