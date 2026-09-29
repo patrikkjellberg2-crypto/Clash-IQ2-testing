@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="clashiq_splash_bg">#07090D</color>
+
+    <style name="ClashIqLaunchTheme" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/clashiq_splash_bg</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
+    </style>
+</resources>
