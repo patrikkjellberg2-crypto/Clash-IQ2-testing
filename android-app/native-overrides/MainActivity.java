@@ -47,6 +47,14 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
 
         splashScreen.setKeepOnScreenCondition(() ->
                 System.currentTimeMillis() - launchStartedAt < splashDuration);
+        splashScreen.setOnExitAnimationListener(splashProvider -> {
+            View splashView = splashProvider.getView();
+            splashView.animate()
+                    .alpha(0f)
+                    .setDuration(420L)
+                    .withEndAction(splashProvider::remove)
+                    .start();
+        });
         super.onCreate(savedInstanceState);
 
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
