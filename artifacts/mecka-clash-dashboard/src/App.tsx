@@ -65,8 +65,10 @@ function Router() {
     <RoutedErrorBoundary>
       <ClashIQPageBanner>
         <Suspense fallback={<PageLoader />}>
-        <Switch>\n          <Route path="/login" component={LoginPage} />
-          <Route path="/welcome" component={WelcomePage} />\n          <Route path="/connect-player" component={ConnectPlayerPage} />
+        <Switch>
+          <Route path="/login" component={LoginPage} />
+          <Route path="/welcome" component={WelcomePage} />
+          <Route path="/connect-player" component={ConnectPlayerPage} />
           <Route path="/my-player" component={MyPlayerPage} />
           <Route path="/connect-youtube" component={ConnectYouTubePage} />
           <Route path="/" component={DashboardPage} />
@@ -77,7 +79,8 @@ function Router() {
           <Route path="/ai-coach" component={AICoachPage} />
           <Route path="/statistics" component={StatisticsPage} />
           <Route path="/settings" component={SettingsPage} />
-          <Route path="/admin-tools" component={AdminPage} />\n          <Route path="/admin" component={AccountAdminPage} />
+          <Route path="/admin-tools" component={AdminPage} />
+          <Route path="/admin" component={AccountAdminPage} />
           <Route path="/village" component={VillagePage} />
           <Route path="/war-archive" component={WarArchivePage} />
           <Route path="/war-chat" component={WarChatPage} />
