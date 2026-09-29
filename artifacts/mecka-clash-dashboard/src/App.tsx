@@ -11,6 +11,7 @@ import { WarArchiver } from '@/components/war-archiver';
 
 import NotFound from '@/pages/not-found';
 const LoginPage = lazy(() => import('@/pages/login'));
+const WelcomePage = lazy(() => import('@/pages/welcome'));
 const ConnectPlayerPage = lazy(() => import('@/pages/connect-player'));
 const MyPlayerPage = lazy(() => import('@/pages/my-player'));
 const ConnectYouTubePage = lazy(() => import('@/pages/connect-youtube'));
@@ -57,14 +58,15 @@ function PageLoader() {
   );
 }
 
-function AuthGate({ children }: { children: ReactNode }) { const [location,navigate]=useLocation(); const [ready,setReady]=React.useState(false); useEffect(()=>{fetch('/api/auth/me',{credentials:'include'}).then(r=>{if(!r.ok&&location!=='/login')navigate('/login');else setReady(true)}).catch(()=>{if(location!=='/login')navigate('/login');setReady(true)})},[location,navigate]); if(location==='/login')return <>{children}</>; if(!ready)return <PageLoader/>; return <>{children}</>; }
+function AuthGate({ children }: { children: ReactNode }) { const [location,navigate]=useLocation(); const [ready,setReady]=React.useState(false); useEffect(()=>{if(location==='/login'||location==='/welcome'){setReady(true);return;} try{if(location==='/'&&localStorage.getItem('clash_iq_welcome_seen_v2')!=='true'){navigate('/welcome');return;}}catch{} fetch('/api/auth/me',{credentials:'include'}).then(r=>{if(!r.ok&&location!=='/login')navigate('/login');else setReady(true)}).catch(()=>{if(location!=='/login')navigate('/login');setReady(true)})},[location,navigate]); if(location==='/login'||location==='/welcome')return <>{children}</>; if(!ready)return <PageLoader/>; return <>{children}</>; }
 
 function Router() {
   return (
     <RoutedErrorBoundary>
       <ClashIQPageBanner>
         <Suspense fallback={<PageLoader />}>
-        <Switch>\n          <Route path="/login" component={LoginPage} />\n          <Route path="/connect-player" component={ConnectPlayerPage} />
+        <Switch>\n          <Route path="/login" component={LoginPage} />
+          <Route path="/welcome" component={WelcomePage} />\n          <Route path="/connect-player" component={ConnectPlayerPage} />
           <Route path="/my-player" component={MyPlayerPage} />
           <Route path="/connect-youtube" component={ConnectYouTubePage} />
           <Route path="/" component={DashboardPage} />
