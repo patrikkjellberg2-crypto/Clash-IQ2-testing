@@ -625,12 +625,27 @@ export default function WarCenterPage() {
                             {num(item.member.townhallLevel)}
                           </td>
                           <td className="px-3 py-3">
-                            <span className="font-data text-xs font-bold">
-                              {item.attacksUsed}/2
-                            </span>
-                            <span className="block text-[10px] text-muted-foreground">
-                              {item.attacksRemaining} remaining
-                            </span>
+                            <div className="flex min-w-[150px] flex-col gap-1.5">
+                              {asArray(item.member.attacks).map((attack, attackIndex) => (
+                                <div
+                                  key={String(attack.order ?? attackIndex)}
+                                  className="flex items-center justify-between gap-2"
+                                >
+                                  <span className="text-[10px] font-bold text-muted-foreground">
+                                    Attack {attackIndex + 1}
+                                  </span>
+                                  <span className="font-data text-xs font-bold">
+                                    {'⭐'.repeat(Math.max(0, Math.min(3, num(attack.stars))))}{' '}
+                                    {Math.round(num(attack.destructionPercentage))}%
+                                  </span>
+                                </div>
+                              ))}
+                              {item.attacksRemaining > 0 && (
+                                <span className="text-[10px] text-muted-foreground">
+                                  {item.attacksRemaining} remaining
+                                </span>
+                              )}
+                            </div>
                           </td>
                           <td className="px-3 py-3 font-data text-xs font-bold">
                             {item.stars}
