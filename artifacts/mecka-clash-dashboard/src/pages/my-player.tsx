@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import {
   Activity,
@@ -122,14 +122,11 @@ export default function MyPlayerPage() {
   const allAttacks = recentWars.flatMap((w: AnyRecord) =>
     Array.isArray(w.attacks) ? w.attacks.map((a: AnyRecord) => ({ ...a, opponentName: w.opponentName, endTime: w.endTime, result: w.result })) : [],
   );
-  const starCounts = useMemo(() => {
-    const out = { 0: 0, 1: 0, 2: 0, 3: 0 };
-    allAttacks.forEach((a: AnyRecord) => {
-      const s = Math.max(0, Math.min(3, stars(a.stars))) as 0|1|2|3;
-      out[s]++;
-    });
-    return out;
-  }, [recentWars]);
+  const starCounts = { 0: 0, 1: 0, 2: 0, 3: 0 };
+  allAttacks.forEach((a: AnyRecord) => {
+    const s = Math.max(0, Math.min(3, stars(a.stars))) as 0|1|2|3;
+    starCounts[s]++;
+  });
   const recentForm = recentWars.slice(0, 10);
   const threeRate = stats.totalAttacks ? (num(stats.threeStarAttacks) / num(stats.totalAttacks)) * 100 : 0;
   const score = Math.round(
