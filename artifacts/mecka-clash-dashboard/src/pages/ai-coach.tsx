@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
+import { sendClashIQNotification } from '@/lib/notifications';
 import WarTimer from '@/components/WarTimer';
 import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import { publishWarChatMessage } from '@/lib/war-chat';
@@ -149,6 +150,17 @@ export default function AICoachPage() {
         result.answer ||
           'No analysis was returned.',
       );
+
+      const analysisText = result.answer || '';
+      const important = /urgent|critical|important|threat|danger|risk|must|priority|immediately|akut|viktig|hot|fara|risk/i.test(analysisText);
+      if (important) {
+        const signature = analysisText.trim().slice(0, 240);
+        const key = 'clash-iq-ai-notification:' + btoa(unescape(encodeURIComponent(signature))).slice(0, 180);
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, '1');
+          void sendClashIQNotification('🤖 AI Coach — viktig analys', analysisText.replace(/\\s+/g, ' ').slice(0, 180), key);
+        }
+      }
       window.setTimeout(() => {
         resultRef.current?.scrollIntoView({
           behavior: 'smooth',
