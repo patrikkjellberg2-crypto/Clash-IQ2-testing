@@ -5,6 +5,18 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('message', (event) => {
+  if (event.data?.type === 'CLASH_IQ_PUSH_NOTIFICATION') {
+    event.waitUntil(
+      self.registration.showNotification(event.data.title || '⚔️ Clash IQ', {
+        body: event.data.body || '',
+        tag: event.data.tag || 'clash-iq-notification',
+        icon: '/favicon.svg',
+        badge: '/favicon.svg',
+        data: { url: '/' },
+      }),
+    );
+  }
+
   if (event.data?.type === 'CLASH_IQ_TEST_NOTIFICATION') {
     event.waitUntil(
       self.registration.showNotification('⚔️ Clash IQ', {
