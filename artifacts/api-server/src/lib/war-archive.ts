@@ -224,14 +224,68 @@ export async function snapshotWarlog(clanTag: string, warlog: unknown, log?: Log
   }
 }
 
+function canonicalWarTime(value: string) {
+  const m = /^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})/.exec(value || "");
+  if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
+  const parsed = new Date(value).getTime();
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function archiveIdentity(row: { clanTag: string; opponentTag: string; endTime: string }) {
+  const time = canonicalWarTime(row.endTime);
+  return `${normalizeTag(row.clanTag)}__${normalizeTag(row.opponentTag)}__${time || row.endTime}`;
+}
+
+function archiveRichness(row: { source: "live" | "warlog"; members: unknown; opponentMembers: unknown[] }) {
+  const members = Array.isArray(row.members) ? row.members.length : 0;
+  const opponentMembers = Array.isArray(row.opponentMembers) ? row.opponentMembers.length : 0;
+  return (row.source === "live" ? 1000000 : 0) + members * 10 + opponentMembers;
+}
+
 export async function listArchivedWars(clanTag: string, limit = 60) {
   const tag = normalizeTag(clanTag);
-  return db
+  const rows = await db
     .select()
     .from(warArchiveTable)
     .where(eq(warArchiveTable.clanTag, tag))
     .orderBy(desc(warArchiveTable.endTime))
-    .limit(Math.min(200, Math.max(1, limit)));
+    .limit(200);
+
+  // The official war log and live snapshots can use different timestamp
+  // string formats for the same completed war. Merge those legacy duplicates
+  // at read time and always prefer the richer live snapshot.
+  const merged = new Map<string, (typeof rows)[number]>();
+
+  for (const row of rows) {
+    const key = archiveIdentity(row);
+    const existing = merged.get(key);
+
+    if (!existing) {
+      merged.set(key, row);
+      continue;
+    }
+
+    const preferred = archiveRichness(row) > archiveRichness(existing) ? row : existing;
+    const fallback = preferred === row ? existing : row;
+
+    merged.set(key, {
+      ...fallback,
+      ...preferred,
+      result: preferred.result || fallback.result,
+      clanName: preferred.clanName || fallback.clanName,
+      opponentName: preferred.opponentName || fallback.opponentName,
+      members:
+        Array.isArray(preferred.members) && preferred.members.length > 0
+          ? preferred.members
+          : fallback.members,
+      opponentMembers:
+        Array.isArray(preferred.opponentMembers) && preferred.opponentMembers.length > 0
+          ? preferred.opponentMembers
+          : fallback.opponentMembers,
+    });
+  }
+
+  return Array.from(merged.values()).slice(0, Math.min(200, Math.max(1, limit)));
 }
 
 export async function getArchivedWar(clanTag: string, id: string) {
