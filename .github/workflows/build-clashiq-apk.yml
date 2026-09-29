@@ -205,15 +205,14 @@ jobs:
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -f "$APK"
 
-          # Verify the packaged manifest/resources without relying on aapt2 xmltree syntax.
-          SDK_AAPT2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -n 1)"
-          "$SDK_AAPT2" dump badging "$APK" > /tmp/badging.txt
+          # Verify the packaged manifest with the classic Android aapt XML dumper.
+          AAPT="$(find "$ANDROID_HOME/build-tools" -name aapt -type f | sort -V | tail -n 1)"
+          "$AAPT" dump badging "$APK" > /tmp/badging.txt
           grep -q "package: name='com.clashiq.app'" /tmp/badging.txt
-
-          unzip -p "$APK" AndroidManifest.xml > /tmp/AndroidManifest.xml
-          strings /tmp/AndroidManifest.xml | grep -q 'ClashIqWidgetProvider'
-          strings /tmp/AndroidManifest.xml | grep -q 'clash_iq_widget_info'
-          strings /tmp/AndroidManifest.xml | grep -q 'ClashIqLaunchTheme'
+          "$AAPT" dump xmltree "$APK" AndroidManifest.xml > /tmp/manifest.txt
+          grep -q 'ClashIqWidgetProvider' /tmp/manifest.txt
+          grep -q 'clash_iq_widget_info' /tmp/manifest.txt
+          grep -q 'ClashIqLaunchTheme' /tmp/manifest.txt
 
           # Ensure the launcher resources are actually packaged.
           unzip -l "$APK" | grep -q 'mipmap-anydpi-v26/ic_launcher.xml'
