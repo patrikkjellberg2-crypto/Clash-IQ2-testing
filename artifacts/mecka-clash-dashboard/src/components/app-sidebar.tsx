@@ -20,6 +20,7 @@ import {
   TrendingUp,
   Music2,
   LockKeyhole,
+  UserRound,
 } from "lucide-react";
 
 type AppSidebarProps = {
@@ -31,6 +32,7 @@ type AppSidebarProps = {
 
 const navigation = [
   { label: "Overview", href: "/", icon: LayoutDashboard, section: "COMMAND" },
+  { label: "My Player", href: "/my-player", icon: UserRound, section: "COMMAND" },
   { label: "War Center", href: "/war-center", icon: Swords, section: "COMMAND" },
   { label: "War Planner", href: "/war-planner", icon: Shield, section: "COMMAND" },
   { label: "Capital Raids", href: "/capital-raids", icon: Castle, section: "COMMAND" },
