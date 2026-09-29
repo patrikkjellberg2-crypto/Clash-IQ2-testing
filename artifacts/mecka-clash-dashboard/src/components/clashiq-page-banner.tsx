@@ -11,7 +11,7 @@ export function ClashIQPageBanner({ children }: { children: ReactNode }) {
   // Overview owns its hero. Every other page gets the same banner.
   // Members and Capital Raids render the banner directly inside their main area.
   // Keep the wrapper neutral there so it cannot create a spacer or repaint the banner.
-  if (location === '/' || location === '/members' || location === '/capital-raids' || location === '/village' || location === '/war-archive' || location === '/war-center' || location === '/war-planner' || location === '/ai-coach' || location === '/activity') {
+  if (location === '/' || location === '/members' || location === '/capital-raids' || location === '/village' || location === '/war-archive' || location === '/war-center' || location === '/war-planner' || location === '/ai-coach' || location === '/activity' || location === '/war-chat') {
     return <>{children}</>;
   }
 
@@ -112,7 +112,6 @@ export function ClashIQPageBanner({ children }: { children: ReactNode }) {
           --sidebar-border: 215 20% 17%;
           --sidebar-ring: 43 96% 56%;
         }
-
 
         .clashiq-global-banner-page main [class~="bg-white"],
         .clashiq-global-banner-page main [class~="bg-slate-50"],
