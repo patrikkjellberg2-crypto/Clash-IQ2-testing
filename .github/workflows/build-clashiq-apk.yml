@@ -58,39 +58,26 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           mkdir -p android/app/src/main/java/com/clashiq/app
-          cp native-overrides/MainActivity.java             android/app/src/main/java/com/clashiq/app/MainActivity.java
-          cp native-overrides/ClashIqWidgetProvider.java             android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
-
-          mkdir -p android/app/src/main/res/layout                    android/app/src/main/res/drawable                    android/app/src/main/res/xml                    android/app/src/main/res/values
-
-          cp native-overrides/res/layout/clash_iq_widget.xml             android/app/src/main/res/layout/clash_iq_widget.xml
-          cp native-overrides/res/drawable/clashiq_widget_bg.xml             android/app/src/main/res/drawable/clashiq_widget_bg.xml
-          cp native-overrides/res/drawable/ic_notification.xml             android/app/src/main/res/drawable/ic_notification.xml
-          cp native-overrides/res/xml/clash_iq_widget_info.xml             android/app/src/main/res/xml/clash_iq_widget_info.xml
-          cp native-overrides/res/values/clashiq_native.xml             android/app/src/main/res/values/clashiq_native.xml
-
+          cp native-overrides/MainActivity.java android/app/src/main/java/com/clashiq/app/MainActivity.java
+          cp native-overrides/ClashIqWidgetProvider.java android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
+          mkdir -p android/app/src/main/res/layout android/app/src/main/res/drawable android/app/src/main/res/xml android/app/src/main/res/values
+          cp native-overrides/res/layout/clash_iq_widget.xml android/app/src/main/res/layout/clash_iq_widget.xml
+          cp native-overrides/res/drawable/clashiq_widget_bg.xml android/app/src/main/res/drawable/clashiq_widget_bg.xml
+          cp native-overrides/res/drawable/ic_notification.xml android/app/src/main/res/drawable/ic_notification.xml
+          cp native-overrides/res/xml/clash_iq_widget_info.xml android/app/src/main/res/xml/clash_iq_widget_info.xml
+          cp native-overrides/res/values/clashiq_native.xml android/app/src/main/res/values/clashiq_native.xml
           grep -q 'core-splashscreen' android/app/build.gradle
-
           python3 - <<'PY'
           from pathlib import Path
-
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
-
           permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
           if "android.permission.POST_NOTIFICATIONS" not in s:
               marker = "    <application"
-              if marker not in s:
-                  raise SystemExit("Could not find application marker")
+              if marker not in s: raise SystemExit("Could not find application marker")
               s = s.replace(marker, permission + marker, 1)
-
-          s = s.replace(
-              'android:theme="@style/AppTheme.NoActionBarLaunch"',
-              'android:theme="@style/ClashIqLaunchTheme"',
-          )
-
+          s = s.replace('android:theme="@style/AppTheme.NoActionBarLaunch"', 'android:theme="@style/ClashIqLaunchTheme"')
           receiver = '''
           <receiver
               android:name=".ClashIqWidgetProvider"
@@ -100,21 +87,15 @@ jobs:
                   <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                   <action android:name="com.clashiq.app.WIDGET_REFRESH" />
               </intent-filter>
-              <meta-data
-                  android:name="android.appwidget.provider"
-                  android:resource="@xml/clash_iq_widget_info" />
+              <meta-data android:name="android.appwidget.provider" android:resource="@xml/clash_iq_widget_info" />
           </receiver>
           '''
-
           if 'android:name=".ClashIqWidgetProvider"' not in s:
               marker = "    <provider"
-              if marker not in s:
-                  raise SystemExit("Could not find manifest provider insertion point")
+              if marker not in s: raise SystemExit("Could not find manifest provider insertion point")
               s = s.replace(marker, receiver + "\n" + marker, 1)
-
           p.write_text(s)
           PY
-
           grep -q 'ClashIqLaunchTheme' android/app/src/main/AndroidManifest.xml
           grep -q 'ClashIqWidgetProvider' android/app/src/main/AndroidManifest.xml
           test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
@@ -127,12 +108,8 @@ jobs:
           set -euo pipefail
           rm -rf android/app/src/main/res/mipmap-*
           cp -a resources/res/. android/app/src/main/res/
-
-          # Use the supplied square Clash IQ artwork directly as the launcher icon.
-          # Do not let Capacitor's adaptive-icon XML select the old foreground artwork.
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-
           test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
           test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
@@ -147,27 +124,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-
           mkdir -p android/app/src/main/java/com/clashiq/app
-          cp native-overrides/MainActivity.java             android/app/src/main/java/com/clashiq/app/MainActivity.java
-          cp native-overrides/ClashIqWidgetProvider.java             android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
-
-          mkdir -p android/app/src/main/res/layout                    android/app/src/main/res/drawable                    android/app/src/main/res/xml                    android/app/src/main/res/values
-
-          cp native-overrides/res/layout/clash_iq_widget.xml             android/app/src/main/res/layout/clash_iq_widget.xml
-          cp native-overrides/res/drawable/clashiq_widget_bg.xml             android/app/src/main/res/drawable/clashiq_widget_bg.xml
-          cp native-overrides/res/drawable/ic_notification.xml             android/app/src/main/res/drawable/ic_notification.xml
-          cp native-overrides/res/xml/clash_iq_widget_info.xml             android/app/src/main/res/xml/clash_iq_widget_info.xml
-          cp native-overrides/res/values/clashiq_native.xml             android/app/src/main/res/values/clashiq_native.xml
-
+          cp native-overrides/MainActivity.java android/app/src/main/java/com/clashiq/app/MainActivity.java
+          cp native-overrides/ClashIqWidgetProvider.java android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
+          mkdir -p android/app/src/main/res/layout android/app/src/main/res/drawable android/app/src/main/res/xml android/app/src/main/res/values
+          cp native-overrides/res/layout/clash_iq_widget.xml android/app/src/main/res/layout/clash_iq_widget.xml
+          cp native-overrides/res/drawable/clashiq_widget_bg.xml android/app/src/main/res/drawable/clashiq_widget_bg.xml
+          cp native-overrides/res/drawable/ic_notification.xml android/app/src/main/res/drawable/ic_notification.xml
+          cp native-overrides/res/xml/clash_iq_widget_info.xml android/app/src/main/res/xml/clash_iq_widget_info.xml
+          cp native-overrides/res/values/clashiq_native.xml android/app/src/main/res/values/clashiq_native.xml
           rm -rf android/app/src/main/res/mipmap-*
           cp -a resources/res/. android/app/src/main/res/
-
-          # Re-apply the supplied square icon after Capacitor sync and remove
-          # adaptive-icon XML so the exact supplied artwork is used.
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-
           python3 - <<'PY'
           from pathlib import Path
           p = Path("android/app/src/main/AndroidManifest.xml")
@@ -175,14 +144,9 @@ jobs:
           permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
           if "android.permission.POST_NOTIFICATIONS" not in s:
               marker = "    <application"
-              if marker not in s:
-                  raise SystemExit("Could not find application marker")
+              if marker not in s: raise SystemExit("Could not find application marker")
               s = s.replace(marker, permission + marker, 1)
-
-          s = s.replace(
-              'android:theme="@style/AppTheme.NoActionBarLaunch"',
-              'android:theme="@style/ClashIqLaunchTheme"',
-          )
+          s = s.replace('android:theme="@style/AppTheme.NoActionBarLaunch"', 'android:theme="@style/ClashIqLaunchTheme"')
           receiver = '''
           <receiver
               android:name=".ClashIqWidgetProvider"
@@ -192,19 +156,15 @@ jobs:
                   <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                   <action android:name="com.clashiq.app.WIDGET_REFRESH" />
               </intent-filter>
-              <meta-data
-                  android:name="android.appwidget.provider"
-                  android:resource="@xml/clash_iq_widget_info" />
+              <meta-data android:name="android.appwidget.provider" android:resource="@xml/clash_iq_widget_info" />
           </receiver>
           '''
           if 'android:name=".ClashIqWidgetProvider"' not in s:
               marker = "    <provider"
-              if marker not in s:
-                  raise SystemExit("Could not find manifest provider insertion point")
+              if marker not in s: raise SystemExit("Could not find manifest provider insertion point")
               s = s.replace(marker, receiver + "\n" + marker, 1)
           p.write_text(s)
           PY
-
           test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
           test -f android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
           test -f android/app/src/main/res/xml/clash_iq_widget_info.xml
