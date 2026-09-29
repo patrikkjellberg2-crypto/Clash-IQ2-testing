@@ -24,6 +24,9 @@ import java.net.URL;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -135,6 +138,7 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
         String targetTime = "";
         String timerLabel = "—";
         boolean timerActive = false;
+        String[] latestAttacks = {"No attacks yet", "", ""};
 
         try {
             if (json != null) {
@@ -165,11 +169,38 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
                             org.json.JSONArray membersArray = ours.optJSONArray("members");
                             if (membersArray != null) {
                                 int attacksUsed = 0;
+                                java.util.List<JSONObject> recent = new ArrayList<>();
+                                int attacksUsed = 0;
                                 for (int i = 0; i < membersArray.length(); i++) {
                                     JSONObject member = membersArray.optJSONObject(i);
-                                    if (member != null) attacksUsed += member.optInt("attacks", 0);
+                                    if (member != null) {
+                                        org.json.JSONArray memberAttacks = member.optJSONArray("attacks");
+                                        if (memberAttacks != null) {
+                                            attacksUsed += memberAttacks.length();
+                                            for (int j = 0; j < memberAttacks.length(); j++) {
+                                                JSONObject attack = memberAttacks.optJSONObject(j);
+                                                if (attack != null) {
+                                                    JSONObject row = new JSONObject(attack.toString());
+                                                    row.put("_attackerName", member.optString("name", "Unknown"));
+                                                    row.put("_order", attack.optInt("order", 0));
+                                                    recent.add(row);
+                                                }
+                                            }
+                                        } else {
+                                            attacksUsed += member.optInt("attacks", 0);
+                                        }
+                                    }
                                 }
                                 attacks = Integer.toString(Math.max(0, membersArray.length() * attacksPerMember - attacksUsed));
+                                Collections.sort(recent, new Comparator<JSONObject>() {
+                                    @Override public int compare(JSONObject a, JSONObject b) {
+                                        return Integer.compare(b.optInt("_order", 0), a.optInt("_order", 0));
+                                    }
+                                });
+                                for (int i = 0; i < Math.min(3, recent.size()); i++) {
+                                    JSONObject attack = recent.get(i);
+                                    latestAttacks[i] = formatRecentAttack(attack);
+                                }
                             }
                         }
                     }
@@ -201,6 +232,9 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_score, "⭐ " + score + " ⭐");
         views.setTextViewText(R.id.widget_destruction, destruction);
         views.setTextViewText(R.id.widget_attacks, "ATTACKS LEFT: " + attacks);
+        views.setTextViewText(R.id.widget_latest_1, latestAttacks[0]);
+        views.setTextViewText(R.id.widget_latest_2, latestAttacks[1]);
+        views.setTextViewText(R.id.widget_latest_3, latestAttacks[2]);
         views.setTextViewText(R.id.widget_timer_label, timerLabel);
         if (!timerActive) {
             views.setTextViewText(R.id.widget_countdown, "—");
@@ -208,6 +242,14 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
 
         setLaunchPendingIntent(context, views, widgetId);
         manager.updateAppWidget(widgetId, views);
+    }
+
+    private static String formatRecentAttack(JSONObject attack) {
+        String name = attack.optString("_attackerName", "Unknown");
+        int stars = attack.optInt("stars", 0);
+        double destruction = attack.optDouble("destructionPercentage", 0);
+        if (name.length() > 15) name = name.substring(0, 14) + "…";
+        return name + "   ⭐" + stars + "   " + String.format(Locale.US, "%.0f%%", destruction);
     }
 
     private static void setLaunchPendingIntent(Context context, RemoteViews views, int widgetId) {
