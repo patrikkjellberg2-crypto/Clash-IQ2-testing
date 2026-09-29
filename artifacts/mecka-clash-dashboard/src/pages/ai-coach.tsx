@@ -420,40 +420,40 @@ export default function AICoachPage() {
                   <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {[
                       {
-                        label: 'Bästa nästa attack',
+                        label: 'Best next attack',
                         icon: Target,
                         mode: 'clan' as Mode,
-                        prompt: 'Vilken är vår bästa nästa attack? Analysera återstående mål, våra återstående attacker och tidigare resultat. Ge ett konkret mål och varför.',
+                        prompt: 'What is our best next attack? Analyze remaining targets, our remaining attacks and previous results. Give me a concrete target and explain why.',
                       },
                       {
-                        label: 'Största hotet',
+                        label: 'Biggest threat',
                         icon: Shield,
                         mode: 'opponent' as Mode,
-                        prompt: 'Vilket är det största konkreta hotet från motståndaren just nu? Använd endast registrerade attacker och aktuell krigsdata.',
+                        prompt: 'What is the biggest concrete threat from the opponent right now? Use only recorded attacks and current war data.',
                       },
                       {
-                        label: 'Läs kriget',
+                        label: 'Read the war',
                         icon: Swords,
                         mode: 'opponent' as Mode,
-                        prompt: 'Ge mig en snabb taktisk lägesbild av kriget: vad har hänt, vad återstår och vad bör vi fokusera på nu?',
+                        prompt: 'Give me a quick tactical overview of the war: what has happened, what remains, and what should we focus on now?',
                       },
                       {
-                        label: 'Vad gör vi nu?',
+                        label: 'What do we do now?',
                         icon: Sparkles,
                         mode: 'clan' as Mode,
-                        prompt: 'Ge mig exakt tre saker klanen bör göra härnäst baserat på aktuell krigsdata.',
+                        prompt: 'Give me exactly three things the clan should do next based on the current war data.',
                       },
                       {
-                        label: 'Våra bästa spelare',
+                        label: 'Our best players',
                         icon: Trophy,
                         mode: 'clan' as Mode,
-                        prompt: 'Vilka av våra spelare har presterat bäst i den aktuella krigsdatan? Visa konkreta resultat.',
+                        prompt: 'Which of our players have performed best in the current war data? Show concrete results.',
                       },
                       {
-                        label: 'Vad kan vi förbättra?',
+                        label: 'What can we improve?',
                         icon: Users,
                         mode: 'clan' as Mode,
-                        prompt: 'Analysera vår nuvarande krigsdata och identifiera de viktigaste förbättringsområdena.',
+                        prompt: 'Analyze our current war data and identify the most important areas for improvement.',
                       },
                     ].map((mission) => (
                       <button
