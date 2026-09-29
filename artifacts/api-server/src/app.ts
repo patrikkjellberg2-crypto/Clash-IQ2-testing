@@ -3,6 +3,7 @@ import path from "node:path";
 import fs from "node:fs";
 import cors from "cors";
 import pinoHttp from "pino-http";
+import cookieParser from "cookie-parser";
 import router from "./routes";
 import { logger } from "./lib/logger";
 import { buildSecurity, corsOptionsDelegate, sameOriginOnly } from "./middlewares/security";
@@ -34,6 +35,7 @@ app.use(
   }),
 );
 app.use(cors(corsOptionsDelegate));
+app.use(cookieParser());
 app.use(express.json({ limit: "256kb" }));
 app.use(express.urlencoded({ extended: true }));
 
