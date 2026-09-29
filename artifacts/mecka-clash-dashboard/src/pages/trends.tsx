@@ -10,9 +10,11 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { TrendingDown, TrendingUp, Minus, BarChart3 } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, BarChart3, ArrowLeft } from "lucide-react";
 import { useGetClashDashboard } from "@workspace/api-client-react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
+import { useLocation } from "wouter";
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => (v && typeof v === "object" ? (v as Dict) : {});
@@ -45,6 +47,7 @@ function trendDelta(mover: Mover) {
 }
 
 export default function TrendsPage() {
+  const [, setLocation] = useLocation();
   const { data, isLoading } = useGetClashDashboard();
   const dashboard = data as unknown as Dict | undefined;
   const clan = d(dashboard?.clan);
@@ -97,17 +100,36 @@ export default function TrendsPage() {
   const activeMover = movers.find((m) => m.playerTag === activePlayer);
 
   if (isLoading) {
-    return <div className="min-h-screen bg-[#02070d] text-white p-8">Loading Trends…</div>;
+    return (
+      <div className="min-h-screen bg-[#07090d] text-white">
+        <AppSidebar clanName={s(clan.name, "ClashIQ Clan")} clanTag={clanTag} />
+        <main className="min-w-0 lg:pl-0"><ClashIQInlineBanner /><div className="p-8 text-sm text-white/40">Loading Trends…</div></main>
+      </div>
+    );
   }
 
   const clanName = s(clan.name, "ClashIQ Clan");
 
   return (
-    <div className="min-h-screen bg-[#02070d] text-white">
-      <div className="flex min-h-screen">
-        <AppSidebar clanName={clanName} clanTag={clanTag} />
-        <main className="min-w-0 flex-1">
-          <header className="border-b border-white/[.06] bg-[#030a12] px-4 py-5 md:px-8">
+    <div className="min-h-[100dvh] overflow-x-hidden bg-[#07090d] text-white">
+      <AppSidebar clanName={clanName} clanTag={clanTag} />
+      <main className="min-w-0 lg:pl-0">
+        <ClashIQInlineBanner />
+
+        <button
+          type="button"
+          aria-label="Go back"
+          title="Back"
+          onClick={() => {
+            if (window.history.length > 1) window.history.back();
+            else setLocation("/");
+          }}
+          className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+        >
+          <ArrowLeft className="size-4" />
+        </button>
+
+          <header className="border-b border-white/[.06] bg-[#07090d]/85 px-4 py-5 backdrop-blur-xl md:px-8">
             <div className="mx-auto max-w-[1400px]">
               <p className="text-[9px] font-black uppercase tracking-[.22em] text-[#f4c542]">
                 Intelligence / Trends
@@ -243,8 +265,7 @@ export default function TrendsPage() {
               </article>
             </section>
           </div>
-        </main>
-      </div>
+      </main>
     </div>
   );
 }
