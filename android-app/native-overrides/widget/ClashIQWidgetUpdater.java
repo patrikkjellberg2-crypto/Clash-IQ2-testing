@@ -60,7 +60,8 @@ public final class ClashIQWidgetUpdater {
             if (war == null) return WidgetData.noWar(clan != null ? clan.optString("name", "Clash IQ") : "Clash IQ");
             JSONObject own = war.optJSONObject("clan");
             JSONObject opp = war.optJSONObject("opponent");
-            String state = war.optString("state", "").toUpperCase();
+            String stateRaw = war.optString("state", "").toLowerCase();
+            String state = "inwar".equals(stateRaw) ? "WAR DAY" : ("preparation".equals(stateRaw) ? "PREPARATION" : stateRaw.toUpperCase());
             String ownName = own != null ? own.optString("name", "BHABE DHEMONS") : "BHABE DHEMONS";
             String oppName = opp != null ? opp.optString("name", "Opponent") : "Opponent";
             int ownStars = own != null ? own.optInt("stars", 0) : 0;
@@ -70,11 +71,38 @@ public final class ClashIQWidgetUpdater {
             String end = war.optString("endTime", "");
             JSONArray members = own != null ? own.optJSONArray("members") : null;
             int remaining = 0;
+            String lastAttacks = "LAST ATTACKS —";
+            if (members != null) {
+                java.util.ArrayList<String> recent = new java.util.ArrayList<>();
+                for (int i = 0; i < members.length(); i++) {
+                    JSONObject member = members.optJSONObject(i);
+                    if (member == null) continue;
+                    JSONArray attacks = member.optJSONArray("attacks");
+                    if (attacks == null) continue;
+                    for (int j = 0; j < attacks.length(); j++) {
+                        JSONObject attack = attacks.optJSONObject(j);
+                        if (attack == null) continue;
+                        String name = member.optString("name", "Player");
+                        int stars = attack.optInt("stars", 0);
+                        int target = attack.optInt("defenderTag", 0);
+                        recent.add(name + " " + stars + "★");
+                    }
+                }
+                java.util.Collections.reverse(recent);
+                if (!recent.isEmpty()) {
+                    StringBuilder b = new StringBuilder("LAST: ");
+                    for (int i = 0; i < Math.min(5, recent.size()); i++) {
+                        if (i > 0) b.append("  •  ");
+                        b.append(recent.get(i));
+                    }
+                    lastAttacks = b.toString();
+                }
+            }
             if (members != null) {
                 int attacksPer = Math.max(1, war.optInt("attacksPerMember", 2));
                 remaining = Math.max(0, members.length() * attacksPer - ownAttacks);
             }
-            return new WidgetData(ownName, oppName, ownStars, oppStars, ownAttacks, oppAttacks, remaining, state, end, false, "");
+            return new WidgetData(ownName, oppName, ownStars, oppStars, ownAttacks, oppAttacks, remaining, state, end, false, lastAttacks);
         } catch (Exception e) {
             return WidgetData.error("LIVE FEED OFFLINE");
         } finally { if (c != null) c.disconnect(); }
@@ -92,6 +120,7 @@ public final class ClashIQWidgetUpdater {
             v.setTextViewText(R.id.widget_opp_name, trim(d.oppName));
             v.setTextViewText(R.id.widget_score, d.ownStars + "  —  " + d.oppStars);
             v.setTextViewText(R.id.widget_attacks, "⚔ " + d.ownAttacks + " used   •   " + d.remaining + " left");
+            v.setTextViewText(R.id.widget_last, d.lastAttacks);
             v.setTextViewText(R.id.widget_timer, formatEnd(d.endTime));
             v.setTextViewText(R.id.widget_error, d.error);
             Intent open = new Intent(context, MainActivity.class).putExtra("clashiq_path", "/war-center");
@@ -114,8 +143,8 @@ public final class ClashIQWidgetUpdater {
     }
 
     private static final class WidgetData {
-        String ownName, oppName, status, endTime, error; int ownStars, oppStars, ownAttacks, oppAttacks, remaining;
-        WidgetData(String a,String b,int c,int d,int e,int f,int g,String h,String i,boolean j,String k){ownName=a;oppName=b;ownStars=c;oppStars=d;ownAttacks=e;oppAttacks=f;remaining=g;status=h;endTime=i;error=k;}
+        String ownName, oppName, status, endTime, error, lastAttacks; int ownStars, oppStars, ownAttacks, oppAttacks, remaining;
+        WidgetData(String a,String b,int c,int d,int e,int f,int g,String h,String i,boolean j,String k){ownName=a;oppName=b;ownStars=c;oppStars=d;ownAttacks=e;oppAttacks=f;remaining=g;status=h;endTime=i;error=j?k:"";lastAttacks=k;}
         static WidgetData error(String e){return new WidgetData("Clash IQ","—",0,0,0,0,0,"OFFLINE","",true,e);}
         static WidgetData noWar(String n){return new WidgetData(n,"—",0,0,0,0,0,"NO ACTIVE WAR","",false,"");}
     }
