@@ -30,10 +30,11 @@ import {
 
 
 /**
- * Recover completed wars with member-level attack data before Player Cards
- * read history. ClashKing exposes both a bulk previous-war endpoint and an
- * end-time-specific endpoint; the official warlog is used only to discover
- * additional completed war timestamps.
+ * Recover completed wars with member-level attack data.
+ *
+ * The official war log contains results but not individual attacks. ClashKing
+ * exposes the richer historical war through the v2 war endpoints, so try
+ * those first and keep the legacy endpoint as a fallback.
  */
 async function recoverHistoricalWars(
   clanTag: string,
@@ -43,62 +44,106 @@ async function recoverHistoricalWars(
   const requested = normalizeClanTag(clanTag);
   const seen = new Set<string>();
 
+  const fetchWar = async (endTime?: string) => {
+    const encodedClan = encodeURIComponent(requested);
+    const encodedTime = endTime ? encodeURIComponent(endTime) : "";
+
+    const paths = endTime
+      ? [
+          `/v2/war/${encodedClan}/previous/${encodedTime}`,
+          `/war/${encodedClan}/previous/${encodedTime}`,
+        ]
+      : [
+          `/v2/war/${encodedClan}/previous`,
+          `/war/${encodedClan}/previous`,
+        ];
+
+    for (const path of paths) {
+      const result = await fetchOptionalClashKingResource(path, null, log);
+      if (result.data) return result.data;
+    }
+
+    return null;
+  };
+
   const save = async (raw: ClashRecord) => {
     const clan = raw.clan && typeof raw.clan === "object" ? raw.clan as ClashRecord : null;
     const opponent = raw.opponent && typeof raw.opponent === "object" ? raw.opponent as ClashRecord : null;
     if (!clan || !opponent) return;
+
     const clanTagFromPayload = normalizeClanTag(String(clan.tag ?? ""));
     const opponentTagFromPayload = normalizeClanTag(String(opponent.tag ?? ""));
     if (clanTagFromPayload !== requested && opponentTagFromPayload !== requested) return;
+
     const endTime = String(raw.endTime ?? "").trim();
     if (!endTime) return;
-    const oriented = clanTagFromPayload === requested
-      ? raw
-      : { ...raw, clan: opponent, opponent: clan };
+
+    const oriented =
+      clanTagFromPayload === requested
+        ? raw
+        : { ...raw, clan: opponent, opponent: clan };
+
     const otherTag = normalizeClanTag(String((oriented.opponent as ClashRecord)?.tag ?? ""));
     const key = `${requested}__${otherTag}__${endTime}`;
     if (seen.has(key)) return;
     seen.add(key);
-    await snapshotCurrentWar(clanTag, { ...oriented, state: "warEnded" }, log as any);
+
+    await snapshotCurrentWar(
+      clanTag,
+      { ...oriented, state: "warEnded" },
+      log as any,
+    );
   };
 
   try {
-    const bulk = await fetchOptionalClashKingResource(
-      `/war/${encodeURIComponent(requested)}/previous`,
-      null,
-      log,
-    );
-    for (const war of listItems(bulk.data).slice(0, maxWars)) {
-      try { await save(war); } catch (error) { log.warn({ error }, "ClashIQ historical bulk war save failed"); }
+    const bulk = await fetchWar();
+    for (const war of listItems(bulk).slice(0, maxWars)) {
+      try {
+        await save(war);
+      } catch (error) {
+        log.warn({ error }, "ClashIQ historical bulk war save failed");
+      }
     }
   } catch (error) {
     log.warn({ error }, "ClashIQ historical bulk recovery failed");
   }
 
+  // The official war log gives us exact end times for wars that the bulk
+  // endpoint may not return. Fetch each missing war individually.
   try {
     const warlog = await fetchOptionalResource(
       `/clans/${encodeURIComponent(requested)}/warlog`,
       [],
       log,
     );
+
     for (const listed of listItems(warlog.data).slice(0, maxWars)) {
       const endTime = String(listed.endTime ?? "").trim();
       if (!endTime) continue;
-      const clan = listed.clan && typeof listed.clan === "object" ? listed.clan as ClashRecord : null;
-      const opponent = listed.opponent && typeof listed.opponent === "object" ? listed.opponent as ClashRecord : null;
+
+      const clan = listed.clan && typeof listed.clan === "object"
+        ? listed.clan as ClashRecord
+        : null;
+      const opponent = listed.opponent && typeof listed.opponent === "object"
+        ? listed.opponent as ClashRecord
+        : null;
+
       if (!clan || !opponent) continue;
+
       const otherTag = normalizeClanTag(String(opponent.tag ?? ""));
       const key = `${requested}__${otherTag}__${endTime}`;
       if (seen.has(key)) continue;
+
       try {
-        const detail = await fetchOptionalClashKingResource(
-          `/war/${encodeURIComponent(requested)}/previous/${encodeURIComponent(endTime)}`,
-          null,
-          log,
-        );
-        for (const war of listItems(detail.data).slice(0, 1)) await save(war);
+        const detail = await fetchWar(endTime);
+        for (const war of listItems(detail).slice(0, 1)) {
+          await save(war);
+        }
       } catch (error) {
-        log.warn({ error, endTime }, "ClashIQ historical war detail recovery failed");
+        log.warn(
+          { error, endTime },
+          "ClashIQ historical war detail recovery failed",
+        );
       }
     }
   } catch (error) {
@@ -1111,18 +1156,17 @@ router.get("/clash/war-archive", async (req, res): Promise<void> => {
       listPlayerWarStats(clanTag),
     ]);
 
-    // The official war log contains final scores but not attack-level data.
-    // A player-stats row can therefore exist while still containing zero
-    // attacks. Recover historical wars whenever the archive has no actual
-    // attack records yet, so Statistics / Best Defenders can use real data.
-    const hasAttackData =
-      players.some((player) => Number(player.attacksUsed ?? 0) > 0) ||
-      wars.some((war) =>
-        Array.isArray(war.members) &&
-        war.members.some((member: any) => Array.isArray(member?.attacks) && member.attacks.length > 0),
+    // Refresh every recent archived war that still lacks attack-level
+    // records. Player aggregate rows can be stale, so they are not used as
+    // proof that the visible Recent Performance wars contain attacks.
+    const warsWithoutAttacks = wars.filter((war) => {
+      const members = Array.isArray(war.members) ? war.members : [];
+      return !members.some(
+        (member: any) => Array.isArray(member?.attacks) && member.attacks.length > 0,
       );
+    });
 
-    if (!hasAttackData) {
+    if (warsWithoutAttacks.length > 0) {
       await recoverHistoricalWars(clanTag, req.log, 15);
       [wars, players] = await Promise.all([
         listArchivedWars(clanTag, Number.isFinite(limit) ? limit : 60),
