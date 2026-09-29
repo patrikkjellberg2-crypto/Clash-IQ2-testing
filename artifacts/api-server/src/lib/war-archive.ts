@@ -233,10 +233,15 @@ function canonicalWarTime(value: string) {
 
 function archiveIdentity(row: { clanTag: string; opponentTag: string; endTime: string }) {
   const time = canonicalWarTime(row.endTime);
-  // The archive is already scoped to the active clan, and legacy rows can
-  // contain slightly different clan-tag formatting. Opponent + canonical
-  // end-time is therefore the stable identity used for display deduplication.
-  return `${normalizeTag(row.opponentTag)}__${time || row.endTime}`;
+  // A completed Clash war is identified for archive display by opponent + UTC
+  // calendar date. Live and official-warlog snapshots can carry slightly
+  // different end-time strings (and occasionally different precision), while
+  // still representing the exact same completed war.
+  if (time) {
+    const date = new Date(time).toISOString().slice(0, 10);
+    return `${normalizeTag(row.opponentTag)}__${date}`;
+  }
+  return `${normalizeTag(row.opponentTag)}__${row.endTime}`;
 }
 
 function archiveRichness(row: { source: "live" | "warlog"; members: unknown; opponentMembers: unknown[] }) {
