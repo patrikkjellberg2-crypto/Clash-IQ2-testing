@@ -4,8 +4,19 @@ export type ClashIQNotificationOptions = {
   tag?: string;
 };
 
+const SERVICE_WORKER_URL = '/clash-iq-sw.js';
+
 export function notificationsSupported(): boolean {
-  return typeof window !== 'undefined' && 'Notification' in window;
+  return typeof window !== 'undefined' && 'Notification' in window && 'serviceWorker' in navigator;
+}
+
+export async function registerNotificationServiceWorker(): Promise<ServiceWorkerRegistration | null> {
+  if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return null;
+  try {
+    return await navigator.serviceWorker.register(SERVICE_WORKER_URL, { scope: '/' });
+  } catch {
+    return null;
+  }
 }
 
 export async function requestNotificationPermission(): Promise<NotificationPermission | 'unsupported'> {
@@ -17,22 +28,29 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
 export async function sendTestNotification(): Promise<{ ok: boolean; message: string }> {
   const permission = await requestNotificationPermission();
   if (permission === 'unsupported') {
-    return { ok: false, message: 'Den här webbläsaren stöder inte notiser.' };
+    return { ok: false, message: 'Den här Android-miljön stöder inte web-notiser.' };
   }
   if (permission !== 'granted') {
-    return { ok: false, message: 'Notistillstånd nekades. Tillåt notiser för Clash IQ i webbläsarens inställningar.' };
+    return { ok: false, message: 'Notistillstånd nekades. Tillåt notiser för Clash IQ i Android/webbläsarens inställningar.' };
+  }
+
+  const registration = await registerNotificationServiceWorker();
+  if (!registration) {
+    return { ok: false, message: 'Clash IQ:s notification service worker kunde inte startas.' };
   }
 
   try {
-    const notification = new Notification('⚔️ Clash IQ', {
-      body: 'Notiser fungerar! Detta är ett test från Clash IQ.',
-      tag: 'clash-iq-test',
-      icon: '/favicon.ico',
-    });
-    window.setTimeout(() => notification.close(), 7000);
-    return { ok: true, message: 'Testnotisen skickades.' };
+    await navigator.serviceWorker.ready;
+    const worker = navigator.serviceWorker.controller;
+    if (worker) {
+      worker.postMessage({ type: 'CLASH_IQ_TEST_NOTIFICATION' });
+    } else {
+      const active = (await navigator.serviceWorker.ready).active;
+      active?.postMessage({ type: 'CLASH_IQ_TEST_NOTIFICATION' });
+    }
+    return { ok: true, message: 'Testnotisen skickades via Clash IQ:s service worker.' };
   } catch {
-    return { ok: false, message: 'Notisen kunde inte visas på den här enheten.' };
+    return { ok: false, message: 'Service worker-notisen kunde inte visas på den här enheten.' };
   }
 }
 
