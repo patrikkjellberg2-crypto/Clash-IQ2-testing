@@ -29,7 +29,7 @@ jobs:
         run: corepack enable && pnpm --version
 
       - name: Install web dependencies
-        run: pnpm install --no-frozen-lockfile --allow-build=esbuild --allow-build=@replit/connectors-sdk
+        run: pnpm install --no-frozen-lockfile
 
       - name: Build latest Testing web app
         run: pnpm --filter @workspace/mecka-clash-dashboard run build
