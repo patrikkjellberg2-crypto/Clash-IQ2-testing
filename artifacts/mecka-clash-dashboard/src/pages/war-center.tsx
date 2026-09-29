@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
+import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import WarTimer from '@/components/WarTimer';
 import {
   ArrowLeft,
@@ -375,7 +376,8 @@ export default function WarCenterPage() {
         <AppSidebar clanName={label(asDict(dashboard.clan).name, 'Mecka Clash')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} />
 
         <main className="min-w-0 flex-1">
-          <header className="sticky top-0 z-20 border-b border-white/10 bg-[#06111f]/90 px-4 py-3 backdrop-blur-xl md:px-7">
+          <ClashIQInlineBanner />
+          <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div>
@@ -413,7 +415,7 @@ export default function WarCenterPage() {
             </div>
           </header>
 
-          <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-7">
+          <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
             <section
               className="premium-card war-command-card overflow-hidden rounded-2xl"
               data-testid="card-war-hero"
