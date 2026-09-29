@@ -19,6 +19,9 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -84,7 +87,7 @@ public final class ClashIQWidgetUpdater {
                         if (attack == null) continue;
                         String name = member.optString("name", "Player");
                         int stars = attack.optInt("stars", 0);
-                        int target = attack.optInt("defenderTag", 0);
+                        
                         recent.add(name + " " + stars + "★");
                     }
                 }
@@ -109,6 +112,7 @@ public final class ClashIQWidgetUpdater {
     }
 
     private static void render(Context context, WidgetData d) {
+        try {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
         ComponentName component = new ComponentName(context, ClashIQWidgetProvider.class);
         int[] ids = manager.getAppWidgetIds(component);
@@ -129,14 +133,23 @@ public final class ClashIQWidgetUpdater {
             v.setOnClickPendingIntent(R.id.widget_root, pi);
             manager.updateAppWidget(id, v);
         }
+        } catch (Throwable ignored) {
+            // A widget rendering failure must never crash the host app/process.
+        }
     }
 
     private static String trim(String s) { return s == null ? "—" : (s.length() > 17 ? s.substring(0, 16) + "…" : s); }
     private static String formatEnd(String iso) {
         if (iso == null || iso.isEmpty()) return "LIVE WAR";
         try {
-            java.time.Instant end = java.time.Instant.parse(iso);
-            long seconds = Math.max(0, java.time.Duration.between(java.time.Instant.now(), end).getSeconds());
+            String normalized = iso.replace("Z", "+0000");
+            if (normalized.length() > 5 && normalized.charAt(normalized.length() - 5) == ':') {
+                normalized = normalized.substring(0, normalized.length() - 2) + normalized.substring(normalized.length() - 1);
+            }
+            SimpleDateFormat parser = new SimpleDateFormat("yyyyMMdd'T'HHmmssZ");
+            parser.setTimeZone(TimeZone.getTimeZone("UTC"));
+            Date end = parser.parse(normalized.replace("-", "").replace(":", ""));
+            long seconds = Math.max(0, (end.getTime() - System.currentTimeMillis()) / 1000L);
             long h = seconds / 3600, m = (seconds % 3600) / 60;
             return h > 0 ? String.format("%dh %02dm", h, m) : String.format("%dm", m);
         } catch (Exception e) { return "LIVE WAR"; }
