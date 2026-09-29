@@ -8,11 +8,28 @@ const obj = (v: any): D => v && typeof v === "object" ? v : {};
 const arr = (v: any): D[] => Array.isArray(v) ? v.map(obj) : [];
 const n = (v: any) => typeof v === "number" && Number.isFinite(v) ? v : Number(v) || 0;
 const s = (v: any, fallback = "—") => typeof v === "string" && v.trim() ? v : fallback;
+const parseClashTime = (value: any) => {
+  const raw = s(value, "");
+  const compact = /^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})(?:\\.\\d+)?Z?$/.exec(raw);
+  if (compact) {
+    const [, year, month, day, hour, minute, second] = compact;
+    return new Date(Date.UTC(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second),
+    ));
+  }
+  return new Date(raw);
+};
+
 const fmt = (v: any) => {
-  const d = new Date(s(v, ""));
+  const d = parseClashTime(v);
   return Number.isNaN(d.getTime())
     ? "—"
-    : new Intl.DateTimeFormat("en-US", { day: "numeric", month: "short", year: "numeric" }).format(d);
+    : new Intl.DateTimeFormat("en-US", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(d);
 };
 const compact = (v: number) => new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 1 }).format(v);
 
@@ -22,7 +39,7 @@ export default function CapitalRaidsPage() {
   const d = data as any;
   const clan = obj(d?.clan);
   const seasons = useMemo(
-    () => arr(d?.capitalRaidSeasons).sort((a, b) => new Date(s(b.endTime, "")).getTime() - new Date(s(a.endTime, "")).getTime()),
+    () => arr(d?.capitalRaidSeasons).sort((a, b) => parseClashTime(b.endTime).getTime() - parseClashTime(a.endTime).getTime()),
     [d?.capitalRaidSeasons],
   );
   const season = seasons[selected] ?? seasons[0] ?? {};
