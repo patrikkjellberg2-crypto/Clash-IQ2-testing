@@ -187,7 +187,7 @@ export default function MembersPage() {
           clanTag={str(d?.clanTag, '#2Q0Q82C9R')}
         />
 
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 !pt-0">
           <ClashIQInlineBanner />
           {/* Header */}
           <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
