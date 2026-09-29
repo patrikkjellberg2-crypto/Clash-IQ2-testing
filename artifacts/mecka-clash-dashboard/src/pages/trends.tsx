@@ -54,6 +54,7 @@ export default function TrendsPage() {
   const clanTag = s(dashboard?.clanTag);
 
   const [selectedPlayer, setSelectedPlayer] = useState("");
+  const [playerWars, setPlayerWars] = useState(20);
 
   const clanQuery = useQuery({
     queryKey: ["clash-trends-clan", clanTag],
@@ -89,7 +90,7 @@ export default function TrendsPage() {
     enabled: Boolean(clanTag && activePlayer),
     queryFn: async () => {
       const r = await fetch(
-        `/api/clash/trends/player/${encodeURIComponent(activePlayer)}?clanTag=${encodeURIComponent(clanTag)}&wars=20`,
+        `/api/clash/trends/player/${encodeURIComponent(activePlayer)}?clanTag=${encodeURIComponent(clanTag)}&wars=${playerWars}`,
       );
       if (!r.ok) throw new Error("Could not load player history");
       const body = await r.json();
@@ -190,6 +191,19 @@ export default function TrendsPage() {
                 <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#5da9ff]">Player trend</p>
                 <h2 className="mt-1 text-lg font-black">{activeMover?.playerName || "Select a player"}</h2>
                 <p className="mt-1 text-xs text-white/35">Stars and average destruction per completed war.</p>
+
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {[5, 10, 20, 50, 60].map((count) => (
+                    <button
+                      key={count}
+                      type="button"
+                      onClick={() => setPlayerWars(count)}
+                      className={`rounded-lg border px-3 py-2 text-[10px] font-black uppercase tracking-wider transition ${playerWars === count ? "border-amber-400/30 bg-amber-400/10 text-amber-300" : "border-white/[.07] bg-white/[.02] text-white/40 hover:bg-white/[.05] hover:text-white/70"}`}
+                    >
+                      {count === 60 ? "Last 60" : `Last ${count}`} wars
+                    </button>
+                  ))}
+                </div>
 
                 <div className="mt-5 h-[300px]">
                   {playerQuery.isLoading ? (
