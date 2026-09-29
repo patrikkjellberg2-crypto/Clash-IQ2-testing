@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { MemberDetailsDialog } from "@/components/member-details-dialog";
 import WarTimer from "@/components/WarTimer";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
 import {
   ArrowRight,
   Check,
@@ -620,49 +621,37 @@ export default function DashboardPage() {
           </header>
 
           <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-7">
-            <section className="hero-banner premium-card relative overflow-hidden rounded-[1.35rem] border-white/15">
-              <div className="hero-glow" />
+            <ClashIQInlineBanner />
 
-              <div className="relative min-h-[220px] md:min-h-[300px]">
-                <img
-                  src="/clash-iq-war-banner.webp"
-                  alt="Clash IQ — Plan, Analyze, Improve, Win"
-                  className="absolute inset-0 h-full w-full scale-[1.02] object-cover object-center"
-                />
-
-                <div className="absolute inset-0 bg-gradient-to-r from-[#06111f]/90 via-[#06111f]/35 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-[#06111f] via-[#06111f]/65 to-transparent" />
-
-                <div className="absolute inset-x-0 bottom-0 flex flex-col gap-2 p-5 md:p-7">
-                  <div className="mb-1 flex items-center gap-2">
-                    <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_12px_rgba(52,211,153,.8)]" />
-                    <p className="text-[10px] font-black uppercase tracking-[.22em] text-sky-300">Clan Command Center</p>
+            <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
+              <div className="mx-auto flex max-w-[1400px] items-center justify-between">
+                <div>
+                  <p className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300">
+                    <span className="size-1.5 rounded-full bg-emerald-400" />
+                    Command Center
+                  </p>
+                  <div className="mt-2 flex items-center gap-2">
+                    <h1 className="text-2xl font-black tracking-tight md:text-3xl">
+                      {clanName}
+                    </h1>
+                    <span className="rounded-full border border-amber-400/25 bg-amber-400/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-widest text-amber-300">
+                      Elite
+                    </span>
                   </div>
-
-                  <div className="flex flex-wrap items-end justify-between gap-3">
-                    <div>
-                      <h1 className="text-2xl font-bold md:text-4xl">
-                        {clanName}
-                      </h1>
-
-                      <p className="text-xs text-slate-300">
-                        {dash.clanTag}
-
-                        <span className="mx-2 text-amber-300">
-                          |
-                        </span>
-
-                        Stronger Together
-                      </p>
-                    </div>
-
-                    <div className="grid size-12 place-items-center rounded-xl border border-amber-400/60 bg-black/40 text-lg font-bold text-amber-300 backdrop-blur-sm">
-                      {n(clan.clanLevel)}
-                    </div>
-                  </div>
+                  <p className="mt-1 text-xs text-slate-500">
+                    {dash.clanTag}
+                    <span className="mx-2 text-amber-300">|</span>
+                    Stronger Together
+                  </p>
+                </div>
+                <div className="hidden items-center gap-2 rounded-xl border border-emerald-400/15 bg-emerald-400/[0.04] px-4 py-2 sm:flex">
+                  <span className="size-2 rounded-full bg-emerald-400" />
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-300">
+                    Live data
+                  </span>
                 </div>
               </div>
-            </section>
+            </header>  </section>
 
                         <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
               <Stat
