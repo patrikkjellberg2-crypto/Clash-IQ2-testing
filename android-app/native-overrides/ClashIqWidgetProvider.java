@@ -170,7 +170,6 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
                             if (membersArray != null) {
                                 int attacksUsed = 0;
                                 java.util.List<JSONObject> recent = new ArrayList<>();
-                                int attacksUsed = 0;
                                 for (int i = 0; i < membersArray.length(); i++) {
                                     JSONObject member = membersArray.optJSONObject(i);
                                     if (member != null) {
