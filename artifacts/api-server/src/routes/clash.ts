@@ -1111,10 +1111,18 @@ router.get("/clash/war-archive", async (req, res): Promise<void> => {
       listPlayerWarStats(clanTag),
     ]);
 
-    // A fresh TEST database has no player stats yet. Recover recent completed
-    // wars with full member/attack detail before returning the archive so
-    // "Players tracked" and player history are populated on the first visit.
-    if (players.length === 0) {
+    // The official war log contains final scores but not attack-level data.
+    // A player-stats row can therefore exist while still containing zero
+    // attacks. Recover historical wars whenever the archive has no actual
+    // attack records yet, so Statistics / Best Defenders can use real data.
+    const hasAttackData =
+      players.some((player) => Number(player.attacksUsed ?? 0) > 0) ||
+      wars.some((war) =>
+        Array.isArray(war.members) &&
+        war.members.some((member: any) => Array.isArray(member?.attacks) && member.attacks.length > 0),
+      );
+
+    if (!hasAttackData) {
       await recoverHistoricalWars(clanTag, req.log, 15);
       [wars, players] = await Promise.all([
         listArchivedWars(clanTag, Number.isFinite(limit) ? limit : 60),
