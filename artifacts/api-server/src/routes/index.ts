@@ -3,10 +3,12 @@ import healthRouter from "./health";
 import clashRouter from "./clash";
 import warPlannerRouter from "./war-planner";
 import aiCoachRouter from "./ai-coach";
+import authRouter from "./auth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(authRouter);
 router.use(clashRouter);
 
 /*
