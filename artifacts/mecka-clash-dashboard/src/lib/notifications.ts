@@ -57,3 +57,18 @@ export async function sendTestNotification(): Promise<{ ok: boolean; message: st
 export function notificationPermission(): NotificationPermission | 'unsupported' {
   return notificationsSupported() ? Notification.permission : 'unsupported';
 }
+
+
+export async function sendClashIQNotification(
+  title: string,
+  body: string,
+  tag: string,
+): Promise<boolean> {
+  if (!notificationsSupported() || Notification.permission !== 'granted') return false;
+  const registration = await registerNotificationServiceWorker();
+  if (!registration) return false;
+  const worker = (await navigator.serviceWorker.ready).active;
+  if (!worker) return false;
+  worker.postMessage({ type: 'CLASH_IQ_PUSH_NOTIFICATION', title, body, tag });
+  return true;
+}
