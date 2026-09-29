@@ -74,5 +74,9 @@
     "wouter": "^3.3.5",
     "zod": "catalog:",
     "clash-of-clans-data": "0.18.0"
+  },
+  "dependencies": {
+    "@capacitor/core": "7.4.3",
+    "@capgo/capacitor-social-login": "7.20.0"
   }
 }
