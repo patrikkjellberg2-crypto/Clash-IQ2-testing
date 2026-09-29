@@ -120,7 +120,23 @@ function ClashIQWarNotifications() {
         if (!response.ok || cancelled) return;
         const dashboard = await response.json();
         const war = dashboard?.currentWar;
-        if (!war || !['preparation', 'inWar', 'matchmaking'].includes(String(war.state || ''))) return;
+        const activeStorageKey = 'clash-iq-active-war-v1';
+        const storedActive = (() => {
+          try { return JSON.parse(localStorage.getItem(activeStorageKey) || 'null'); } catch { return null; }
+        })();
+
+        if (!war || !['preparation', 'inWar', 'matchmaking'].includes(String(war.state || ''))) {
+          if (storedActive?.warId && !storedActive.endedNotified) {
+            localStorage.setItem(activeStorageKey, JSON.stringify({ warId, opponent, end: Number.isFinite(end) ? end : null }));
+        const sent = readSent();
+            if (!sent[storedActive.warId + ':ended']) {
+              await show('🏁 War avslutad', 'War mot ' + (storedActive.opponent || 'motståndaren') + ' är avslutad.', storedActive.warId + ':ended');
+              markSent(storedActive.warId + ':ended');
+            }
+            localStorage.removeItem(activeStorageKey);
+          }
+          return;
+        }
         const start = Date.parse(String(war.startTime || ''));
         const end = Date.parse(String(war.endTime || ''));
         if (!Number.isFinite(start)) return;
