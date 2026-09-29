@@ -32,25 +32,26 @@ export function ClashIQPageBanner({ children }: { children: ReactNode }) {
         <ArrowLeft className="size-4" />
       </button>
       <style>{`
+        /* Members is the visual reference: compact banner, rounded frame, tight dark command-center flow. */
         .clashiq-global-banner-page main {
           margin-top: 0 !important;
           background-color: #07090d !important;
           background-image:
-            linear-gradient(to bottom, rgba(7,9,13,0) 0, rgba(7,9,13,0) 360px, #07090d 360px),
+            linear-gradient(to bottom, rgba(7,9,13,0) 0, rgba(7,9,13,0) 270px, #07090d 270px),
             url(${BANNER_SRC});
           background-repeat: no-repeat;
           background-position: center 28px;
-          background-size: min(1400px, calc(100% - 56px)) 360px;
+          background-size: min(1155px, calc(100% - 32px)) auto;
           color: #fff !important;
         }
 
-        /* The banner is painted directly into main, so it cannot become a flex item or create a gap. */
+        /* Keep the banner compact like Members instead of using a full-width hero. */
         .clashiq-global-banner-page main {
-          padding-top: 384px !important;
+          padding-top: 294px !important;
         }
 
         .clashiq-global-banner-page main.lg\\:pl-\\[260px\\] {
-          background-size: min(1400px, calc(100% - 56px)) 360px;
+          background-size: min(1155px, calc(100% - 32px)) auto;
         }
 
         .clashiq-global-banner-page > div {
@@ -59,11 +60,18 @@ export function ClashIQPageBanner({ children }: { children: ReactNode }) {
           color: #fff !important;
         }
 
+        /* Match Members: dark header, thin divider, compact spacing below the banner. */
+        .clashiq-global-banner-page main > header {
+          border-color: rgba(255,255,255,.05) !important;
+          background: rgba(7,9,13,.85) !important;
+          backdrop-filter: blur(18px);
+        }
+
         @media (max-width: 1023px) {
           .clashiq-global-banner-page main {
-            padding-top: 252px !important;
+            padding-top: 242px !important;
             background-position: center 16px;
-            background-size: calc(100% - 32px) 220px;
+            background-size: calc(100% - 32px) auto;
           }
         }
 
