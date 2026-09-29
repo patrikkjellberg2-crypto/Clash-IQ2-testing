@@ -126,9 +126,8 @@ function ClashIQWarNotifications() {
         })();
 
         if (!war || !['preparation', 'inWar', 'matchmaking'].includes(String(war.state || ''))) {
-          if (storedActive?.warId && !storedActive.endedNotified) {
-            localStorage.setItem(activeStorageKey, JSON.stringify({ warId, opponent, end: Number.isFinite(end) ? end : null }));
-        const sent = readSent();
+          if (storedActive?.warId) {
+            const sent = readSent();
             if (!sent[storedActive.warId + ':ended']) {
               await show('🏁 War avslutad', 'War mot ' + (storedActive.opponent || 'motståndaren') + ' är avslutad.', storedActive.warId + ':ended');
               markSent(storedActive.warId + ':ended');

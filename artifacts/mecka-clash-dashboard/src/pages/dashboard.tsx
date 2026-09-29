@@ -509,6 +509,42 @@ function IntelligencePulse({
 }
 
 
+function RecentAttacksWidget({ war }: { war: Dict }) {
+  const own = d(war.clan);
+  const members = arr(own.members);
+  const attacks = members.flatMap(member =>
+    arr(member.attacks).map(attack => ({ attack, member })),
+  ).sort((a, b) => n(b.attack.order) - n(a.attack.order)).slice(0, 5);
+  const opponentMembers = arr(d(war.opponent).members);
+  const opponentByTag = new Map(opponentMembers.map(member => [s(member.tag).toUpperCase(), member]));
+  return (
+    <article className="premium-card overflow-hidden rounded-2xl border border-amber-400/15">
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+        <div><p className="section-kicker">Live war widget</p><h2 className="mt-1 text-xl font-black tracking-tight">Senaste attacker</h2></div>
+        <Swords className="size-5 text-amber-300" />
+      </div>
+      {!attacks.length ? <div className="p-6 text-sm text-muted-foreground">Inga attacker registrerade ännu.</div> : (
+        <div className="divide-y divide-white/[.06]">
+          {attacks.map(({ attack, member }, index) => {
+            const attackerName = s(member.name, "Unknown");
+            const defender = opponentByTag.get(s(attack.defenderTag).toUpperCase());
+            const target = defender ? s(defender.name, "#" + n(defender.mapPosition)) : "#" + (n(attack.defenderMapPosition) || n(attack.mapPosition) || "?");
+            const stars = Math.max(0, Math.min(3, n(attack.stars)));
+            const destruction = Math.round(n(attack.destructionPercentage));
+            const starText = "★".repeat(stars) + "☆".repeat(3 - stars);
+            return (
+              <div key={s(attack.attackerTag, attackerName) + "-" + String(attack.order || index)} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-4 px-5 py-4">
+                <div className="min-w-0"><p className="truncate text-base font-bold text-white">{attackerName}</p><p className="mt-0.5 truncate text-xs text-slate-500">mot {target}</p></div>
+                <div className="text-lg font-black tracking-tight text-amber-300" aria-label={stars + " stjärnor"}>{starText}</div>
+                <div className="min-w-[3.5rem] text-right text-sm font-bold text-slate-300">{destruction}%</div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </article>
+  );
+}
 function WarPerformance({
   warlog,
   clanTag,
@@ -866,6 +902,8 @@ export default function DashboardPage() {
                 gold
               />
             </section>
+
+            <RecentAttacksWidget war={war} />
 
             <section className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-[1.35fr_.9fr_.8fr]">
               <WarCard
