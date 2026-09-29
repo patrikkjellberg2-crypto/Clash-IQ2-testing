@@ -462,7 +462,7 @@ export default function WarCenterPage() {
                       <div className="mx-auto grid size-12 place-items-center rounded-xl border border-sky-400/30 bg-sky-400/10 text-sm font-black text-sky-300">
                         {num(opponent.clanLevel)}
                       </div>
-                      <p className="mt-4 break-words text-xl font-black tracking-tight text-sky-100 md:text-2xl">
+                      <p className="mt-4 break-words text-2xl font-black tracking-tight text-sky-100 md:text-3xl">
                         {label(opponent.name, 'Opponent')}
                       </p>
                       <p className="mt-1 text-[11px] font-bold uppercase tracking-[.14em] text-sky-300/60">
@@ -505,13 +505,13 @@ export default function WarCenterPage() {
 
             <section className="grid gap-5 xl:grid-cols-[.78fr_1.22fr]">
               <article
-                className="overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+                className="premium-card overflow-hidden rounded-2xl"
                 data-testid="card-attack-order"
               >
-                <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
-                  <div className="flex items-center gap-2">
-                    <Target className="size-4 text-primary" />
-                    <h2 className="text-sm font-bold">Recommended order</h2>
+                <div className="flex items-center justify-between border-b border-white/10 bg-white/[.015] px-5 py-4">
+                  <div>
+                    <p className="section-kicker">Attack queue</p>
+                    <h2 className="mt-1 text-lg font-black tracking-tight">Recommended Order</h2>
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
                     {attackOrder.length} remaining
@@ -527,7 +527,7 @@ export default function WarCenterPage() {
                       <Link
                         key={str(item.member.tag, String(index))}
                         href={`/player/${encodeURIComponent(str(item.member.tag))}`}
-                        className="group flex items-center gap-3 px-5 py-3.5 transition hover:bg-white/[.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                        className="group flex items-center gap-3 px-5 py-3.5 transition hover:bg-white/[.055] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/40"
                         data-testid={`row-attack-order-${index}`}
                         aria-label={`Open player card for ${label(item.member.name, 'Unknown member')}`}
                       >
@@ -578,13 +578,13 @@ export default function WarCenterPage() {
               </article>
 
               <article
-                className="overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+                className="premium-card overflow-hidden rounded-2xl"
                 data-testid="card-war-members"
               >
-                <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
-                  <div className="flex items-center gap-2">
-                    <Users className="size-4 text-primary" />
-                    <h2 className="text-sm font-bold">Members' attacks</h2>
+                <div className="flex items-center justify-between border-b border-white/10 bg-white/[.015] px-5 py-4">
+                  <div>
+                    <p className="section-kicker">War roster</p>
+                    <h2 className="mt-1 text-lg font-black tracking-tight">Members' Attacks</h2>
                   </div>
                   <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
                     {members.length} in war
@@ -692,13 +692,13 @@ export default function WarCenterPage() {
             </section>
 
             <article
-              className="overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+              className="premium-card overflow-hidden rounded-2xl"
               data-testid="card-target-map"
             >
-              <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <MapPinned className="size-4 text-primary" />
-                  <h2 className="text-sm font-bold">Target map</h2>
+              <div className="flex items-center justify-between border-b border-white/10 bg-white/[.015] px-5 py-4">
+                <div>
+                  <p className="section-kicker">Enemy board</p>
+                  <h2 className="mt-1 text-lg font-black tracking-tight">Target Map</h2>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
                   {opponentMembers.length} bases
@@ -749,13 +749,13 @@ export default function WarCenterPage() {
             </article>
 
             <article
-              className="overflow-hidden rounded-2xl border border-card-border bg-card shadow-sm"
+              className="premium-card overflow-hidden rounded-2xl"
               data-testid="card-defensive-attacks"
             >
-              <div className="flex items-center justify-between border-b border-border/70 px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert className="size-4 text-primary" />
-                  <h2 className="text-sm font-bold">Defensive Attacks</h2>
+              <div className="flex items-center justify-between border-b border-white/10 bg-white/[.015] px-5 py-4">
+                <div>
+                  <p className="section-kicker">Incoming attacks</p>
+                  <h2 className="mt-1 text-lg font-black tracking-tight">Defensive Attacks</h2>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-[.12em] text-muted-foreground">
                   {defensiveAttacks.length} received
