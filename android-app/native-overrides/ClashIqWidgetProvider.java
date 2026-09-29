@@ -1,12 +1,16 @@
 package com.clashiq.app;
 
 import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.SystemClock;
 import android.widget.RemoteViews;
 
@@ -17,8 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.time.Instant;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -26,9 +30,17 @@ import java.util.concurrent.Executors;
 
 public class ClashIqWidgetProvider extends AppWidgetProvider {
     private static final String ACTION_REFRESH = "com.clashiq.app.WIDGET_REFRESH";
+    private static final String ACTION_NOTIFY_PREP = "com.clashiq.app.NOTIFY_PREP";
+    private static final String ACTION_NOTIFY_START = "com.clashiq.app.NOTIFY_START";
+    private static final String EXTRA_START_TIME = "startTime";
+    private static final String EXTRA_OPPONENT = "opponent";
     private static final String API_URL =
             "https://clash-iq2-testing.onrender.com/api/clash/dashboard?clanTag=%232Q0Q82C9R";
     private static final long REFRESH_MS = 30L * 60L * 1000L;
+    private static final long PREP_NOTIFICATION_MS = 15L * 60L * 1000L;
+    private static final int PREP_ALARM_ID = 9918;
+    private static final int START_ALARM_ID = 9919;
+    private static final String CHANNEL_ID = "war_alerts";
     private static final ExecutorService EXECUTOR = Executors.newCachedThreadPool();
 
     @Override
@@ -45,14 +57,39 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
     @Override
     public void onDisabled(Context context) {
         cancelRefresh(context);
+        cancelWarNotifications(context);
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
-        if (ACTION_REFRESH.equals(intent.getAction())) {
+        String action = intent.getAction();
+        if (ACTION_REFRESH.equals(action)) {
+            refreshAll(context);
+        } else if (ACTION_NOTIFY_PREP.equals(action)) {
+            String opponent = intent.getStringExtra(EXTRA_OPPONENT);
+            String start = intent.getStringExtra(EXTRA_START_TIME);
+            showNotification(context,
+                    "⚔️ WAR STARTS IN 15 MIN",
+                    "BHABE DHEMONS vs " + safeOpponent(opponent),
+                    "Get your attacks ready.",
+                    1001);
+            markNotified(context, "prep", start);
+        } else if (ACTION_NOTIFY_START.equals(action)) {
+            String opponent = intent.getStringExtra(EXTRA_OPPONENT);
+            String start = intent.getStringExtra(EXTRA_START_TIME);
+            showNotification(context,
+                    "⚔️ WAR DAY",
+                    "BHABE DHEMONS vs " + safeOpponent(opponent),
+                    "The war has started. Clash IQ is live.",
+                    1002);
+            markNotified(context, "start", start);
             refreshAll(context);
         }
+    }
+
+    private static String safeOpponent(String opponent) {
+        return opponent == null || opponent.trim().isEmpty() ? "Unknown opponent" : opponent;
     }
 
     private static void refreshAll(Context context) {
@@ -67,15 +104,7 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_title, "⚔️ BHABE DHEMONS");
         views.setTextViewText(R.id.widget_status, "LOADING…");
 
-        Intent launch = context.getPackageManager()
-                .getLaunchIntentForPackage(context.getPackageName());
-        if (launch != null) {
-            launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            PendingIntent pending = PendingIntent.getActivity(
-                    context, widgetId, launch,
-                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            views.setOnClickPendingIntent(R.id.widget_root, pending);
-        }
+        setLaunchPendingIntent(context, views, widgetId);
         manager.updateAppWidget(widgetId, views);
 
         EXECUTOR.execute(() -> {
@@ -103,7 +132,9 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
         String score = "—";
         String destruction = "—";
         String attacks = "—";
-        String countdown = "—";
+        String targetTime = "";
+        String timerLabel = "—";
+        boolean timerActive = false;
 
         try {
             if (json != null) {
@@ -111,9 +142,10 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
                 JSONObject war = root.optJSONObject("currentWar");
                 if (war != null) {
                     String state = war.optString("state", "").toLowerCase(Locale.ROOT);
-                    status = state.contains("prep")
-                            ? "PREPARATION DAY"
-                            : (state.contains("war") || state.contains("inwar") ? "WAR DAY" : state.toUpperCase(Locale.ROOT));
+                    boolean preparation = state.contains("prep");
+                    boolean inWar = state.contains("war") || state.contains("inwar");
+
+                    status = preparation ? "PREPARATION DAY" : (inWar ? "WAR DAY" : state.toUpperCase(Locale.ROOT));
 
                     JSONObject enemy = war.optJSONObject("opponent");
                     if (enemy != null) opponent = enemy.optString("name", "Unknown opponent");
@@ -129,25 +161,35 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
 
                     if (ours != null) {
                         int attacksPerMember = ours.optInt("attacksPerMember", 1);
-                        int members = ours.optInt("members", 0);
-                        int attacksUsed = 0;
                         if (ours.has("members") && ours.opt("members") instanceof org.json.JSONArray) {
                             org.json.JSONArray membersArray = ours.optJSONArray("members");
                             if (membersArray != null) {
+                                int attacksUsed = 0;
                                 for (int i = 0; i < membersArray.length(); i++) {
                                     JSONObject member = membersArray.optJSONObject(i);
                                     if (member != null) attacksUsed += member.optInt("attacks", 0);
                                 }
-                                int total = membersArray.length() * attacksPerMember;
-                                attacks = Integer.toString(Math.max(0, total - attacksUsed));
+                                attacks = Integer.toString(Math.max(0, membersArray.length() * attacksPerMember - attacksUsed));
                             }
-                        } else if (members > 0) {
-                            attacks = "—";
                         }
                     }
 
-                    String end = war.optString("endTime", "");
-                    if (!end.isEmpty()) countdown = countdown(end);
+                    if (preparation) {
+                        targetTime = war.optString("startTime", "");
+                        timerLabel = "WAR STARTS IN";
+                    } else if (inWar) {
+                        targetTime = war.optString("endTime", "");
+                        timerLabel = "WAR ENDS IN";
+                    }
+                    long remaining = millisUntil(targetTime);
+                    if (remaining > 0) {
+                        timerActive = true;
+                        views.setChronometer(R.id.widget_countdown,
+                                SystemClock.elapsedRealtime() + remaining,
+                                "%s",
+                                true);
+                    }
+                    scheduleWarNotifications(context, war, opponent);
                 }
             }
         } catch (Exception ignored) {
@@ -159,10 +201,17 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
         views.setTextViewText(R.id.widget_score, "⭐ " + score + " ⭐");
         views.setTextViewText(R.id.widget_destruction, destruction);
         views.setTextViewText(R.id.widget_attacks, "ATTACKS LEFT: " + attacks);
-        views.setTextViewText(R.id.widget_countdown, countdown);
+        views.setTextViewText(R.id.widget_timer_label, timerLabel);
+        if (!timerActive) {
+            views.setTextViewText(R.id.widget_countdown, "—");
+        }
 
-        Intent launch = context.getPackageManager()
-                .getLaunchIntentForPackage(context.getPackageName());
+        setLaunchPendingIntent(context, views, widgetId);
+        manager.updateAppWidget(widgetId, views);
+    }
+
+    private static void setLaunchPendingIntent(Context context, RemoteViews views, int widgetId) {
+        Intent launch = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
         if (launch != null) {
             launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pending = PendingIntent.getActivity(
@@ -170,7 +219,114 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
                     PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
             views.setOnClickPendingIntent(R.id.widget_root, pending);
         }
-        manager.updateAppWidget(widgetId, views);
+    }
+
+    private static long millisUntil(String isoTime) {
+        try {
+            if (isoTime == null || isoTime.isEmpty()) return 0;
+            return Math.max(0, Duration.between(Instant.now(), Instant.parse(isoTime)).toMillis());
+        } catch (DateTimeParseException ignored) {
+            return 0;
+        }
+    }
+
+    private static void scheduleWarNotifications(Context context, JSONObject war, String opponent) {
+        String start = war.optString("startTime", "");
+        long startMs = epochMillis(start);
+        if (startMs <= System.currentTimeMillis()) return;
+
+        scheduleNotification(context, ACTION_NOTIFY_START, START_ALARM_ID, startMs, start, opponent);
+
+        long prepMs = startMs - PREP_NOTIFICATION_MS;
+        if (prepMs > System.currentTimeMillis()) {
+            scheduleNotification(context, ACTION_NOTIFY_PREP, PREP_ALARM_ID, prepMs, start, opponent);
+        }
+    }
+
+    private static long epochMillis(String iso) {
+        try {
+            return Instant.parse(iso).toEpochMilli();
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    private static void scheduleNotification(Context context, String action, int requestCode,
+                                              long when, String start, String opponent) {
+        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, ClashIqWidgetProvider.class)
+                .setAction(action)
+                .putExtra(EXTRA_START_TIME, start)
+                .putExtra(EXTRA_OPPONENT, opponent);
+        PendingIntent pending = PendingIntent.getBroadcast(
+                context, requestCode, intent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            alarm.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, when, pending);
+        } else {
+            alarm.set(AlarmManager.RTC_WAKEUP, when, pending);
+        }
+    }
+
+    private static void cancelWarNotifications(Context context) {
+        AlarmManager alarm = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        for (int requestCode : new int[]{PREP_ALARM_ID, START_ALARM_ID}) {
+            Intent intent = new Intent(context, ClashIqWidgetProvider.class);
+            PendingIntent pending = PendingIntent.getBroadcast(
+                    context, requestCode, intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            alarm.cancel(pending);
+        }
+    }
+
+    private static void showNotification(Context context, String title, String body,
+                                         String text, int notificationId) {
+        NotificationManager manager = (NotificationManager)
+                context.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID, "Clash IQ War Alerts",
+                    NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("War preparation and start alerts for BHABE DHEMONS.");
+            manager.createNotificationChannel(channel);
+        }
+
+        Intent launch = context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        PendingIntent pending = null;
+        if (launch != null) {
+            launch.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            pending = PendingIntent.getActivity(
+                    context, notificationId, launch,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        }
+
+        Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
+                ? new Notification.Builder(context, CHANNEL_ID)
+                : new Notification.Builder(context);
+
+        builder.setSmallIcon(R.drawable.ic_notification)
+                .setContentTitle(title)
+                .setContentText(body)
+                .setStyle(new Notification.BigTextStyle().bigText(text))
+                .setAutoCancel(true)
+                .setCategory(Notification.CATEGORY_EVENT)
+                .setPriority(Notification.PRIORITY_HIGH)
+                .setWhen(System.currentTimeMillis());
+        if (pending != null) builder.setContentIntent(pending);
+
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                context.checkSelfPermission("android.permission.POST_NOTIFICATIONS")
+                        == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            manager.notify(notificationId, builder.build());
+        }
+    }
+
+    private static void markNotified(Context context, String kind, String start) {
+        if (start == null || start.isEmpty()) return;
+        context.getSharedPreferences("clash_iq_widget", Context.MODE_PRIVATE)
+                .edit().putBoolean(kind + "_" + start, true).apply();
     }
 
     private static String fetch(String endpoint) {
@@ -194,19 +350,6 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
             return null;
         } finally {
             if (connection != null) connection.disconnect();
-        }
-    }
-
-    private static String countdown(String endTime) {
-        try {
-            Instant end = Instant.parse(endTime);
-            long seconds = Math.max(0, Duration.between(Instant.now(), end).getSeconds());
-            long h = seconds / 3600;
-            long m = (seconds % 3600) / 60;
-            long s = seconds % 60;
-            return String.format(Locale.US, "%02d:%02d:%02d", h, m, s);
-        } catch (DateTimeParseException ignored) {
-            return "—";
         }
     }
 
