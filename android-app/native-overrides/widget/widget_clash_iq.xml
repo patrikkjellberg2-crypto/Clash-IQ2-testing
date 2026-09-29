@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="12dp"
+    android:background="@drawable/widget_bg">
+    <LinearLayout
+        android:layout_width="match_parent" android:layout_height="match_parent"
+        android:orientation="vertical">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical">
+            <ImageView android:layout_width="28dp" android:layout_height="28dp" android:src="@mipmap/ic_launcher" android:contentDescription="Clash IQ"/>
+            <TextView android:id="@+id/widget_title" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:layout_marginStart="8dp" android:text="CLASH IQ" android:textColor="#F6C84A" android:textSize="16sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/widget_status" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="LIVE" android:textColor="#9BE15D" android:textSize="10sp" android:textStyle="bold"/>
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" android:gravity="center_vertical" android:orientation="vertical">
+            <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center">
+                <TextView android:id="@+id/widget_own_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="BHABE DHEMONS" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold"/>
+                <TextView android:layout_width="30dp" android:layout_height="wrap_content" android:gravity="center" android:text="VS" android:textColor="#777D89" android:textSize="10sp" android:textStyle="bold"/>
+                <TextView android:id="@+id/widget_opp_name" android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:gravity="center" android:text="Opponent" android:textColor="#FFFFFF" android:textSize="13sp" android:textStyle="bold"/>
+            </LinearLayout>
+            <TextView android:id="@+id/widget_score" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="4dp" android:text="0  —  0" android:textColor="#F6C84A" android:textSize="25sp" android:textStyle="bold"/>
+            <TextView android:id="@+id/widget_timer" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="2dp" android:text="LIVE WAR" android:textColor="#AAB0BC" android:textSize="11sp"/>
+            <TextView android:id="@+id/widget_attacks" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="5dp" android:text="⚔ 0 used • 0 left" android:textColor="#D7DAE0" android:textSize="10sp"/>
+        </LinearLayout>
+        <TextView android:id="@+id/widget_error" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:text="" android:textColor="#F19AA3" android:textSize="9sp"/>
+    </LinearLayout>
+</FrameLayout>
