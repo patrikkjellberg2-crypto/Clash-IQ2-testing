@@ -22,6 +22,7 @@
             <TextView android:id="@+id/widget_score" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="4dp" android:text="0  —  0" android:textColor="#F6C84A" android:textSize="25sp" android:textStyle="bold"/>
             <TextView android:id="@+id/widget_timer" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="2dp" android:text="LIVE WAR" android:textColor="#AAB0BC" android:textSize="11sp"/>
             <TextView android:id="@+id/widget_attacks" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="5dp" android:text="⚔ 0 used • 0 left" android:textColor="#D7DAE0" android:textSize="10sp"/>
+            <TextView android:id="@+id/widget_last" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:layout_marginTop="4dp" android:maxLines="1" android:ellipsize="end" android:text="LAST ATTACKS —" android:textColor="#8F96A3" android:textSize="8sp"/>
         </LinearLayout>
         <TextView android:id="@+id/widget_error" android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center" android:text="" android:textColor="#F19AA3" android:textSize="9sp"/>
     </LinearLayout>
