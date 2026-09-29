@@ -70,14 +70,31 @@ export default function ClanMusicPage() {
 
   const canAdd = useMemo(() => Boolean(clanTag && url.trim()), [clanTag, url]);
 
-  function youtubeEmbedUrl(value: string) {
+  function youtubeVideoId(value: string) {
     try {
       const u = new URL(value);
-      if (u.hostname.includes("youtu.be")) return `https://www.youtube.com/embed/${u.pathname.slice(1).split("/")[0]}?autoplay=1`;
+      const host = u.hostname.toLowerCase();
+      if (host === "youtu.be") return u.pathname.split("/").filter(Boolean)[0] ?? "";
       const id = u.searchParams.get("v");
-      if (id) return `https://www.youtube.com/embed/${id}?autoplay=1`;
+      if (id) return id;
+      const match = u.pathname.match(/^\\/(?:shorts|embed|live)\\/([^/?]+)/);
+      return match?.[1] ?? "";
     } catch {}
     return "";
+  }
+
+  function youtubeEmbedUrl(value: string) {
+    const id = youtubeVideoId(value);
+    if (!id) return "";
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const params = new URLSearchParams({
+      autoplay: "1",
+      playsinline: "1",
+      rel: "0",
+      modestbranding: "1",
+    });
+    if (origin) params.set("origin", origin);
+    return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?${params.toString()}`;
   }
 
   function openTrack(index: number) {
@@ -183,7 +200,7 @@ export default function ClanMusicPage() {
                   <Plus className="size-4" /> {saving ? "Reading…" : "Add song"}
                 </button>
               </div>
-              <p className="mt-3 text-[11px] text-white/30">YouTube supplies the title automatically. The song is then added to the clan's shared list.</p>
+              <p className="mt-3 text-[11px] text-white/30">YouTube supplies the title automatically. Playback in Clash IQ does not require a Google/YouTube login.</p>
               {message && <p className="mt-2 text-[11px] font-bold text-amber-300">{message}</p>}
             </section>
 
@@ -256,12 +273,15 @@ export default function ClanMusicPage() {
                 </div>
                 {youtubeEmbedUrl(tracks[selectedIndex]?.url ?? "") ? (
                   <div className="overflow-hidden rounded-xl border border-white/10 bg-black aspect-video">
-                    <iframe title={tracks[selectedIndex]?.title ?? "Clan player"} src={youtubeEmbedUrl(tracks[selectedIndex]?.url ?? "")} className="h-full w-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
+                    <iframe title={tracks[selectedIndex]?.title ?? "Clan player"} src={youtubeEmbedUrl(tracks[selectedIndex]?.url ?? "")} className="h-full w-full" referrerPolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowFullScreen />
                   </div>
                 ) : (
                   <a href={tracks[selectedIndex]?.url} target="_blank" rel="noreferrer" className="flex items-center justify-center rounded-xl border border-white/10 p-8 text-sm font-bold text-amber-300">Open this song on YouTube</a>
                 )}
-                <div className="mt-3 flex items-center justify-between">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                  <a href={tracks[selectedIndex]?.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 hover:text-white">
+                    <ExternalLink className="size-4" /> Open in YouTube
+                  </a>
                   <button type="button" disabled={selectedIndex === 0} onClick={() => setSelectedIndex(i => Math.max(0, i - 1))} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 disabled:opacity-20"><ChevronLeft className="size-4" /> Previous</button>
                   <span className="text-[10px] text-white/25">{selectedIndex + 1} / {tracks.length}</span>
                   <button type="button" disabled={selectedIndex === tracks.length - 1} onClick={() => setSelectedIndex(i => Math.min(tracks.length - 1, i + 1))} className="inline-flex items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-xs font-black text-white/60 disabled:opacity-20">Next <ChevronRight className="size-4" /></button>
@@ -271,7 +291,7 @@ export default function ClanMusicPage() {
 
             <div className="rounded-xl border border-white/[.06] bg-white/[.02] p-4 text-center">
               <p className="text-[11px] leading-5 text-white/35">
-                Clash IQ är huvudspellistan. När du väljer Spara till YouTube synkas din privata YouTube-spellista så att den matchar klanens lista — nya låtar läggs till, borttagna låtar tas bort och ordningen uppdateras. Första gången behöver du ansluta Google/YouTube.
+                Clash IQ är huvudspellistan. Uppspelning här kräver inte att du är inloggad på Google eller YouTube. Om YouTube blockerar en viss video i den inbäddade spelaren kan du öppna samma låt direkt i YouTube. Spara till YouTube är en valfri separat funktion som kräver ett Google/YouTube-konto.
               </p>
               {youtubeMessage && <p className="mt-2 text-[11px] font-bold text-amber-300">{youtubeMessage}</p>}
             </div>
