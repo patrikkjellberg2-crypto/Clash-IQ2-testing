@@ -5,6 +5,7 @@ import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { ClashIQPageBanner } from '@/components/clashiq-page-banner';
+import { registerNotificationServiceWorker, notificationsSupported } from '@/lib/notifications';
 import { MemberDetailsOverlay } from '@/components/member-details-dialog';
 import { WarArchiver } from '@/components/war-archiver';
 
@@ -96,6 +97,48 @@ function RoutedErrorBoundary({ children }: { children: ReactNode }) {
   return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>;
 }
 
+function ClashIQWarNotifications() {
+  useEffect(() => {
+    if (!notificationsSupported()) return;
+    let cancelled = false;
+    const STORAGE_KEY = 'clash-iq-war-notifications-v1';
+    const NEAR_END_MS = 2 * 60 * 60 * 1000;
+    const readSent = (): Record<string, boolean> => {
+      try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); } catch { return {}; }
+    };
+    const markSent = (key: string) => { const sent = readSent(); sent[key] = true; localStorage.setItem(STORAGE_KEY, JSON.stringify(sent)); };
+    const show = async (title: string, body: string, tag: string) => {
+      if (Notification.permission !== 'granted') return;
+      const registration = await registerNotificationServiceWorker();
+      if (!registration) return;
+      const worker = (await navigator.serviceWorker.ready).active;
+      worker?.postMessage({ type: 'CLASH_IQ_PUSH_NOTIFICATION', title, body, tag });
+    };
+    const check = async () => {
+      try {
+        const response = await fetch('/api/clash/dashboard', { headers: { Accept: 'application/json' }, cache: 'no-store' });
+        if (!response.ok || cancelled) return;
+        const dashboard = await response.json();
+        const war = dashboard?.currentWar;
+        if (!war || !['preparation', 'inWar', 'matchmaking'].includes(String(war.state || ''))) return;
+        const start = Date.parse(String(war.startTime || ''));
+        const end = Date.parse(String(war.endTime || ''));
+        if (!Number.isFinite(start)) return;
+        const opponent = war?.opponent?.name || war?.opponent?.tag || 'motståndaren';
+        const warId = String(war.warId || (war.opponent?.tag || opponent) + '-' + war.startTime);
+        const sent = readSent();
+        if (!sent[warId + ':started'] && Date.now() >= start) { await show('⚔️ Ny war startar', 'War mot ' + opponent + ' är igång.', warId + ':started'); markSent(warId + ':started'); }
+        if (!sent[warId + ':12h'] && Date.now() >= start + 12 * 60 * 60 * 1000) { await show('⏱️ 12 timmar har gått', 'War mot ' + opponent + ' har passerat 12 timmar.', warId + ':12h'); markSent(warId + ':12h'); }
+        if (Number.isFinite(end) && !sent[warId + ':near-end'] && end - Date.now() <= NEAR_END_MS && end > Date.now()) { await show('🚨 War närmar sig slutet', 'Mindre än 2 timmar kvar mot ' + opponent + '.', warId + ':near-end'); markSent(warId + ':near-end'); }
+      } catch {}
+    };
+    void registerNotificationServiceWorker();
+    void check();
+    const timer = window.setInterval(() => void check(), 30_000);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, []);
+  return null;
+}
 function ClashIQPreferences() {
   const audioContextRef = useRef<AudioContext | null>(null);
 
@@ -178,6 +221,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ClashIQPreferences />
+      <ClashIQWarNotifications />
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <AuthGate><Router /></AuthGate>
