@@ -1,1 +1,9 @@
-{"appId":"com.clashiq.app","appName":"Clash IQ","webDir":"www","backgroundColor":"#07090d","server":{"url":"https://clash-iq2-testing.onrender.com","cleartext":false,"errorPath":"error.html"},"android":{"allowMixedContent":false,"webContentsDebuggingEnabled":false}}
+{
+  "appId":"com.clashiq.app",
+  "appName":"Clash IQ",
+  "webDir":"www",
+  "backgroundColor":"#07090d",
+  "server":{"url":"https://clash-iq2-testing.onrender.com","cleartext":false,"errorPath":"error.html"},
+  "android":{"allowMixedContent":false,"webContentsDebuggingEnabled":false},
+  "plugins":{"SocialLogin":{"providers":{"google":true,"facebook":false,"apple":false,"twitter":false},"logLevel":1}}
+}
