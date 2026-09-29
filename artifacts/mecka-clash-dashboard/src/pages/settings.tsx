@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
+import { notificationPermission, sendTestNotification } from '@/lib/notifications';
 
 function Toggle({ enabled, onClick }: { enabled: boolean; onClick: () => void }) {
   return (
@@ -141,6 +142,9 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [notificationPermissionState, setNotificationPermissionState] = useState<NotificationPermission | 'unsupported'>('unsupported');
+  const [testingNotification, setTestingNotification] = useState(false);
+  const [notificationTestMessage, setNotificationTestMessage] = useState('');
 
   const settings = {
     aiEnabled,
@@ -179,6 +183,7 @@ export default function SettingsPage() {
       }
     }
 
+    setNotificationPermissionState(notificationPermission());
     void loadSettings();
     return () => {
       cancelled = true;
@@ -227,6 +232,18 @@ export default function SettingsPage() {
     if (key === 'compactMode') setCompactMode(value);
     if (key === 'soundEffects') setSoundEffects(value);
     void persistSettings(next);
+  }
+
+  async function testNotification() {
+    setTestingNotification(true);
+    setNotificationTestMessage('');
+    try {
+      const result = await sendTestNotification();
+      setNotificationPermissionState(notificationPermission());
+      setNotificationTestMessage(result.message);
+    } finally {
+      setTestingNotification(false);
+    }
   }
 
   function saveSettings() {
@@ -343,6 +360,30 @@ export default function SettingsPage() {
                 <SettingRow icon={Swords} title="War alerts" description="Highlight important active-war and attack activity.">
                   <Toggle enabled={warAlerts} onClick={() => updateAndSave('warAlerts', !warAlerts)} />
                 </SettingRow>
+                <div className="mt-4 rounded-2xl border border-amber-400/15 bg-amber-400/[0.04] p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="min-w-0">
+                      <p className="text-xs font-black uppercase tracking-wider text-amber-300">Notification test</p>
+                      <p className="mt-1 text-xs leading-5 text-slate-500">
+                        Permission: <span className="text-slate-300">{notificationPermissionState}</span>
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void testNotification()}
+                      disabled={testingNotification}
+                      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl border border-amber-400/25 bg-amber-400/10 px-4 py-2.5 text-[10px] font-black uppercase tracking-wider text-amber-200 transition hover:bg-amber-400/15 disabled:opacity-50"
+                    >
+                      <Bell className="h-4 w-4" />
+                      {testingNotification ? 'Testing…' : 'Send test'}
+                    </button>
+                  </div>
+                  {notificationTestMessage ? (
+                    <p className="mt-3 rounded-xl border border-white/5 bg-black/20 px-3 py-2 text-xs text-slate-300">
+                      {notificationTestMessage}
+                    </p>
+                  ) : null}
+                </div>
               </Section>
 
               <Section icon={Shield} eyebrow="04 • Privacy & Data" title="Security">
