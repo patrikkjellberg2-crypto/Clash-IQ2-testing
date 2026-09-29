@@ -60,6 +60,15 @@ jobs:
           sed -i 's/compileSdk = [0-9]*/compileSdk = 36/' android/variables.gradle
           sed -i 's/targetSdk = [0-9]*/targetSdk = 35/' android/variables.gradle
           sed -i 's#gradle-[0-9.]*-bin.zip#gradle-8.11.1-bin.zip#' android/gradle/wrapper/gradle-wrapper.properties
+      - name: Force AndroidX Browser version for Social Login
+        run: |
+          cat > android/force-browser.gradle <<'EOF'
+          allprojects {
+            configurations.configureEach {
+              resolutionStrategy.force("androidx.browser:browser:1.9.0")
+            }
+          }
+          EOF
       - name: Apply icon resources and version
         run: |
           cp -r resources/res/. android/app/src/main/res/
@@ -69,7 +78,7 @@ jobs:
           grep -n "versionCode\|versionName" android/app/build.gradle
       - name: Build debug APK
         working-directory: android-app/android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        run: ./gradlew -I force-browser.gradle assembleDebug --no-daemon --stacktrace
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
