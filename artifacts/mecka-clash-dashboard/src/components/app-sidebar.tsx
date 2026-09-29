@@ -19,6 +19,7 @@ import {
   MessageSquareText,
   TrendingUp,
   Music2,
+  LockKeyhole,
 } from "lucide-react";
 
 type AppSidebarProps = {
@@ -44,6 +45,7 @@ const navigation = [
   { label: "Player History", href: "/player-history", icon: Users, section: "INTELLIGENCE" },
   { label: "Village", href: "/village", icon: Hammer, section: "INTELLIGENCE" },
   { label: "Settings", href: "/settings", icon: Settings, section: "INTELLIGENCE" },
+  { label: "Admin", href: "/admin", icon: LockKeyhole, section: "ADMIN" },
 ];
 
 function ClanMark({ small = false }: { small?: boolean }) {
@@ -124,6 +126,7 @@ function SidebarContent({
 }) {
   const command = navigation.filter((i) => i.section === "COMMAND");
   const intelligence = navigation.filter((i) => i.section === "INTELLIGENCE");
+  const admin = navigation.filter((i) => i.section === "ADMIN");
   const active = (href: string) =>
     href === "/" ? activePath === "/" : activePath.startsWith(href);
 
@@ -192,6 +195,7 @@ function SidebarContent({
             ))}
           </div>
         </div>
+        {admin.length > 0 && <div className="mt-7"><p className="mb-2 px-2 text-[9px] font-black uppercase tracking-[0.22em] text-slate-600">Admin</p><div className="space-y-1">{admin.map((item) => <NavItem key={item.href} {...item} active={active(item.href)} onNavigate={onNavigate} />)}</div></div>}
       </nav>
 
       <div className="space-y-2 px-4 pb-4">
