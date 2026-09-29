@@ -229,6 +229,17 @@ async function listYoutubePlaylistItems(accessToken: string, playlistId: string)
   return items;
 }
 
+function accountConnectionId(userId: string) {
+  return createHash("sha256").update(`clash-iq-youtube:${userId}:${process.env.DATABASE_URL || "local"}`).digest("hex");
+}
+
+async function currentAccountId(req: any) {
+  const sid = parseCookies(req.headers.cookie)["clashiq_session"] || "";
+  if (!sid) return "";
+  const { rows } = await pool.query("SELECT user_id FROM clashiq_sessions WHERE id = $1 AND expires_at > NOW()", [sid]);
+  return rows[0]?.user_id ? String(rows[0].user_id) : "";
+}
+
 let ready: Promise<void> | null = null;
 function ensureTables() {
   if (!ready) {
@@ -240,8 +251,8 @@ function ensureTables() {
 router.get("/clash/music/youtube/status", async (req, res): Promise<void> => {
   try {
     await ensureTables();
-    const cookies = parseCookies(req.headers.cookie);
-    const connection = await getConnection(cookies[CONNECTION_COOKIE]);
+    const userId = await currentAccountId(req);
+    const connection = await getConnection(userId ? accountConnectionId(userId) : "");
     res.json({
       configured: oauthConfigured(),
       connected: Boolean(connection),
@@ -258,7 +269,9 @@ router.get("/clash/music/youtube/auth", async (req, res): Promise<void> => {
     res.status(503).json({ error: "YouTube saving is not configured yet. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to Render." });
     return;
   }
-  const connectionId = parseCookies(req.headers.cookie)[CONNECTION_COOKIE] || randomBytes(24).toString("hex");
+  const userId = await currentAccountId(req);
+  if (!userId) { res.status(401).json({ error: "Sign in to Clash IQ first." }); return; }
+  const connectionId = accountConnectionId(userId);
   const state = randomBytes(32).toString("hex");
   setCookie(res, CONNECTION_COOKIE, connectionId, 60 * 60 * 24 * 365);
   setCookie(res, STATE_COOKIE, state, 60 * 10);
@@ -282,11 +295,11 @@ router.get("/clash/music/youtube/callback", async (req, res): Promise<void> => {
       res.redirect("/music?youtube=denied");
       return;
     }
-    const cookies = parseCookies(req.headers.cookie);
+    const userId = await currentAccountId(req);
     const state = cleanText(req.query.state, 200);
     const expectedState = cookies[STATE_COOKIE] || "";
     const code = cleanText(req.query.code, 4000);
-    const connectionId = cookies[CONNECTION_COOKIE] || "";
+    const connectionId = userId ? accountConnectionId(userId) : "";
     if (!state || !expectedState || state !== expectedState || !code || !connectionId) {
       clearCookie(res, STATE_COOKIE);
       res.status(400).send("YouTube authorization could not be verified. Please start the connection again from Clash IQ.");
@@ -324,8 +337,8 @@ router.post("/clash/music/youtube/sync", async (req, res): Promise<void> => {
     if (!oauthConfigured()) { res.status(503).json({ error: "YouTube saving is not configured on this Clash IQ deployment." }); return; }
 
     await ensureTables();
-    const cookies = parseCookies(req.headers.cookie);
-    let connection = await getConnection(cookies[CONNECTION_COOKIE]);
+    const userId = await currentAccountId(req);
+    let connection = await getConnection(userId ? accountConnectionId(userId) : "");
     if (!connection) {
       res.status(401).json({ error: "Connect your YouTube account first.", needsAuth: true });
       return;
