@@ -169,21 +169,23 @@ function EmptyWarState() {
 }
 
 function StatusPill({ state }: { state: string }) {
-  const active = state.toLowerCase() === 'inwar';
+  const normalized = state.toLowerCase();
+  const active = normalized === 'inwar';
+  const preparation = normalized === 'preparation';
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[.12em] ${
-        active
-          ? 'bg-[#f4c542]/20 text-[#9c6e00]'
-          : 'bg-secondary text-muted-foreground'
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-black uppercase tracking-[.16em] shadow-[0_0_20px_rgba(245,190,60,.08)] ${
+        active || preparation
+          ? 'border-amber-300/25 bg-amber-400/10 text-amber-300'
+          : 'border-white/10 bg-white/[.04] text-slate-400'
       }`}
     >
       <span
         className={`size-1.5 rounded-full ${
-          active ? 'animate-pulse-line bg-[#e2a900]' : 'bg-muted-foreground'
+          active || preparation ? 'animate-pulse-line bg-amber-300' : 'bg-slate-500'
         }`}
       />
-      {active ? 'In War' : label(state, 'Unknown status')}
+      {active ? 'In War' : preparation ? 'Preparation' : label(state, 'Unknown status')}
     </span>
   );
 }
@@ -202,12 +204,12 @@ function StatTile({
   tone: 'blue' | 'gold' | 'green';
 }) {
   const tones = {
-    blue: 'bg-[#0b5fa5]/10 text-[#0b5fa5]',
-    gold: 'bg-[#f4c542]/20 text-[#9c6e00]',
-    green: 'bg-[#2b9f78]/12 text-[#267a5e]',
+    blue: 'bg-sky-400/10 text-sky-300',
+    gold: 'bg-amber-400/10 text-amber-300',
+    green: 'bg-emerald-400/10 text-emerald-300',
   };
   return (
-    <article className="rounded-2xl border border-card-border bg-card p-4 shadow-sm">
+    <article className="premium-card stat-glow group rounded-2xl p-4 transition duration-300 hover:-translate-y-0.5 hover:border-sky-400/35">
       <div className={`grid size-9 place-items-center rounded-xl ${tones[tone]}`}>
         <Icon className="size-[18px]" />
       </div>
@@ -368,12 +370,12 @@ export default function WarCenterPage() {
   const destruction = Math.round(num(clan.destructionPercentage));
 
   return (
-    <div className="min-h-[100dvh] bg-background dashboard-grid">
+    <div className="clashiq-overview min-h-screen bg-[#07090d] text-white">
       <div className="flex min-h-[100dvh]">
         <AppSidebar clanName={label(asDict(dashboard.clan).name, 'Mecka Clash')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} />
 
         <main className="min-w-0 flex-1">
-          <header className="border-b border-border/80 bg-background/80 px-5 py-4 backdrop-blur-md md:px-8">
+          <header className="sticky top-0 z-20 border-b border-white/10 bg-[#06111f]/90 px-4 py-3 backdrop-blur-xl md:px-7">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="flex items-center gap-3">
                 <div>
@@ -411,56 +413,71 @@ export default function WarCenterPage() {
             </div>
           </header>
 
-          <div className="mx-auto max-w-[1400px] space-y-5 px-5 py-6 md:px-8 md:py-8">
+          <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-7">
             <section
-              className="relative overflow-hidden rounded-3xl bg-sidebar p-6 text-sidebar-foreground shadow-lg md:p-8"
+              className="premium-card war-command-card overflow-hidden rounded-2xl"
               data-testid="card-war-hero"
             >
-              <div className="pointer-events-none absolute -right-20 -top-32 size-80 rounded-full border-[28px] border-sidebar-primary/10" />
-              <div className="relative flex flex-col justify-between gap-7 md:flex-row md:items-end">
+              <div className="flex items-center justify-between border-b border-white/10 bg-white/[.015] px-5 py-4">
                 <div>
-                  <div className="flex items-center gap-3">
-                    <SwedishMark />
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="font-display text-3xl font-bold tracking-[-.065em] md:text-4xl">
-                          {label(clan.name, 'Our clan')}
-                        </h2>
-                        <StatusPill state={str(currentWar.state)} />
+                  <p className="section-kicker">Live battlefield</p>
+                  <h2 className="mt-1 text-lg font-black tracking-tight">Current War</h2>
+                </div>
+                <StatusPill state={str(currentWar.state)} />
+              </div>
+
+              <div className="space-y-4 p-4 md:p-5">
+                <div className="grid min-h-[235px] place-items-center rounded-2xl border border-white/[.06] bg-black/10 p-5 md:p-7">
+                  <div className="grid w-full max-w-4xl grid-cols-1 items-center gap-5 text-center md:grid-cols-[1fr_auto_1fr] md:gap-8">
+                    <div className="min-w-0">
+                      <div className="mx-auto w-fit">
+                        <SwedishMark />
                       </div>
-                      <p className="mt-2 text-sm text-sidebar-foreground/60">
-                        vs. {label(opponent.name, 'the opponent')} ·{' '}
+                      <p className="mt-4 break-words text-xl font-black tracking-tight text-white md:text-2xl">
+                        {label(clan.name, 'Our clan')}
+                      </p>
+                      <p className="mt-1 text-[11px] font-bold uppercase tracking-[.14em] text-slate-500">
+                        {label(clan.tag, dashboard.clanTag)}
+                      </p>
+                      <p className="mt-3 text-sm font-bold text-slate-300">
+                        ⭐ {stars} · {destruction}% destruction
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center">
+                      <p className="text-xs font-black uppercase tracking-[.28em] text-amber-300">
+                        VS
+                      </p>
+                      <p className="mt-2 font-data text-4xl font-black text-white md:text-5xl">
+                        {stars}
+                        <span className="mx-2 text-slate-600">:</span>
+                        {opponentStars}
+                      </p>
+                      <p className="mt-1 text-[10px] font-bold uppercase tracking-[.16em] text-slate-500">
                         {num(currentWar.teamSize)} vs. {num(currentWar.teamSize)}
+                      </p>
+                    </div>
+
+                    <div className="min-w-0">
+                      <div className="mx-auto grid size-12 place-items-center rounded-xl border border-sky-400/30 bg-sky-400/10 text-sm font-black text-sky-300">
+                        {num(opponent.clanLevel)}
+                      </div>
+                      <p className="mt-4 break-words text-xl font-black tracking-tight text-sky-100 md:text-2xl">
+                        {label(opponent.name, 'Opponent')}
+                      </p>
+                      <p className="mt-1 text-[11px] font-bold uppercase tracking-[.14em] text-sky-300/60">
+                        Enemy clan
+                      </p>
+                      <p className="mt-3 text-sm font-bold text-slate-300">
+                        ⭐ {opponentStars} · {Math.round(num(opponent.destructionPercentage))}% destruction
                       </p>
                     </div>
                   </div>
                 </div>
-                <div className="relative border-t border-sidebar-foreground/10 pt-5 md:min-w-[260px] md:border-l md:border-t-0 md:pl-7 md:pt-0">
-                  <p className="text-[10px] font-bold uppercase tracking-[.14em] text-sidebar-foreground/45">
-                    Score
-                  </p>
-                  <p className="mt-1 font-data text-4xl font-bold">
-                    {stars}
-                    <span className="text-sidebar-foreground/35"> : </span>
-                    {opponentStars}
-                  </p>
-                  <div className="mt-3 h-2 overflow-hidden rounded-full bg-sidebar-foreground/15">
-                    <div
-                      className="h-full rounded-full bg-sidebar-accent transition-all"
-                      style={{
-                        width: `${Math.min(100, Math.max(4, destruction))}%`,
-                      }}
-                    />
-                  </div>
-                  <p className="mt-2 text-[11px] text-sidebar-foreground/55">
-                    {destruction}% destruction ·{' '}
-                    {formatDate(currentWar.endTime, true)}
-                  </p>
-                </div>
+
+                <WarTimer currentWar={currentWar} />
               </div>
             </section>
-
-            <WarTimer currentWar={currentWar} />
 
             <section className="grid gap-4 sm:grid-cols-3" aria-label="War status">
               <StatTile
@@ -507,15 +524,17 @@ export default function WarCenterPage() {
                 {attackOrder.length ? (
                   <div className="divide-y divide-border/60">
                     {attackOrder.slice(0, 8).map((item, index) => (
-                      <div
+                      <Link
                         key={str(item.member.tag, String(index))}
-                        className="flex items-center gap-3 px-5 py-3.5 transition hover:bg-secondary/40"
+                        href={`/player/${encodeURIComponent(str(item.member.tag))}`}
+                        className="group flex items-center gap-3 px-5 py-3.5 transition hover:bg-white/[.035] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                         data-testid={`row-attack-order-${index}`}
+                        aria-label={`Open player card for ${label(item.member.name, 'Unknown member')}`}
                       >
                         <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-primary/10 font-data text-xs font-bold text-primary">
                           {index + 1}
                         </span>
-                        <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f4c542]/20 text-[10px] font-bold text-[#9c6e00]">
+                        <div className="grid size-8 shrink-0 place-items-center rounded-lg bg-[#f4c542]/20 text-[10px] font-bold text-amber-300">
                           {initials(label(item.member.name, 'MC'))}
                         </div>
                         <div className="min-w-0 flex-1">
@@ -535,11 +554,11 @@ export default function WarCenterPage() {
                             target #{num(item.target?.mapPosition, num(item.member.mapPosition))}
                           </p>
                         </div>
-                      </div>
+                      </Link>
                     ))}
                   </div>
                 ) : (
-                  <div className="flex min-h-[230px] flex-col items-center justify-center px-6 text-center">
+                  <div className="flex min-h-[230px flex-col items-center justify-center px-6 text-center">
                     <CheckCircle2 className="size-8 text-[#2b9f78]" />
                     <p className="mt-3 text-sm font-bold">
                       All attacks are used
@@ -787,7 +806,7 @@ export default function WarCenterPage() {
                             <td className="px-3 py-3 font-data text-xs font-bold">{starsAgainstUs}</td>
                             <td className="px-3 py-3 font-data text-xs font-bold">{destructionAgainstUs}%</td>
                             <td className="px-5 py-3 text-right">
-                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${starsAgainstUs === 0 ? 'bg-[#2b9f78]/12 text-[#267a5e]' : starsAgainstUs === 1 ? 'bg-[#f4c542]/20 text-[#9c6e00]' : 'bg-[#cf5b4d]/12 text-[#a84439]'}`}>
+                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-[10px] font-bold ${starsAgainstUs === 0 ? 'bg-[#2b9f78]/12 text-[#267a5e]' : starsAgainstUs === 1 ? 'bg-amber-400/10 text-amber-300' : 'bg-[#cf5b4d]/12 text-[#a84439]'}`}>
                                 {starsAgainstUs === 0 ? 'Defended' : `${starsAgainstUs} star${starsAgainstUs === 1 ? '' : 's'}`}
                               </span>
                             </td>
