@@ -18,6 +18,7 @@ const CapitalRaidsPage = lazy(() => import('@/pages/capital-raids'));
 const AICoachPage = lazy(() => import('@/pages/ai-coach'));
 const StatisticsPage = lazy(() => import('@/pages/statistics'));
 import SettingsPage from '@/pages/settings';
+import AdminPage from '@/pages/admin';
 const VillagePage = lazy(() => import('@/pages/village'));
 const WarArchivePage = lazy(() => import('@/pages/war-archive'));
 const WarChatPage = lazy(() => import('@/pages/war-chat'));
@@ -64,6 +65,7 @@ function Router() {
           <Route path="/ai-coach" component={AICoachPage} />
           <Route path="/statistics" component={StatisticsPage} />
           <Route path="/settings" component={SettingsPage} />
+          <Route path="/admin" component={AdminPage} />
           <Route path="/village" component={VillagePage} />
           <Route path="/war-archive" component={WarArchivePage} />
           <Route path="/war-chat" component={WarChatPage} />
