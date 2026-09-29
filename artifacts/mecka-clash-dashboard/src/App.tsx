@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import React, { lazy, Suspense, type ReactNode } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 import { ErrorBoundary } from '@/components/error-boundary';
@@ -8,6 +8,9 @@ import { ClashIQPageBanner } from '@/components/clashiq-page-banner';
 import { WarArchiver } from '@/components/war-archiver';
 
 import NotFound from '@/pages/not-found';
+const LoginPage = lazy(() => import('@/pages/login'));
+const ConnectPlayerPage = lazy(() => import('@/pages/connect-player'));
+const AdminPage = lazy(() => import('@/pages/admin'));
 const DashboardPage = lazy(() => import('@/pages/dashboard'));
 const WarCenterPage = lazy(() => import('@/pages/war-center'));
 const WarPlannerPage = lazy(() => import('@/pages/war-planner'));
@@ -45,12 +48,24 @@ function PageLoader() {
   );
 }
 
+function AuthGate({ children }: { children: ReactNode }) {
+  const [location, navigate] = useLocation();
+  const [ready, setReady] = React.useState(false);
+  React.useEffect(() => { fetch('/api/auth/me', { credentials: 'include' }).then(r => { if (!r.ok && location !== '/login') navigate('/login'); else setReady(true); }).catch(() => { if (location !== '/login') navigate('/login'); setReady(true); }); }, [location, navigate]);
+  if (location === '/login') return <>{children}</>;
+  if (!ready) return <div className='min-h-screen bg-[#07090d] text-white grid place-items-center'>Loading Clash IQ…</div>;
+  return <>{children}</>;
+}
+
 function Router() {
   return (
     <RoutedErrorBoundary>
       <ClashIQPageBanner>
         <Suspense fallback={<PageLoader />}>
         <Switch>
+          <Route path="/login" component={LoginPage} />
+          <Route path="/connect-player" component={ConnectPlayerPage} />
+          <Route path="/admin" component={AdminPage} />
           <Route path="/" component={DashboardPage} />
           <Route path="/war-center" component={WarCenterPage} />
           <Route path="/war-planner" component={WarPlannerPage} />
@@ -92,7 +107,7 @@ function App() {
         <WouterRouter
           base={import.meta.env.BASE_URL.replace(/\/$/, '')}
         >
-          <Router />
+          <AuthGate><Router /></AuthGate>
         </WouterRouter>
 
         <WarArchiver />
