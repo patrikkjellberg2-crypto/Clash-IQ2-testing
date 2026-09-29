@@ -1,12 +1,11 @@
 import { type ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { useLocation, useSetLocation } from 'wouter';
+import { useLocation } from 'wouter';
 
 const BANNER_SRC = '/clash-iq-war-banner.webp';
 
 export function ClashIQPageBanner({ children }: { children: ReactNode }) {
-  const [location] = useLocation();
-  const setLocation = useSetLocation();
+  const [location, setLocation] = useLocation();
 
   // Overview owns its hero. Every other page gets the same banner.
   // Members and Capital Raids render the banner directly inside their main area.
