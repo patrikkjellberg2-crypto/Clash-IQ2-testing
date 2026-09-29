@@ -134,8 +134,22 @@ export default function StatisticsPage() {
       }
     }
 
-    const attacks = playerStats.reduce((sum, player) => sum + n(player.attacksUsed), 0);
-    const threeStars = playerStats.reduce((sum, player) => sum + n(player.threeStars), 0);
+    let attacks = playerStats.reduce((sum, player) => sum + n(player.attacksUsed), 0);
+    let threeStars = playerStats.reduce((sum, player) => sum + n(player.threeStars), 0);
+
+    // Fall back to the actual archived attack records when the rolled-up
+    // player stats table has not been populated yet.
+    if (attacks === 0) {
+      for (const war of archiveWars) {
+        const own = ownSideOf(war, clanTag);
+        for (const member of arr(own.members)) {
+          for (const attack of arr(member.attacks)) {
+            attacks++;
+            if (n(attack.stars) >= 3) threeStars++;
+          }
+        }
+      }
+    }
 
     const completed = wins + losses + draws;
 
@@ -219,13 +233,34 @@ export default function StatisticsPage() {
     </section>
   </div></main></div></div>;
 }  const leaderboards = useMemo(() => {
-    const threeStar = playerStats
+    const fallbackThreeStarMap = new Map<string, { tag: string; name: string; threeStars: number; attacks: number }>();
+    for (const war of archiveWars) {
+      const own = ownSideOf(war, clanTag);
+      for (const member of arr(own.members)) {
+        const tag = normalizeTag(s(member.tag));
+        if (!tag || tag === '#') continue;
+        const entry = fallbackThreeStarMap.get(tag) || { tag, name: s(member.name, tag), threeStars: 0, attacks: 0 };
+        for (const attack of arr(member.attacks)) {
+          entry.attacks += 1;
+          if (n(attack.stars) >= 3) entry.threeStars += 1;
+        }
+        fallbackThreeStarMap.set(tag, entry);
+      }
+    }
+
+    const threeStarSource = playerStats.some(player => n(player.attacksUsed) > 0)
+      ? playerStats.map(player => ({
+          tag: s(player.playerTag),
+          name: s(player.playerName, s(player.playerTag, 'Unknown')),
+          threeStars: n(player.threeStars),
+          attacks: n(player.attacksUsed),
+        }))
+      : Array.from(fallbackThreeStarMap.values());
+
+    const threeStar = threeStarSource
       .map(player => ({
-        tag: s(player.playerTag),
-        name: s(player.playerName, s(player.playerTag, 'Unknown')),
-        threeStars: n(player.threeStars),
-        attacks: n(player.attacksUsed),
-        rate: n(player.attacksUsed) ? Math.round(n(player.threeStars) / n(player.attacksUsed) * 100) : 0,
+        ...player,
+        rate: player.attacks ? Math.round(player.threeStars / player.attacks * 100) : 0,
       }))
       .filter(player => player.attacks > 0)
       .sort((a, b) => b.threeStars - a.threeStars || b.rate - a.rate || b.attacks - a.attacks)
