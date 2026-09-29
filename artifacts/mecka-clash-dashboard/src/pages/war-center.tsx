@@ -377,6 +377,18 @@ export default function WarCenterPage() {
 
         <main className="min-w-0 flex-1">
           <ClashIQInlineBanner />
+          <button
+            type="button"
+            aria-label="Go back"
+            title="Back"
+            onClick={() => {
+              if (window.history.length > 1) window.history.back();
+              else window.location.href = '/';
+            }}
+            className="fixed left-16 top-4 z-40 grid size-10 place-items-center rounded-xl border border-white/10 bg-[#07090d]/90 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+          >
+            <ArrowLeft className="size-4" />
+          </button>
           <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="flex items-center gap-3">
