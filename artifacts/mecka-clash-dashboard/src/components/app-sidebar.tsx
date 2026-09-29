@@ -21,6 +21,7 @@ import {
   Music2,
   LockKeyhole,
   UserRound,
+  LogOut,
 } from "lucide-react";
 
 type AppSidebarProps = {
@@ -120,11 +121,13 @@ function SidebarContent({
   clanTag,
   activePath,
   onNavigate,
+  onLogout,
 }: {
   clanName: string;
   clanTag: string;
   activePath: string;
   onNavigate?: () => void;
+  onLogout?: () => void;
 }) {
   const command = navigation.filter((i) => i.section === "COMMAND");
   const intelligence = navigation.filter((i) => i.section === "INTELLIGENCE");
@@ -227,11 +230,18 @@ function SidebarContent({
         </Link>
       </div>
 
-      <div className="border-t border-white/[0.06] px-4 py-4">
+      <div className="border-t border-white/[0.06] px-4 py-3 space-y-3">
+        <button type="button" onClick={onLogout} className="group flex w-full items-center gap-3 rounded-xl border border-red-400/10 bg-red-400/[.03] px-3 py-2.5 text-left text-sm text-red-300/80 transition hover:border-red-400/20 hover:bg-red-400/[.07] hover:text-red-200">
+          <span className="grid size-8 place-items-center rounded-lg bg-red-400/10 text-red-300"><LogOut className="size-4" /></span>
+          <span className="flex-1 font-bold">Log out</span>
+          <ChevronRight className="size-3.5 opacity-40" />
+        </button>
+        <div>
         <p className="truncate text-[8px] font-black uppercase tracking-[0.2em] text-slate-700">
           CLASHIQ ELITE WAR COMMAND
         </p>
         <p className="mt-1 text-[9px] text-slate-600">Built for war leadership.</p>
+        </div>
       </div>
     </div>
   );
@@ -244,13 +254,18 @@ export function AppSidebar({
   onClose,
 }: AppSidebarProps) {
   const [internalMobileOpen, setInternalMobileOpen] = useState(false);
-  const [location] = useLocation();
+  const [location, navigate] = useLocation();
   const controlled = typeof mobileOpen === "boolean";
   const isMobileOpen = controlled ? mobileOpen : internalMobileOpen;
 
   const closeMobile = () => {
     onClose?.();
     setInternalMobileOpen(false);
+  };
+
+  const handleLogout = async () => {
+    try { await fetch("/api/auth/logout", { method: "POST", credentials: "include" }); }
+    finally { closeMobile(); navigate("/login"); }
   };
 
   return (
@@ -260,6 +275,7 @@ export function AppSidebar({
           clanName={clanName}
           clanTag={clanTag}
           activePath={location}
+          onLogout={handleLogout}
         />
       </aside>
 
@@ -296,6 +312,7 @@ export function AppSidebar({
               clanTag={clanTag}
               activePath={location}
               onNavigate={closeMobile}
+              onLogout={handleLogout}
             />
           </aside>
         </div>
