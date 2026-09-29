@@ -225,7 +225,7 @@ export async function snapshotWarlog(clanTag: string, warlog: unknown, log?: Log
 }
 
 function canonicalWarTime(value: string) {
-  const m = /^(\\d{4})(\\d{2})(\\d{2})T(\\d{2})(\\d{2})(\\d{2})/.exec(value || "");
+  const m = /^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/.exec(value || "");
   if (m) return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +m[6]);
   const parsed = new Date(value).getTime();
   return Number.isFinite(parsed) ? parsed : 0;
