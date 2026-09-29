@@ -581,45 +581,6 @@ export default function DashboardPage() {
         />
 
         <main className="min-w-0 flex-1">
-          <header className="sticky top-0 z-20 border-b border-white/10 bg-[#06111f]/90 px-4 py-3 backdrop-blur-xl">
-            <div className="mx-auto flex max-w-[1400px] items-center gap-3">
-              <div className="ml-auto flex items-center gap-3">
-                <div className="hidden sm:block">
-                  <p className="text-xs font-bold">
-                    Live Data
-                  </p>
-
-                  <p className="text-[10px] text-muted-foreground">
-                    Updated{" "}
-                    {dataUpdatedAt
-                      ? ago(dataUpdatedAt)
-                      : ago(
-                          dash.fetchedAt,
-                        )}
-                  </p>
-                </div>
-
-                <span className="size-2 rounded-full bg-emerald-400" />
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    void refetch()
-                  }
-                  className="grid size-9 place-items-center rounded-xl border border-white/10 bg-white/5"
-                >
-                  <RefreshCw
-                    className={
-                      isFetching
-                        ? "size-4 animate-spin"
-                        : "size-4"
-                    }
-                  />
-                </button>
-              </div>
-            </div>
-          </header>
-
           <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-7">
             <ClashIQInlineBanner />
 
