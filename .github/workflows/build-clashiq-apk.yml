@@ -207,7 +207,7 @@ jobs:
 
           # Inspect the packaged APK with Android build tools.
           SDK_AAPT2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -n 1)"
-          "$SDK_AAPT2" dump xmltree "$APK" AndroidManifest.xml > /tmp/manifest.txt
+          "$SDK_AAPT2" dump xmltree --file AndroidManifest.xml "$APK" > /tmp/manifest.txt
 
           grep -q 'ClashIqWidgetProvider' /tmp/manifest.txt
           grep -q 'clash_iq_widget_info' /tmp/manifest.txt
