@@ -385,7 +385,7 @@ export default function WarCenterPage() {
               if (window.history.length > 1) window.history.back();
               else window.location.href = '/';
             }}
-            className="fixed left-16 top-4 z-40 grid size-10 place-items-center rounded-xl border border-white/10 bg-[#07090d]/90 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+            className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
           >
             <ArrowLeft className="size-4" />
           </button>
