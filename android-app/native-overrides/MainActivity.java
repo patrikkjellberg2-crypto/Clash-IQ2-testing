@@ -65,6 +65,16 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
         ViewCompat.requestApplyInsets(content);
 
         createNotificationChannel();
+        Intent launchIntent = getIntent();
+        String clashIqPath = launchIntent != null ? launchIntent.getStringExtra("clashiq_path") : null;
+        if (clashIqPath != null && !clashIqPath.isEmpty()) {
+            handler.postDelayed(() -> {
+                if (getBridge() != null && getBridge().getWebView() != null) {
+                    getBridge().getWebView().loadUrl("https://clash-iq2-testing.onrender.com" + clashIqPath);
+                }
+            }, 700L);
+        }
+
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
