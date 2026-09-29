@@ -86,7 +86,7 @@ export default function TrendsPage() {
   const activePlayer = selectedPlayer || movers[0]?.playerTag || "";
 
   const playerQuery = useQuery({
-    queryKey: ["clash-trends-player", clanTag, activePlayer],
+    queryKey: ["clash-trends-player", clanTag, activePlayer, playerWars],
     enabled: Boolean(clanTag && activePlayer),
     queryFn: async () => {
       const r = await fetch(
