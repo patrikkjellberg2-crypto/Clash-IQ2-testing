@@ -53,16 +53,81 @@ jobs:
           npm install --no-package-lock
           npx --yes @capacitor/cli@7.4.3 add android
 
+      - name: Apply Clash IQ native Android shell
+        working-directory: android-app
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Native activity override: correct WindowInsets + native splash + first-launch welcome.
+          mkdir -p android/app/src/main/java/com/clashiq/app
+          cp native-overrides/MainActivity.java             android/app/src/main/java/com/clashiq/app/MainActivity.java
+
+          # Native widget.
+          cp native-overrides/ClashIqWidgetProvider.java             android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
+
+          mkdir -p android/app/src/main/res/layout                    android/app/src/main/res/drawable                    android/app/src/main/res/xml                    android/app/src/main/res/values
+
+          cp native-overrides/res/layout/clash_iq_widget.xml             android/app/src/main/res/layout/clash_iq_widget.xml
+          cp native-overrides/res/drawable/clashiq_widget_bg.xml             android/app/src/main/res/drawable/clashiq_widget_bg.xml
+          cp native-overrides/res/xml/clash_iq_widget_info.xml             android/app/src/main/res/xml/clash_iq_widget_info.xml
+          cp native-overrides/res/values/clashiq_native.xml             android/app/src/main/res/values/clashiq_native.xml
+
+          # The current Capacitor template already provides core-splashscreen.
+          # Fail early if the dependency is unexpectedly missing.
+          grep -q 'core-splashscreen' android/app/build.gradle
+
+          # Use our native splash launch theme and register the real widget.
+          python3 - <<'PY'
+          from pathlib import Path
+
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+
+          s = s.replace(
+              'android:theme="@style/AppTheme.NoActionBarLaunch"',
+              'android:theme="@style/ClashIqLaunchTheme"',
+          )
+
+          receiver = '''
+          <receiver
+              android:name=".ClashIqWidgetProvider"
+              android:exported="true"
+              android:label="Clash IQ War">
+              <intent-filter>
+                  <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                  <action android:name="com.clashiq.app.WIDGET_REFRESH" />
+              </intent-filter>
+              <meta-data
+                  android:name="android.appwidget.provider"
+                  android:resource="@xml/clash_iq_widget_info" />
+          </receiver>
+          '''
+
+          if "android:name=".ClashIqWidgetProvider"" not in s:
+              marker = "    <provider"
+              if marker not in s:
+                  raise SystemExit("Could not find manifest provider insertion point")
+              s = s.replace(marker, receiver + "\n" + marker, 1)
+
+          p.write_text(s)
+          PY
+
+          # Keep the app out of fullscreen/edge-to-edge overlap while still
+          # handling dynamic WindowInsets in MainActivity.
+          grep -q 'ClashIqLaunchTheme' android/app/src/main/AndroidManifest.xml
+          grep -q 'ClashIqWidgetProvider' android/app/src/main/AndroidManifest.xml
+          test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
+          test -f android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
+
       - name: Apply Clash IQ launcher icon
         working-directory: android-app
         shell: bash
         run: |
-          rm -rf android/app/src/main/res/mipmap-* 
-          mkdir -p android/app/src/main/res
+          set -euo pipefail
+          rm -rf android/app/src/main/res/mipmap-*
           cp -a resources/res/. android/app/src/main/res/
 
-          # Capacitor's generated manifest uses ic_launcher/ic_launcher_round.
-          # Keep the explicit Clash IQ resources and fail if the adaptive icon is missing.
           test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
           test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
           test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
@@ -72,24 +137,90 @@ jobs:
         working-directory: android-app
         run: npx --yes @capacitor/cli@7.4.3 sync android
 
-      - name: Re-apply launcher icon after Capacitor sync
+      - name: Re-apply native Android shell after Capacitor sync
         working-directory: android-app
         shell: bash
         run: |
+          set -euo pipefail
+
+          mkdir -p android/app/src/main/java/com/clashiq/app
+          cp native-overrides/MainActivity.java             android/app/src/main/java/com/clashiq/app/MainActivity.java
+          cp native-overrides/ClashIqWidgetProvider.java             android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
+
+          mkdir -p android/app/src/main/res/layout                    android/app/src/main/res/drawable                    android/app/src/main/res/xml                    android/app/src/main/res/values
+
+          cp native-overrides/res/layout/clash_iq_widget.xml             android/app/src/main/res/layout/clash_iq_widget.xml
+          cp native-overrides/res/drawable/clashiq_widget_bg.xml             android/app/src/main/res/drawable/clashiq_widget_bg.xml
+          cp native-overrides/res/xml/clash_iq_widget_info.xml             android/app/src/main/res/xml/clash_iq_widget_info.xml
+          cp native-overrides/res/values/clashiq_native.xml             android/app/src/main/res/values/clashiq_native.xml
+
           rm -rf android/app/src/main/res/mipmap-*
           cp -a resources/res/. android/app/src/main/res/
-          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path("android/app/src/main/AndroidManifest.xml")
+          s = p.read_text()
+          s = s.replace(
+              'android:theme="@style/AppTheme.NoActionBarLaunch"',
+              'android:theme="@style/ClashIqLaunchTheme"',
+          )
+          receiver = '''
+          <receiver
+              android:name=".ClashIqWidgetProvider"
+              android:exported="true"
+              android:label="Clash IQ War">
+              <intent-filter>
+                  <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                  <action android:name="com.clashiq.app.WIDGET_REFRESH" />
+              </intent-filter>
+              <meta-data
+                  android:name="android.appwidget.provider"
+                  android:resource="@xml/clash_iq_widget_info" />
+          </receiver>
+          '''
+          if "android:name=".ClashIqWidgetProvider"" not in s:
+              marker = "    <provider"
+              if marker not in s:
+                  raise SystemExit("Could not find manifest provider insertion point")
+              s = s.replace(marker, receiver + "\n" + marker, 1)
+          p.write_text(s)
+          PY
+
+          test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
+          test -f android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
+          test -f android/app/src/main/res/xml/clash_iq_widget_info.xml
+          grep -q 'ClashIqWidgetProvider' android/app/src/main/AndroidManifest.xml
+          grep -q 'ClashIqLaunchTheme' android/app/src/main/AndroidManifest.xml
 
       - name: Build debug APK
         working-directory: android-app/android
         run: ./gradlew assembleDebug --no-daemon
 
-      - name: Verify APK
+      - name: Verify native Android shell in APK
         working-directory: android-app/android
         shell: bash
         run: |
-          test -f app/build/outputs/apk/debug/app-debug.apk
-          sha256sum app/build/outputs/apk/debug/app-debug.apk
+          set -euo pipefail
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+
+          # Inspect the packaged APK with Android build tools.
+          SDK_AAPT2="$(find "$ANDROID_HOME/build-tools" -name aapt2 -type f | sort -V | tail -n 1)"
+          "$SDK_AAPT2" dump xmltree "$APK" AndroidManifest.xml > /tmp/manifest.txt
+
+          grep -q 'ClashIqWidgetProvider' /tmp/manifest.txt
+          grep -q 'clash_iq_widget_info' /tmp/manifest.txt
+          grep -q 'ClashIqLaunchTheme' /tmp/manifest.txt
+
+          # Ensure the launcher resources are actually packaged.
+          unzip -l "$APK" | grep -q 'mipmap-anydpi-v26/ic_launcher.xml'
+          unzip -l "$APK" | grep -q 'mipmap-xxxhdpi/ic_launcher.png'
+
+          # Ensure our native classes were compiled into DEX.
+          unzip -l "$APK" | grep -q 'classes.dex'
+          echo "Native Android shell checks passed."
+          sha256sum "$APK"
 
       - name: Upload Clash IQ APK
         uses: actions/upload-artifact@v4
