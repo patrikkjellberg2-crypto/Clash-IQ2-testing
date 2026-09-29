@@ -11,6 +11,7 @@ import { WarArchiver } from '@/components/war-archiver';
 import NotFound from '@/pages/not-found';
 const LoginPage = lazy(() => import('@/pages/login'));
 const ConnectPlayerPage = lazy(() => import('@/pages/connect-player'));
+const ConnectYouTubePage = lazy(() => import('@/pages/connect-youtube'));
 const AccountAdminPage = lazy(() => import('@/pages/account-admin'));
 const DashboardPage = lazy(() => import('@/pages/dashboard'));
 const WarCenterPage = lazy(() => import('@/pages/war-center'));
@@ -62,6 +63,7 @@ function Router() {
       <ClashIQPageBanner>
         <Suspense fallback={<PageLoader />}>
         <Switch>\n          <Route path="/login" component={LoginPage} />\n          <Route path="/connect-player" component={ConnectPlayerPage} />
+          <Route path="/connect-youtube" component={ConnectYouTubePage} />
           <Route path="/" component={DashboardPage} />
           <Route path="/war-center" component={WarCenterPage} />
           <Route path="/war-planner" component={WarPlannerPage} />
