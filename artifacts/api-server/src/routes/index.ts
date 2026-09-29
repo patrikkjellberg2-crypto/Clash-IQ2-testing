@@ -6,6 +6,7 @@ import aiCoachRouter from "./ai-coach";
 import settingsRouter from "./settings";
 import clanMusicRouter from "./clan-music";
 import adminRouter from "./admin";
+import clashTrendsRouter from "./clash-trends";
 
 const router: IRouter = Router();
 
@@ -31,5 +32,6 @@ router.use(aiCoachRouter);
 router.use(settingsRouter);
 router.use(clanMusicRouter);
 router.use(adminRouter);
+router.use(clashTrendsRouter);
 
 export default router;
