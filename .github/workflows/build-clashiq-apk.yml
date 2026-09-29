@@ -179,7 +179,7 @@ jobs:
                   android:resource="@xml/clash_iq_widget_info" />
           </receiver>
           '''
-          if "android:name=".ClashIqWidgetProvider"" not in s:
+          if 'android:name=".ClashIqWidgetProvider"' not in s:
               marker = "    <provider"
               if marker not in s:
                   raise SystemExit("Could not find manifest provider insertion point")
