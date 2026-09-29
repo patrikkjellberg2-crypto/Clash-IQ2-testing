@@ -54,6 +54,19 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Fix AndroidX browser dependency conflict
+        run: |
+          cat >> android/build.gradle <<'EOF'
+
+          // Clash IQ: Capgo Social Login and Android Browser Helper otherwise
+          // resolve incompatible androidx.browser versions under Gradle's
+          // consistent-resolution rules.
+          subprojects {
+              configurations.all {
+                  resolutionStrategy.force "androidx.browser:browser:1.9.0"
+              }
+          }
+          EOF
       - name: Apply icon resources and version
         run: |
           cp -r resources/res/. android/app/src/main/res/
