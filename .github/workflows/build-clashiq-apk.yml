@@ -54,6 +54,11 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+      - name: Install native Social Login MainActivity override
+        run: |
+          mkdir -p android/app/src/main/java/com/clashiq/app
+          cp native-overrides/MainActivity.java android/app/src/main/java/com/clashiq/app/MainActivity.java
+
       - name: Update Android toolchain for Social Login
         run: |
           sed -i 's/com.android.tools.build:gradle:[0-9.\-]*/com.android.tools.build:gradle:8.9.1/' android/build.gradle
