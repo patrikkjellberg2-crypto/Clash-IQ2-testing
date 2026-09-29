@@ -12,6 +12,8 @@ on:
         default: "1.2.0"
         required: true
   push:
+    branches:
+      - "dev-v3.1"
     tags:
       - "apk-v*"
 
