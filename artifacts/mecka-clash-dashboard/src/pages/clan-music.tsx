@@ -77,7 +77,7 @@ export default function ClanMusicPage() {
       if (host === "youtu.be") return u.pathname.split("/").filter(Boolean)[0] ?? "";
       const id = u.searchParams.get("v");
       if (id) return id;
-      const match = u.pathname.match(/^\\/(?:shorts|embed|live)\\/([^/?]+)/);
+      const match = u.pathname.match(/^\/(?:shorts|embed|live)\/([^/?]+)/);
       return match?.[1] ?? "";
     } catch {}
     return "";
