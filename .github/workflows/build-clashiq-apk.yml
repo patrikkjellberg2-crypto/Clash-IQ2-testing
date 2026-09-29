@@ -2,6 +2,9 @@ name: Build Clash IQ Android APK (Testing)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - dev-v3.1
 
 permissions:
   contents: read
