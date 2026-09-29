@@ -70,6 +70,7 @@ jobs:
 
           cp native-overrides/res/layout/clash_iq_widget.xml             android/app/src/main/res/layout/clash_iq_widget.xml
           cp native-overrides/res/drawable/clashiq_widget_bg.xml             android/app/src/main/res/drawable/clashiq_widget_bg.xml
+          cp native-overrides/res/drawable/ic_notification.xml             android/app/src/main/res/drawable/ic_notification.xml
           cp native-overrides/res/xml/clash_iq_widget_info.xml             android/app/src/main/res/xml/clash_iq_widget_info.xml
           cp native-overrides/res/values/clashiq_native.xml             android/app/src/main/res/values/clashiq_native.xml
 
@@ -83,6 +84,13 @@ jobs:
 
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
+
+          permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
+          if "android.permission.POST_NOTIFICATIONS" not in s:
+              marker = "    <application"
+              if marker not in s:
+                  raise SystemExit("Could not find application marker")
+              s = s.replace(marker, permission + marker, 1)
 
           s = s.replace(
               'android:theme="@style/AppTheme.NoActionBarLaunch"',
@@ -161,6 +169,13 @@ jobs:
           from pathlib import Path
           p = Path("android/app/src/main/AndroidManifest.xml")
           s = p.read_text()
+          permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
+          if "android.permission.POST_NOTIFICATIONS" not in s:
+              marker = "    <application"
+              if marker not in s:
+                  raise SystemExit("Could not find application marker")
+              s = s.replace(marker, permission + marker, 1)
+
           s = s.replace(
               'android:theme="@style/AppTheme.NoActionBarLaunch"',
               'android:theme="@style/ClashIqLaunchTheme"',
