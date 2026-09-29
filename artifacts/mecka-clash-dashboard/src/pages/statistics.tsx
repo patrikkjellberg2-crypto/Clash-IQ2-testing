@@ -82,6 +82,7 @@ function StatCard({ icon: Icon, label, value, detail }: { icon: typeof Trophy; l
 export default function StatisticsPage() {
   const { data, isLoading, isError } = useGetClashDashboard();
   const [archiveWars, setArchiveWars] = useState<Dict[]>([]);
+  const [playerStats, setPlayerStats] = useState<Dict[]>([]);
   const dashboard = data as unknown as Dict | undefined;
   const clan = d(dashboard?.clan);
   const clanTag = s(dashboard?.clanTag);
@@ -93,9 +94,13 @@ export default function StatisticsPage() {
       .then(payload => {
         if (!active) return;
         setArchiveWars(arr(payload?.wars));
+        setPlayerStats(arr(payload?.players));
       })
       .catch(() => {
-        if (active) setArchiveWars([]);
+        if (active) {
+          setArchiveWars([]);
+          setPlayerStats([]);
+        }
       });
     return () => {
       active = false;
@@ -129,18 +134,8 @@ export default function StatisticsPage() {
       }
     }
 
-    let attacks = 0;
-    let threeStars = 0;
-
-    for (const war of archiveWars) {
-      const own = d(war.clan);
-      for (const member of arr(own.members)) {
-        for (const attack of arr(member.attacks)) {
-          attacks++;
-          if (n(attack.stars) >= 3) threeStars++;
-        }
-      }
-    }
+    const attacks = playerStats.reduce((sum, player) => sum + n(player.attacksUsed), 0);
+    const threeStars = playerStats.reduce((sum, player) => sum + n(player.threeStars), 0);
 
     const completed = wins + losses + draws;
 
@@ -169,6 +164,44 @@ export default function StatisticsPage() {
       <StatCard icon={Target} label="Three-Star Rate" value={stats.threeStarRate == null ? '—' : `${stats.threeStarRate}%`} detail={stats.attacks ? `${stats.threeStars} of ${stats.attacks} archived attacks with attack-level data` : 'No attack-level data is available in the war archive yet'}/>
       <StatCard icon={TrendingUp} label="Avg. Destruction" value={stats.avgDestruction == null ? '—' : `${stats.avgDestruction}%`} detail={stats.avgDestruction == null ? 'No valid 0–100% destruction values available' : 'Average destruction per completed war'}/>
     </section>
+    <section className="mt-5 grid gap-5 lg:grid-cols-2">
+      <div className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Attack Leaders</p>
+        <h2 className="mt-1 text-xl font-black">Three-Star Top 5</h2>
+        <p className="mt-1 text-xs text-slate-500">Most 3★ attacks in the archived war data.</p>
+        <div className="mt-4 space-y-2">
+          {leaderboards.threeStar.length ? leaderboards.threeStar.map((player, index) => (
+            <Link key={player.tag} href={`/player/${encodeURIComponent(player.tag)}`} className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] px-3 py-3 hover:border-amber-400/25 hover:bg-white/[.04]">
+              <span className="grid size-8 place-items-center rounded-lg bg-amber-400/[.06] text-xs font-black text-amber-300">{index + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold text-white">{player.name}</span>
+                <span className="text-[10px] text-slate-500">{player.threeStars} three-stars · {player.attacks} attacks · {player.rate}% rate</span>
+              </span>
+              <span className="text-amber-300">★★★</span>
+            </Link>
+          )) : <p className="rounded-xl border border-dashed border-white/10 p-5 text-center text-sm text-slate-500">No attack-level data yet.</p>}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Defense Leaders</p>
+        <h2 className="mt-1 text-xl font-black">Best Defenders</h2>
+        <p className="mt-1 text-xs text-slate-500">Lowest average stars and destruction conceded.</p>
+        <div className="mt-4 space-y-2">
+          {leaderboards.bestDefense.length ? leaderboards.bestDefense.map((player, index) => (
+            <Link key={player.tag} href={`/player/${encodeURIComponent(player.tag)}`} className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] px-3 py-3 hover:border-amber-400/25 hover:bg-white/[.04]">
+              <span className="grid size-8 place-items-center rounded-lg bg-amber-400/[.06] text-xs font-black text-amber-300">{index + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold text-white">{player.name}</span>
+                <span className="text-[10px] text-slate-500">{player.count} defenses · {player.avgStars.toFixed(1)}★ conceded · {Math.round(player.avgDestruction)}% destruction</span>
+              </span>
+              <span className="text-xs font-black text-emerald-300">{player.zeroStars} × 0★</span>
+            </Link>
+          )) : <p className="rounded-xl border border-dashed border-white/10 p-5 text-center text-sm text-slate-500">No defense data yet.</p>}
+        </div>
+      </div>
+    </section>
+
     <section className="mt-5 rounded-2xl border border-white/[.08] bg-[#0b1119] p-5"><div className="flex items-end justify-between gap-4 border-b border-white/[.06] pb-4"><div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">War History</p><h2 className="mt-1 text-xl font-black">Recent Performance</h2></div><span className="rounded-full border border-white/[.08] bg-white/[.02] px-3 py-1 text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{wars.length} wars</span></div>
       {wars.length ? <div className="mt-4 grid gap-2 lg:grid-cols-2">{wars.slice(0,12).map(({war,result},index) => {
         const own = ownSideOf(war, clanTag);
