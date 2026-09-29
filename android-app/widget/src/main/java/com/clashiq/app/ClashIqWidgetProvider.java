@@ -103,7 +103,7 @@ public class ClashIqWidgetProvider extends AppWidgetProvider {
                         war.optDouble("destruction", 0)
                     );
                     attacks = String.valueOf(war.optInt("attacksRemaining", 0));
-                    timer = war.optString("timeRemaining", "—");
+                    timer = remainingTime(war.optString("endTime", ""));
                 }
 
                 final String fStatus = status;
