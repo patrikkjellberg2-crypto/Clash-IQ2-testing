@@ -185,7 +185,40 @@ export default function TrendsPage() {
               </div>
             </section>
 
-            <section className="grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
+            <section className="space-y-5">
+              <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
+                <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#5da9ff]">Player trend</p>
+                <h2 className="mt-1 text-lg font-black">{activeMover?.playerName || "Select a player"}</h2>
+                <p className="mt-1 text-xs text-white/35">Stars and average destruction per completed war.</p>
+
+                <div className="mt-5 h-[300px]">
+                  {playerQuery.isLoading ? (
+                    <div className="grid h-full place-items-center text-sm text-white/35">Loading player history…</div>
+                  ) : playerQuery.isError ? (
+                    <div className="grid h-full place-items-center text-sm text-red-200">Could not load player history.</div>
+                  ) : playerQuery.data?.length ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={playerQuery.data}>
+                        <CartesianGrid stroke="rgba(255,255,255,.06)" />
+                        <XAxis dataKey="endTime" tickFormatter={dateLabel} tick={{ fill: "#64748b", fontSize: 11 }} />
+                        <YAxis yAxisId="stars" allowDecimals={false} tick={{ fill: "#64748b", fontSize: 11 }} />
+                        <YAxis yAxisId="destruction" orientation="right" domain={[0, 100]} tick={{ fill: "#64748b", fontSize: 11 }} />
+                        <Tooltip
+                          labelFormatter={dateLabel}
+                          contentStyle={{ background: "#07111b", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12 }}
+                        />
+                        <Legend />
+                        <Line yAxisId="stars" type="monotone" dataKey="stars" name="Stars" stroke="#f4c542" strokeWidth={3} dot={false} />
+                        <Line yAxisId="destruction" type="monotone" dataKey="destruction" name="Destruction %" stroke="#5da9ff" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="grid h-full place-items-center text-sm text-white/30">
+                      Select a player with archived war data.
+                    </div>
+                  )}
+                </div>
+              </article>
               <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
                 <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#f4c542]">Member movement</p>
                 <h2 className="mt-1 text-lg font-black">Who is trending?</h2>
@@ -229,42 +262,7 @@ export default function TrendsPage() {
                   {!movers.length && <p className="py-8 text-center text-sm text-white/30">No player trend data yet.</p>}
                 </div>
               </article>
-
-              <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
-                <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#5da9ff]">Player trend</p>
-                <h2 className="mt-1 text-lg font-black">{activeMover?.playerName || "Select a player"}</h2>
-                <p className="mt-1 text-xs text-white/35">Stars and average destruction per completed war.</p>
-
-                <div className="mt-5 h-[300px]">
-                  {playerQuery.isLoading ? (
-                    <div className="grid h-full place-items-center text-sm text-white/35">Loading player history…</div>
-                  ) : playerQuery.isError ? (
-                    <div className="grid h-full place-items-center text-sm text-red-200">Could not load player history.</div>
-                  ) : playerQuery.data?.length ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={playerQuery.data}>
-                        <CartesianGrid stroke="rgba(255,255,255,.06)" />
-                        <XAxis dataKey="endTime" tickFormatter={dateLabel} tick={{ fill: "#64748b", fontSize: 11 }} />
-                        <YAxis yAxisId="stars" allowDecimals={false} tick={{ fill: "#64748b", fontSize: 11 }} />
-                        <YAxis yAxisId="destruction" orientation="right" domain={[0, 100]} tick={{ fill: "#64748b", fontSize: 11 }} />
-                        <Tooltip
-                          labelFormatter={dateLabel}
-                          contentStyle={{ background: "#07111b", border: "1px solid rgba(255,255,255,.1)", borderRadius: 12 }}
-                        />
-                        <Legend />
-                        <Line yAxisId="stars" type="monotone" dataKey="stars" name="Stars" stroke="#f4c542" strokeWidth={3} dot={false} />
-                        <Line yAxisId="destruction" type="monotone" dataKey="destruction" name="Destruction %" stroke="#5da9ff" strokeWidth={2} dot={false} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="grid h-full place-items-center text-sm text-white/30">
-                      Select a player with archived war data.
-                    </div>
-                  )}
-                </div>
-              </article>
-            </section>
-          </div>
+            </section>          </div>
       </main>
     </div>
   );
