@@ -111,6 +111,7 @@ export default function AICoachPage() {
           headers: {
             'Content-Type':
               'application/json',
+            'X-ClashIQ-Client-ID': getAiClientId(),
           },
 
           body: JSON.stringify({
@@ -184,7 +185,7 @@ export default function AICoachPage() {
     try {
       const response = await fetch('/api/ai/war-test', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'X-ClashIQ-Client-ID': getAiClientId() },
         body: JSON.stringify({
           scenario: scenario.id,
           question: 'Identify the current enemy threat. Use only recorded attacks and current war state. If there is no active threat, say so clearly.',
