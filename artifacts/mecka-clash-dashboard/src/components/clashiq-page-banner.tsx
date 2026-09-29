@@ -1,6 +1,7 @@
 import { type ReactNode } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 
 const BANNER_SRC = '/clash-iq-war-banner.webp';
 
@@ -10,8 +11,17 @@ export function ClashIQPageBanner({ children }: { children: ReactNode }) {
   // Overview owns its hero. Every other page gets the same banner.
   // Members and Capital Raids render the banner directly inside their main area.
   // Keep the wrapper neutral there so it cannot create a spacer or repaint the banner.
-  if (location === '/' || location === '/members' || location === '/capital-raids' || location === '/village' || location === '/war-archive' || location === '/war-center') {
+  if (location === '/' || location === '/members' || location === '/capital-raids' || location === '/village' || location === '/war-archive') {
     return <>{children}</>;
+  }
+
+  if (location === '/war-center') {
+    return (
+      <div className="min-h-[100dvh] overflow-x-hidden bg-[#07090d] text-white">
+        <ClashIQInlineBanner />
+        {children}
+      </div>
+    );
   }
 
   return (
