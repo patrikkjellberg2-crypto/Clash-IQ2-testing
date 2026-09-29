@@ -61,15 +61,6 @@ const validDestruction = (value: unknown) => {
   return valueNumber >= 0 && valueNumber <= 100 ? valueNumber : null;
 };
 
-const archiveWarId = (war: Dict, clanTag: string) => {
-  const own = ownSideOf(war, clanTag);
-  const enemy = own === d(war.clan) ? d(war.opponent) : d(war.clan);
-  const opponentTag = s(enemy.tag);
-  const endTime = s(war.endTime);
-  if (!opponentTag || !endTime) return '';
-  return `${normalizeTag(clanTag)}__${normalizeTag(opponentTag)}__${endTime}`;
-};
-
 function StatCard({ icon: Icon, label, value, detail }: { icon: typeof Trophy; label: string; value: string; detail: string }) {
   return <article className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5 shadow-[0_16px_50px_rgba(0,0,0,.18)]">
     <div className="grid size-10 place-items-center rounded-xl border border-amber-400/20 bg-amber-400/[.06] text-amber-300"><Icon className="size-5" /></div>
@@ -83,7 +74,6 @@ export default function StatisticsPage() {
   const { data, isLoading, isError } = useGetClashDashboard();
   const [archiveWars, setArchiveWars] = useState<Dict[]>([]);
   const [playerStats, setPlayerStats] = useState<Dict[]>([]);
-  const [openWarId, setOpenWarId] = useState('');
   const dashboard = data as unknown as Dict | undefined;
   const clan = d(dashboard?.clan);
   const clanTag = s(dashboard?.clanTag);
@@ -301,23 +291,13 @@ export default function StatisticsPage() {
       {wars.length ? <div className="mt-4 grid gap-2 lg:grid-cols-2">{wars.slice(0,12).map(({war,result},index) => {
         const own = ownSideOf(war, clanTag);
         const enemy = own === d(war.clan) ? d(war.opponent) : d(war.clan);
-        const warId = archiveWarId(war, clanTag);
-        const isOpen = warId !== '' && openWarId === warId;
-        const attacks = arr(own.members).flatMap(member => arr(member.attacks).map(attack => ({ member, attack })));
-        return <div key={`${warTime(war)}-${index}`} className="overflow-hidden rounded-xl border border-white/[.06] bg-white/[.02]">
-          <button type="button" onClick={() => setOpenWarId(isOpen ? '' : warId)} className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:border-amber-400/25 hover:bg-white/[.04]">
-            <div className="grid size-9 shrink-0 place-items-center rounded-lg border border-amber-400/15 bg-amber-400/[.05] text-amber-300"><Swords className="size-4"/></div>
-            <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate text-sm font-bold">vs {s(enemy.name,'Unknown opponent')}</p><span className="text-[8px] font-black tracking-[.15em] text-amber-300">{result}</span></div><p className="mt-0.5 text-[10px] text-slate-500">{Math.round(Math.max(0, Math.min(100, n(own.destructionPercentage))))}% destruction · {attacks.length} attacks</p></div>
-            <p className="text-sm font-black">{n(own.stars)} - {n(enemy.stars)}</p>
-            <span className="text-xs text-amber-300">{isOpen ? '−' : '+'}</span>
-          </button>
-          {isOpen && <div className="border-t border-white/[.06] bg-black/10 p-3">
-            {attacks.length ? <div className="space-y-2">{attacks.map(({member, attack}, attackIndex) => <div key={attackIndex} className="flex items-center gap-3 rounded-lg border border-white/[.05] bg-white/[.02] px-3 py-2">
-              <span className="w-6 text-center text-xs font-black text-slate-500">{attackIndex + 1}</span>
-              <div className="min-w-0 flex-1"><p className="truncate text-xs font-bold text-white">{s(member.name,'Unknown')}</p><p className="text-[10px] text-slate-500">vs {s(attack.defenderName, s(attack.defenderTag,'Unknown'))} · {n(attack.destructionPercentage)}% destruction</p></div>
-              <span className="shrink-0 text-sm font-black text-amber-300">{n(attack.stars)}★</span>
-            </div>)}</div> : <p className="p-4 text-center text-xs text-slate-500">No attack-level data available for this war.</p>}
-          </div>}
+        return <div key={`${warTime(war)}-${index}`} className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] px-4 py-3">
+          <div className="grid size-9 shrink-0 place-items-center rounded-lg border border-amber-400/15 bg-amber-400/[.05] text-amber-300"><Swords className="size-4"/></div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2"><p className="truncate text-sm font-bold">vs {s(enemy.name,'Unknown opponent')}</p><span className="text-[8px] font-black tracking-[.15em] text-amber-300">{result}</span></div>
+            <p className="mt-0.5 text-[10px] text-slate-500">{Math.round(Math.max(0, Math.min(100, n(own.destructionPercentage))))}% destruction</p>
+          </div>
+          <p className="text-sm font-black">{n(own.stars)} - {n(enemy.stars)}</p>
         </div>;
       })}</div> : <div className="mt-4 rounded-xl border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">No completed war statistics available yet.</div>}
     </section>
