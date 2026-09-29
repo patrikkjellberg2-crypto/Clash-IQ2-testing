@@ -15,6 +15,7 @@ import CapitalRaidsPage from '@/pages/capital-raids';
 import AICoachPage from '@/pages/ai-coach';
 import StatisticsPage from '@/pages/statistics';
 import SettingsPage from '@/pages/settings';
+import TrendsPage from '@/pages/trends';
 
 import {
   Route,
@@ -67,6 +68,11 @@ function Router() {
         <Route
           path="/settings"
           component={SettingsPage}
+        />
+
+        <Route
+          path="/trends"
+          component={TrendsPage}
         />
 
         <Route

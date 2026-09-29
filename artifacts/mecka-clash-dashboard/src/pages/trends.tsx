@@ -10,9 +10,11 @@ import {
   Tooltip,
   Legend,
 } from "recharts";
-import { TrendingDown, TrendingUp, Minus, BarChart3 } from "lucide-react";
+import { TrendingDown, TrendingUp, Minus, BarChart3, ArrowLeft } from "lucide-react";
 import { useGetClashDashboard } from "@workspace/api-client-react";
 import { AppSidebar } from "@/components/app-sidebar";
+import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
+import { useLocation } from "wouter";
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => (v && typeof v === "object" ? (v as Dict) : {});
@@ -45,6 +47,7 @@ function trendDelta(mover: Mover) {
 }
 
 export default function TrendsPage() {
+  const [, setLocation] = useLocation();
   const { data, isLoading } = useGetClashDashboard();
   const dashboard = data as unknown as Dict | undefined;
   const clan = d(dashboard?.clan);
@@ -97,17 +100,36 @@ export default function TrendsPage() {
   const activeMover = movers.find((m) => m.playerTag === activePlayer);
 
   if (isLoading) {
-    return <div className="min-h-screen bg-[#02070d] text-white p-8">Loading Trends…</div>;
+    return (
+      <div className="min-h-screen bg-[#07090d] text-white">
+        <AppSidebar clanName={s(clan.name, "ClashIQ Clan")} clanTag={clanTag} />
+        <main className="min-w-0 lg:pl-0"><ClashIQInlineBanner /><div className="p-8 text-sm text-white/40">Loading Trends…</div></main>
+      </div>
+    );
   }
 
   const clanName = s(clan.name, "ClashIQ Clan");
 
   return (
-    <div className="min-h-screen bg-[#02070d] text-white">
-      <div className="flex min-h-screen">
-        <AppSidebar clanName={clanName} clanTag={clanTag} />
-        <main className="min-w-0 flex-1">
-          <header className="border-b border-white/[.06] bg-[#030a12] px-4 py-5 md:px-8">
+    <div className="min-h-[100dvh] overflow-x-hidden bg-[#07090d] text-white">
+      <AppSidebar clanName={clanName} clanTag={clanTag} />
+      <main className="min-w-0 lg:pl-0">
+        <ClashIQInlineBanner />
+
+        <button
+          type="button"
+          aria-label="Go back"
+          title="Back"
+          onClick={() => {
+            if (window.history.length > 1) window.history.back();
+            else setLocation("/");
+          }}
+          className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+        >
+          <ArrowLeft className="size-4" />
+        </button>
+
+          <header className="border-b border-white/[.06] bg-[#07090d]/85 px-4 py-5 backdrop-blur-xl md:px-8">
             <div className="mx-auto max-w-[1400px]">
               <p className="text-[9px] font-black uppercase tracking-[.22em] text-[#f4c542]">
                 Intelligence / Trends
@@ -163,51 +185,7 @@ export default function TrendsPage() {
               </div>
             </section>
 
-            <section className="grid gap-5 lg:grid-cols-[.9fr_1.1fr]">
-              <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
-                <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#f4c542]">Member movement</p>
-                <h2 className="mt-1 text-lg font-black">Who is trending?</h2>
-                <p className="mt-1 text-xs text-white/35">Latest 5 completed wars vs. the 5 before them.</p>
-
-                <div className="mt-4 space-y-2">
-                  {movers.slice(0, 20).map((mover) => {
-                    const Icon =
-                      mover.trend === "improving"
-                        ? TrendingUp
-                        : mover.trend === "declining"
-                          ? TrendingDown
-                          : Minus;
-                    const active = mover.playerTag === activePlayer;
-
-                    return (
-                      <button
-                        key={mover.playerTag}
-                        type="button"
-                        onClick={() => setSelectedPlayer(mover.playerTag)}
-                        className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${active ? "border-[#f4c542]/25 bg-[#f4c542]/[.06]" : "border-white/[.06] bg-white/[.02] hover:bg-white/[.04]"}`}
-                      >
-                        <Icon className={`size-4 ${mover.trend === "improving" ? "text-emerald-300" : mover.trend === "declining" ? "text-rose-300" : "text-slate-400"}`} />
-                        <span className="min-w-0 flex-1">
-                          <span
-                            data-player-tag={mover.playerTag}
-                            data-player-name={mover.playerName}
-                            className="block cursor-pointer truncate text-sm font-bold hover:text-[#f4c542]"
-                          >
-                            {mover.playerName}
-                          </span>
-                          <span className="text-[10px] text-white/30">{mover.warsCounted} wars tracked</span>
-                        </span>
-                        <span className="text-right">
-                          <span className="block text-xs font-black">{trendDelta(mover) >= 0 ? "+" : ""}{trendDelta(mover).toFixed(2)}★</span>
-                          <span className="text-[9px] uppercase tracking-wider text-white/25">{mover.trend}</span>
-                        </span>
-                      </button>
-                    );
-                  })}
-                  {!movers.length && <p className="py-8 text-center text-sm text-white/30">No player trend data yet.</p>}
-                </div>
-              </article>
-
+            <section className="space-y-5">
               <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
                 <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#5da9ff]">Player trend</p>
                 <h2 className="mt-1 text-lg font-black">{activeMover?.playerName || "Select a player"}</h2>
@@ -241,10 +219,47 @@ export default function TrendsPage() {
                   )}
                 </div>
               </article>
-            </section>
-          </div>
-        </main>
-      </div>
+              <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5">
+                <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#f4c542]">Member movement</p>
+                <h2 className="mt-1 text-lg font-black">Who is trending?</h2>
+                <p className="mt-1 text-xs text-white/35">Latest 5 completed wars vs. the 5 before them.</p>
+
+                <div className="mt-4 space-y-2">
+                  {movers.slice(0, 20).map((mover) => {
+                    const Icon =
+                      mover.trend === "improving"
+                        ? TrendingUp
+                        : mover.trend === "declining"
+                          ? TrendingDown
+                          : Minus;
+                    const active = mover.playerTag === activePlayer;
+
+                    return (
+                      <button
+                        key={mover.playerTag}
+                        type="button"
+                        onClick={() => setSelectedPlayer(mover.playerTag)}
+                        className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${active ? "border-[#f4c542]/25 bg-[#f4c542]/[.06]" : "border-white/[.06] bg-white/[.02] hover:bg-white/[.04]"}`}
+                      >
+                        <Icon className={`size-4 ${mover.trend === "improving" ? "text-emerald-300" : mover.trend === "declining" ? "text-rose-300" : "text-slate-400"}`} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-bold">
+                            {mover.playerName}
+                          </span>
+                          <span className="text-[10px] text-white/30">{mover.warsCounted} wars tracked</span>
+                        </span>
+                        <span className="text-right">
+                          <span className="block text-xs font-black">{trendDelta(mover) >= 0 ? "+" : ""}{trendDelta(mover).toFixed(2)}★</span>
+                          <span className="text-[9px] uppercase tracking-wider text-white/25">{mover.trend}</span>
+                        </span>
+                      </button>
+                    );
+                  })}
+                  {!movers.length && <p className="py-8 text-center text-sm text-white/30">No player trend data yet.</p>}
+                </div>
+              </article>
+            </section>          </div>
+      </main>
     </div>
   );
 }
