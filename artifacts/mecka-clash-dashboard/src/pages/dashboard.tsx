@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
 import {
   ArrowRight,
+  BrainCircuit,
   Check,
   Clock3,
   Coins,
@@ -332,6 +333,182 @@ function getWarResult(
   return null;
 }
 
+function IntelligencePulse({
+  war,
+  clanName,
+}: {
+  war: Dict;
+  clanName: string;
+}) {
+  const own = d(war.clan);
+  const opponent = d(war.opponent);
+  const ownMembers = arr(own.members);
+  const enemyMembers = arr(opponent.members);
+  const state = s(war.state, "unknown").toLowerCase();
+  const active = state === "inwar";
+
+  if (!war.clan || !war.opponent) {
+    return (
+      <article className="premium-card rounded-2xl border border-sky-400/15 p-5">
+        <div className="flex items-center gap-3">
+          <BrainCircuit className="size-5 text-sky-300" />
+          <div>
+            <h2 className="text-xl font-bold">Intelligence Pulse</h2>
+            <p className="text-sm text-muted-foreground">No active war board available.</p>
+          </div>
+        </div>
+        <p className="mt-4 text-sm text-muted-foreground">
+          Clash IQ will surface live war changes here when the next war starts.
+        </p>
+      </article>
+    );
+  }
+
+  const attacksPerMember = Math.max(1, n(war.attacksPerMember, 2));
+  const teamSize = Math.max(
+    n(war.teamSize),
+    ownMembers.length,
+    enemyMembers.length,
+  );
+  const maxAttacks = teamSize * attacksPerMember;
+  const ownUsed = n(own.attacks);
+  const enemyUsed = n(opponent.attacks);
+  const ownRemaining = Math.max(0, maxAttacks - ownUsed);
+  const enemyRemaining = Math.max(0, maxAttacks - enemyUsed);
+  const starDelta = n(own.stars) - n(opponent.stars);
+  const destructionDelta = n(own.destructionPercentage) - n(opponent.destructionPercentage);
+
+  const cleanupTargets = enemyMembers
+    .map(member => {
+      const attacks = arr(member.attacks);
+      const best = attacks.reduce((best, attack) => {
+        if (!best) return attack;
+        const stars = n(attack.stars);
+        const bestStars = n(best.stars);
+        const destruction = n(attack.destructionPercentage);
+        const bestDestruction = n(best.destructionPercentage);
+        return stars < bestStars || (stars === bestStars && destruction > bestDestruction)
+          ? attack
+          : best;
+      }, null as Dict | null);
+      return { member, best };
+    })
+    .filter(({ member, best }) => n(member.attacks?.length) > 0 && best && n(best.stars) < 3)
+    .sort((a, b) => n(b.best?.destructionPercentage) - n(a.best?.destructionPercentage))
+    .slice(0, 2);
+
+  const unusedPlayers = active
+    ? ownMembers.filter(member => n(member.attacks?.length) < attacksPerMember).length
+    : 0;
+
+  const alerts: { tone: "red" | "amber" | "green" | "sky"; title: string; detail: string }[] = [];
+
+  if (active && ownRemaining > 0) {
+    alerts.push({
+      tone: unusedPlayers > 0 ? "amber" : "sky",
+      title: `${ownRemaining} attack${ownRemaining === 1 ? "" : "s"} remaining`,
+      detail: `${unusedPlayers} clan member${unusedPlayers === 1 ? " has" : "s have"} an unused attack.`,
+    });
+  }
+
+  if (active && starDelta < 0) {
+    alerts.push({
+      tone: "red",
+      title: "Enemy is ahead",
+      detail: `${Math.abs(starDelta)} star${Math.abs(starDelta) === 1 ? "" : "s"} behind · destruction gap ${Math.abs(destructionDelta).toFixed(1)}%.`,
+    });
+  } else if (active && starDelta > 0) {
+    alerts.push({
+      tone: "green",
+      title: `${starDelta} star lead`,
+      detail: `Your destruction is ${destructionDelta >= 0 ? "also" : "not"} ahead by ${Math.abs(destructionDelta).toFixed(1)}%.`,
+    });
+  } else if (active) {
+    alerts.push({
+      tone: "amber",
+      title: "Close war",
+      detail: `Stars are tied · destruction decides the current edge.`,
+    });
+  }
+
+  if (cleanupTargets.length) {
+    const target = cleanupTargets[0];
+    alerts.push({
+      tone: "sky",
+      title: "Cleanup opportunity",
+      detail: `#${n(target.member.mapPosition)} ${s(target.member.name, "Enemy")} has been attacked without a 3★ clear.`,
+    });
+  }
+
+  const toneClasses = {
+    red: "border-red-400/20 bg-red-400/[.06] text-red-200",
+    amber: "border-amber-400/20 bg-amber-400/[.06] text-amber-200",
+    green: "border-emerald-400/20 bg-emerald-400/[.06] text-emerald-200",
+    sky: "border-sky-400/20 bg-sky-400/[.06] text-sky-200",
+  } as const;
+
+  return (
+    <article className="premium-card overflow-hidden rounded-2xl border border-sky-400/15">
+      <div className="flex items-center justify-between border-b border-white/10 px-5 py-4">
+        <div className="flex items-center gap-3">
+          <div className="grid size-9 place-items-center rounded-xl bg-sky-400/10 text-sky-300">
+            <BrainCircuit className="size-4" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold">Intelligence Pulse</h2>
+            <p className="text-xs font-bold uppercase tracking-[.16em] text-muted-foreground">
+              {active ? `Live · ${clanName}` : "War intelligence"}
+            </p>
+          </div>
+        </div>
+        <Link
+          href="/war-planner"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary/15 px-3 py-2 text-sm font-bold text-sky-200"
+        >
+          Open Planner <ArrowRight className="size-3" />
+        </Link>
+      </div>
+
+      <div className="grid gap-3 p-5 md:grid-cols-3">
+        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4">
+          <p className="text-xs font-bold uppercase tracking-[.15em] text-muted-foreground">Board</p>
+          <p className="mt-2 text-4xl font-black">{n(own.stars)}–{n(opponent.stars)}</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {active ? `${ownRemaining} own · ${enemyRemaining} enemy attacks left` : "Latest captured state"}
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4">
+          <p className="text-xs font-bold uppercase tracking-[.15em] text-muted-foreground">Destruction</p>
+          <p className="mt-2 text-4xl font-black">{n(own.destructionPercentage).toFixed(1)}%</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Opponent {n(opponent.destructionPercentage).toFixed(1)}%
+          </p>
+        </div>
+        <div className="rounded-xl border border-white/10 bg-white/[.025] p-4">
+          <p className="text-xs font-bold uppercase tracking-[.15em] text-muted-foreground">Detected</p>
+          <p className="mt-2 text-4xl font-black">{alerts.length}</p>
+          <p className="mt-1 text-sm text-muted-foreground">data-backed signals</p>
+        </div>
+      </div>
+
+      <div className="grid gap-2 px-5 pb-5">
+        {alerts.slice(0, 3).map((alert, index) => (
+          <div key={`${alert.title}-${index}`} className={`rounded-xl border p-3 ${toneClasses[alert.tone]}`}>
+            <div className="flex items-start gap-3">
+              <ShieldAlert className="mt-0.5 size-4 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-base font-bold">{alert.title}</p>
+                <p className="mt-1 text-sm leading-5 opacity-80">{alert.detail}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+
 function WarPerformance({
   warlog,
   clanTag,
@@ -496,6 +673,13 @@ export default function DashboardPage() {
       });
     return () => { cancelled = true; };
   }, [dash?.clanTag]);
+
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      void refetch();
+    }, 60_000);
+    return () => window.clearInterval(interval);
+  }, [refetch]);
 
   const members = useMemo(
     () =>
@@ -683,7 +867,7 @@ export default function DashboardPage() {
               />
             </section>
 
-            <section className="grid gap-5 xl:grid-cols-[1.35fr_.9fr_.8fr]">
+            <section className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-[1.35fr_.9fr_.8fr]">
               <WarCard
                 war={war}
                 clanName={clanName}
@@ -743,6 +927,11 @@ export default function DashboardPage() {
                 </Link>
               </article>
             </section>
+
+            <IntelligencePulse
+              war={war}
+              clanName={clanName}
+            />
 
             <section className="premium-card overflow-hidden rounded-2xl">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
