@@ -3,6 +3,7 @@ import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
+import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import {
   ArrowLeft,
   BarChart3,
