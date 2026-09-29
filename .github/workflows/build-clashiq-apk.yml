@@ -58,7 +58,7 @@ jobs:
         run: |
           cp -r resources/res/. android/app/src/main/res/
           export VERSION_CODE=$(( $(date +%s) / 60 ))
-          python3 -c 'from pathlib import Path; import re; p=Path("android/app/build.gradle"); s=p.read_text(); s=re.sub(r"versionCode \\d+", "versionCode $VERSION_CODE", s); s=re.sub(r"versionName \"[^\"]*\"", "versionName \"$VERSION_NAME\"", s); p.write_text(s)'
+          python3 -c 'from pathlib import Path; import re, os; p=Path("android/app/build.gradle"); s=p.read_text(); s=re.sub(r"versionCode \\d+", "versionCode "+os.environ["VERSION_CODE"], s); s=re.sub(r"versionName "[^"]*"", "versionName \"" + os.environ["VERSION_NAME"] + "\"", s); p.write_text(s)'
           grep -n "versionCode\|versionName" android/app/build.gradle
       - name: Build debug APK
         working-directory: android-app/android
