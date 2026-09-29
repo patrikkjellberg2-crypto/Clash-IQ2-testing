@@ -308,7 +308,28 @@ export default function AICoachPage() {
             <ArrowLeft className="size-4" />
           </button>
           <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-8">
-            <WarTimer currentWar={war} compact />
+            <section className="overflow-hidden rounded-2xl border border-white/[.07] bg-[#06111b]/90 shadow-[0_12px_45px_rgba(0,0,0,.2)]">
+              <div className="border-b border-white/[.06] px-5 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-[9px] font-black uppercase tracking-[.18em] text-[#f4c542]">
+                      Current War
+                    </p>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-sm font-black">
+                      <span>{clanName}</span>
+                      <span className="text-white/25">VS</span>
+                      <span>{opponentName}</span>
+                    </div>
+                  </div>
+                  <span className="rounded-full border border-[#f4c542]/20 bg-[#f4c542]/10 px-3 py-1.5 text-[9px] font-black uppercase tracking-[.14em] text-[#f4c542]">
+                    {s(war.state, 'No active war')}
+                  </span>
+                </div>
+              </div>
+              <div className="p-3">
+                <WarTimer currentWar={war} compact />
+              </div>
+            </section>
 
             <section className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
               <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5 shadow-[0_12px_45px_rgba(0,0,0,.2)]">
