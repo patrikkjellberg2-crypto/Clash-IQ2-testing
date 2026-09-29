@@ -1,8 +1,10 @@
 package com.clashiq.app;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -56,8 +58,30 @@ public class MainActivity extends BridgeActivity {
         });
         ViewCompat.requestApplyInsets(content);
 
+        createNotificationChannel();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS)
+                        != PackageManager.PERMISSION_GRANTED) {
+            handler.postDelayed(() ->
+                    requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 7001), 900L);
+        }
+
         if (firstLaunch) {
             handler.postDelayed(this::showWelcome, splashDuration + 120L);
+        }
+    }
+
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            android.app.NotificationChannel channel = new android.app.NotificationChannel(
+                    "war_alerts",
+                    "Clash IQ War Alerts",
+                    android.app.NotificationManager.IMPORTANCE_HIGH);
+            channel.setDescription("War preparation and start alerts for BHABE DHEMONS.");
+            android.app.NotificationManager manager =
+                    getSystemService(android.app.NotificationManager.class);
+            if (manager != null) manager.createNotificationChannel(channel);
         }
     }
 
