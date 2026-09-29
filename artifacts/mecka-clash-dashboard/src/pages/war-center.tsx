@@ -389,43 +389,7 @@ export default function WarCenterPage() {
           >
             <ArrowLeft className="size-4" />
           </button>
-          <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
-            <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-[.18em] text-primary">
-                    Live krig / {label(currentWar.state, 'status')}
-                  </p>
-                  <h1 className="mt-1 font-display text-xl font-bold tracking-[-.05em] md:text-2xl">
-                    War Center
-                  </h1>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="hidden items-center gap-2 text-right sm:flex">
-                  <span className="size-2 rounded-full bg-[#2b9f78]" />
-                  <div>
-                    <p className="text-xs font-bold">Live feed</p>
-                    <p className="text-[10px] text-muted-foreground">
-                      Official data
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void refetch()}
-                  className="grid size-9 place-items-center rounded-xl border border-border bg-card text-muted-foreground transition hover:border-primary/50 hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  aria-label="Uppdatera kriget"
-                  data-testid="button-refresh-war-center"
-                >
-                  <RefreshCw className="size-4" />
-                </button>
-                <div className="grid size-9 place-items-center rounded-xl bg-primary text-xs font-bold text-primary-foreground">
-                  MC
-                </div>
-              </div>
-            </div>
-          </header>
+
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
             <section
