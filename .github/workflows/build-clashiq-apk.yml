@@ -45,7 +45,7 @@ jobs:
         working-directory: android-app
         run: |
           pnpm install --no-frozen-lockfile
-          npx cap add android
+          pnpm exec cap add android
 
       - name: Apply Clash IQ launcher icon
         working-directory: android-app
@@ -64,7 +64,7 @@ jobs:
 
       - name: Sync Capacitor
         working-directory: android-app
-        run: npx cap sync android
+        run: pnpm exec cap sync android
 
       - name: Re-apply launcher icon after Capacitor sync
         working-directory: android-app
