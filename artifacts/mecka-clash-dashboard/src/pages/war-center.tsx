@@ -538,7 +538,7 @@ export default function WarCenterPage() {
                           {initials(label(item.member.name, 'MC'))}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-bold">
+                          <p className="truncate text-sm font-bold group-hover:text-amber-300">
                             {label(item.member.name, 'Unknown member')}
                           </p>
                           <p className="mt-0.5 text-[11px] text-muted-foreground">
@@ -547,7 +547,7 @@ export default function WarCenterPage() {
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-data text-sm font-bold text-[#9c6e00]">
+                          <p className="font-data text-sm font-bold text-amber-300">
                             {item.attacksRemaining} remaining
                           </p>
                           <p className="text-[10px] text-muted-foreground">
@@ -558,7 +558,7 @@ export default function WarCenterPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="flex min-h-[230px flex-col items-center justify-center px-6 text-center">
+                  <div className="flex min-h-[230px] flex-col items-center justify-center px-6 text-center">
                     <CheckCircle2 className="size-8 text-[#2b9f78]" />
                     <p className="mt-3 text-sm font-bold">
                       All attacks are used
