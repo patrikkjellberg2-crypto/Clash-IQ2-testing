@@ -61,6 +61,18 @@ const validDestruction = (value: unknown) => {
   return valueNumber >= 0 && valueNumber <= 100 ? valueNumber : null;
 };
 
+const opponentLabel = (war: Dict, own: Dict, enemy: Dict) => {
+  const name = s(enemy.name).trim();
+  const tag = s(enemy.tag).trim();
+  if (name || tag) return name || tag;
+
+  // CWL season data can arrive as several wars without a populated
+  // opponent identity. A multi-star entry is the recognizable CWL shape.
+  if (n(own.stars) > 3) return 'CVL';
+
+  return 'Unknown opponent';
+};
+
 function StatCard({ icon: Icon, label, value, detail }: { icon: typeof Trophy; label: string; value: string; detail: string }) {
   return <article className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5 shadow-[0_16px_50px_rgba(0,0,0,.18)]">
     <div className="grid size-10 place-items-center rounded-xl border border-amber-400/20 bg-amber-400/[.06] text-amber-300"><Icon className="size-5" /></div>
@@ -334,7 +346,7 @@ export default function StatisticsPage() {
         <h2 className="mt-1 text-xl font-black">Best War</h2>
         {warInsights.bestWar ? <div className="mt-4 rounded-xl border border-white/[.06] bg-white/[.02] p-4">
           <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0"><p className="truncate text-lg font-black">vs {s(warInsights.bestWar.enemy.name, 'Unknown opponent')}</p><p className="mt-1 text-xs text-slate-500">{warInsights.bestWar.result} · {Math.round(Math.max(0, Math.min(100, n(warInsights.bestWar.own.destructionPercentage))))}% destruction</p></div>
+            <div className="min-w-0"><p className="truncate text-lg font-black">vs {opponentLabel(warInsights.bestWar.war, warInsights.bestWar.own, warInsights.bestWar.enemy)}</p><p className="mt-1 text-xs text-slate-500">{warInsights.bestWar.result} · {Math.round(Math.max(0, Math.min(100, n(warInsights.bestWar.own.destructionPercentage))))}% destruction</p></div>
             <p className="shrink-0 text-2xl font-black text-amber-300">{n(warInsights.bestWar.own.stars)}★</p>
           </div>
         </div> : <p className="mt-4 text-sm text-slate-500">No completed wars available yet.</p>}
@@ -414,7 +426,7 @@ export default function StatisticsPage() {
         return <div key={`${warTime(war)}-${index}`} className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] px-4 py-3">
           <div className="grid size-9 shrink-0 place-items-center rounded-lg border border-amber-400/15 bg-amber-400/[.05] text-amber-300"><Swords className="size-4"/></div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2"><p className="truncate text-sm font-bold">vs {s(enemy.name,'Unknown opponent')}</p><span className="text-[8px] font-black tracking-[.15em] text-amber-300">{result}</span></div>
+            <div className="flex items-center gap-2"><p className="truncate text-sm font-bold">vs {opponentLabel(war, own, enemy)}</p><span className="text-[8px] font-black tracking-[.15em] text-amber-300">{result}</span></div>
             <p className="mt-0.5 text-[10px] text-slate-500">{Math.round(Math.max(0, Math.min(100, n(own.destructionPercentage))))}% destruction</p>
           </div>
           <p className="text-sm font-black">{n(own.stars)} - {n(enemy.stars)}</p>
