@@ -1,4 +1,5 @@
 import { Router, type IRouter, type Request, type Response } from "express";
+import { checkAiUsage, recordAiUsage } from "../lib/ai-usage";
 
 const router: IRouter = Router();
 
@@ -648,11 +649,15 @@ async function handleCoach(req: Request, res: Response, requireAuth = false) {
     const mode = req.body?.mode === "opponent" ? "opponent" : req.body?.mode === "question" ? "question" : "clan";
     const question = typeof req.body?.question === "string" ? req.body.question.slice(0, 1000) : "";
 
+    const usage = checkAiUsage(req);
+    if (!usage.allowed) return res.status(429).json({ error: usage.reason, usage: { daily: usage.daily, hourly: usage.hourly } });
+
     const data = await getClanData(tag);
     const prompt = buildPrompt(data, mode, question);
     if (prompt.length > MAX_PROMPT_CHARS) throw new Error(`AI war data exceeded the safety limit (${prompt.length} characters).`);
 
     const answer = await callGemini(prompt);
+    recordAiUsage(req, mode, GEMINI_MODEL, prompt.length, answer.length, true);
     return res.json({ answer, mode, clanTag: tag });
   } catch (error: any) {
     console.error("AI Coach error:", error);
