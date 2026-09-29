@@ -1,16 +1,1 @@
-{
-  "name": "clash-iq-android",
-  "version": "4.0.0-beta.1",
-  "private": true,
-  "description": "Capacitor Android prerelease shell for Clash IQ 4.0 (loads the 4.0 prerelease dashboard).",
-  "scripts": {
-    "sync": "cap sync android"
-  },
-  "dependencies": {
-    "@capacitor/android": "7.4.3",
-    "@capacitor/core": "7.4.3"
-  },
-  "devDependencies": {
-    "@capacitor/cli": "7.4.3"
-  }
-}
+{"name":"clash-iq-android","version":"1.2.0","private":true,"description":"Capacitor Android shell for Clash IQ.","scripts":{"sync":"cap sync android"},"dependencies":{"@capacitor/android":"7.4.3","@capacitor/core":"7.4.3"},"devDependencies":{"@capacitor/cli":"7.4.3"}}

@@ -1,196 +1,70 @@
-name: Build Clash IQ Android APK (Testing)
+name: Build Clash IQ APK
 
 on:
   workflow_dispatch:
+    inputs:
+      server_url:
+        description: "Hosted Clash IQ URL"
+        default: "https://clash-iq2-testing.onrender.com"
+        required: true
+      version_name:
+        description: "Version name"
+        default: "1.2.0"
+        required: true
   push:
-    branches:
-      - dev-v3.1
+    tags:
+      - "apk-v*"
 
 permissions:
   contents: read
 
+concurrency:
+  group: apk-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: android-app
+    env:
+      SERVER_URL: ${{ inputs.server_url || 'https://clash-iq2-testing.onrender.com' }}
+      VERSION_NAME: ${{ inputs.version_name || '1.2.0' }}
 
     steps:
-      - name: Checkout Testing branch
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          ref: ${{ github.ref_name }}
-          fetch-depth: 1
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 24
-
-      - name: Set up Java 21
-        uses: actions/setup-java@v4
+          node-version: 22
+      - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: 21
-
-      - name: Enable pnpm
-        run: corepack enable && pnpm --version
-
-      - name: Install web dependencies
-        run: pnpm install --no-frozen-lockfile
-
-      - name: Build latest Testing web app
-        run: pnpm --filter @workspace/mecka-clash-dashboard run build
-
-      - name: Prepare Capacitor web bundle
-        shell: bash
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install Capacitor
+        run: npm install --no-audit --no-fund
+      - name: Point the app at the hosted dashboard
         run: |
-          rm -rf android-app/www
-          mkdir -p android-app/www
-          cp -a artifacts/mecka-clash-dashboard/dist/. android-app/www/
-
-      - name: Install Capacitor Android shell
-        working-directory: android-app
+          node -e 'const fs=require("fs"); const c=JSON.parse(fs.readFileSync("capacitor.config.json","utf8")); c.server.url=process.env.SERVER_URL; fs.writeFileSync("capacitor.config.json",JSON.stringify(c,null,2));'
+      - name: Generate Android project
         run: |
-          npm install --no-package-lock
-          npx --yes @capacitor/cli@7.4.3 add android
-
-      - name: Apply Clash IQ native Android shell
-        working-directory: android-app
-        shell: bash
+          npx cap add android
+          npx cap sync android
+      - name: Apply icon resources and version
         run: |
-          set -euo pipefail
-          mkdir -p android/app/src/main/java/com/clashiq/app
-          cp native-overrides/MainActivity.java android/app/src/main/java/com/clashiq/app/MainActivity.java
-          cp native-overrides/ClashIqWidgetProvider.java android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
-          mkdir -p android/app/src/main/res/layout android/app/src/main/res/drawable android/app/src/main/res/xml android/app/src/main/res/values
-          cp native-overrides/res/layout/clash_iq_widget.xml android/app/src/main/res/layout/clash_iq_widget.xml
-          cp native-overrides/res/drawable/clashiq_widget_bg.xml android/app/src/main/res/drawable/clashiq_widget_bg.xml
-          cp native-overrides/res/drawable/ic_notification.xml android/app/src/main/res/drawable/ic_notification.xml
-          cp native-overrides/res/xml/clash_iq_widget_info.xml android/app/src/main/res/xml/clash_iq_widget_info.xml
-          cp native-overrides/res/values/clashiq_native.xml android/app/src/main/res/values/clashiq_native.xml
-          grep -q 'core-splashscreen' android/app/build.gradle
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("android/app/src/main/AndroidManifest.xml")
-          s = p.read_text()
-          permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
-          if "android.permission.POST_NOTIFICATIONS" not in s:
-              marker = "    <application"
-              if marker not in s: raise SystemExit("Could not find application marker")
-              s = s.replace(marker, permission + marker, 1)
-          s = s.replace('android:theme="@style/AppTheme.NoActionBarLaunch"', 'android:theme="@style/ClashIqLaunchTheme"')
-          receiver = '''
-          <receiver
-              android:name=".ClashIqWidgetProvider"
-              android:exported="true"
-              android:label="Clash IQ War">
-              <intent-filter>
-                  <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                  <action android:name="com.clashiq.app.WIDGET_REFRESH" />
-              </intent-filter>
-              <meta-data android:name="android.appwidget.provider" android:resource="@xml/clash_iq_widget_info" />
-          </receiver>
-          '''
-          if 'android:name=".ClashIqWidgetProvider"' not in s:
-              marker = "    <provider"
-              if marker not in s: raise SystemExit("Could not find manifest provider insertion point")
-              s = s.replace(marker, receiver + "\n" + marker, 1)
-          p.write_text(s)
-          PY
-          grep -q 'ClashIqLaunchTheme' android/app/src/main/AndroidManifest.xml
-          grep -q 'ClashIqWidgetProvider' android/app/src/main/AndroidManifest.xml
-          test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
-          test -f android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
-
-      - name: Apply Clash IQ launcher icon
-        working-directory: android-app
-        shell: bash
-        run: |
-          set -euo pipefail
-          rm -rf android/app/src/main/res/mipmap-*
-          cp -a resources/res/. android/app/src/main/res/
-          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-          test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
-
-      - name: Sync Capacitor
-        working-directory: android-app
-        run: npx --yes @capacitor/cli@7.4.3 sync android
-
-      - name: Re-apply native Android shell after Capacitor sync
-        working-directory: android-app
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p android/app/src/main/java/com/clashiq/app
-          cp native-overrides/MainActivity.java android/app/src/main/java/com/clashiq/app/MainActivity.java
-          cp native-overrides/ClashIqWidgetProvider.java android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
-          mkdir -p android/app/src/main/res/layout android/app/src/main/res/drawable android/app/src/main/res/xml android/app/src/main/res/values
-          cp native-overrides/res/layout/clash_iq_widget.xml android/app/src/main/res/layout/clash_iq_widget.xml
-          cp native-overrides/res/drawable/clashiq_widget_bg.xml android/app/src/main/res/drawable/clashiq_widget_bg.xml
-          cp native-overrides/res/drawable/ic_notification.xml android/app/src/main/res/drawable/ic_notification.xml
-          cp native-overrides/res/xml/clash_iq_widget_info.xml android/app/src/main/res/xml/clash_iq_widget_info.xml
-          cp native-overrides/res/values/clashiq_native.xml android/app/src/main/res/values/clashiq_native.xml
-          rm -rf android/app/src/main/res/mipmap-*
-          cp -a resources/res/. android/app/src/main/res/
-          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-          python3 - <<'PY'
-          from pathlib import Path
-          p = Path("android/app/src/main/AndroidManifest.xml")
-          s = p.read_text()
-          permission = '    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n'
-          if "android.permission.POST_NOTIFICATIONS" not in s:
-              marker = "    <application"
-              if marker not in s: raise SystemExit("Could not find application marker")
-              s = s.replace(marker, permission + marker, 1)
-          s = s.replace('android:theme="@style/AppTheme.NoActionBarLaunch"', 'android:theme="@style/ClashIqLaunchTheme"')
-          receiver = '''
-          <receiver
-              android:name=".ClashIqWidgetProvider"
-              android:exported="true"
-              android:label="Clash IQ War">
-              <intent-filter>
-                  <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-                  <action android:name="com.clashiq.app.WIDGET_REFRESH" />
-              </intent-filter>
-              <meta-data android:name="android.appwidget.provider" android:resource="@xml/clash_iq_widget_info" />
-          </receiver>
-          '''
-          if 'android:name=".ClashIqWidgetProvider"' not in s:
-              marker = "    <provider"
-              if marker not in s: raise SystemExit("Could not find manifest provider insertion point")
-              s = s.replace(marker, receiver + "\n" + marker, 1)
-          p.write_text(s)
-          PY
-          test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
-          test -f android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
-          test -f android/app/src/main/res/xml/clash_iq_widget_info.xml
-          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
-          grep -q 'ClashIqWidgetProvider' android/app/src/main/AndroidManifest.xml
-          grep -q 'ClashIqLaunchTheme' android/app/src/main/AndroidManifest.xml
-
+          cp -r resources/res/. android/app/src/main/res/
+          VERSION_CODE=$(( $(date +%s) / 60 ))
+          python3 -c 'from pathlib import Path; import re; p=Path("android/app/build.gradle"); s=p.read_text(); s=re.sub(r"versionCode \\d+", "versionCode $VERSION_CODE", s); s=re.sub(r"versionName \"[^\"]*\"", "versionName \"$VERSION_NAME\"", s); p.write_text(s)'
+          grep -n "versionCode\|versionName" android/app/build.gradle
       - name: Build debug APK
         working-directory: android-app/android
-        run: ./gradlew assembleDebug --no-daemon
-
-      - name: Verify native Android shell in APK
-        working-directory: android-app/android
-        shell: bash
-        run: |
-          set -euo pipefail
-          APK="app/build/outputs/apk/debug/app-debug.apk"
-          test -f "$APK"
-          unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-          echo "APK build completed successfully."
-          sha256sum "$APK"
-
-      - name: Upload Clash IQ APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+      - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
-          name: Clash-IQ-Testing-APK
+          name: Clash-IQ-${{ env.VERSION_NAME }}-debug
           path: android-app/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
           retention-days: 30
