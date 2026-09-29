@@ -417,27 +417,43 @@ export default function AICoachPage() {
                     </span>
                   </div>
 
-                  <div className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <div className="mt-2 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                     {[
                       {
-                        label: 'Next 3 moves',
+                        label: 'Bästa nästa attack',
+                        icon: Target,
                         mode: 'clan' as Mode,
-                        prompt: 'Give me the three most important things our clan should do next. Be specific and prioritize the actions by impact.',
+                        prompt: 'Vilken är vår bästa nästa attack? Analysera återstående mål, våra återstående attacker och tidigare resultat. Ge ett konkret mål och varför.',
                       },
                       {
-                        label: 'Enemy targets',
+                        label: 'Största hotet',
+                        icon: Shield,
                         mode: 'opponent' as Mode,
-                        prompt: 'Analyze the current opponent and identify the best attack targets in priority order. Explain briefly why each target matters.',
+                        prompt: 'Vilket är det största konkreta hotet från motståndaren just nu? Använd endast registrerade attacker och aktuell krigsdata.',
                       },
                       {
-                        label: 'Member attention',
+                        label: 'Läs kriget',
+                        icon: Swords,
+                        mode: 'opponent' as Mode,
+                        prompt: 'Ge mig en snabb taktisk lägesbild av kriget: vad har hänt, vad återstår och vad bör vi fokusera på nu?',
+                      },
+                      {
+                        label: 'Vad gör vi nu?',
+                        icon: Sparkles,
                         mode: 'clan' as Mode,
-                        prompt: 'Based on the available clan data, identify members who need attention and explain what the leadership team should check.',
+                        prompt: 'Ge mig exakt tre saker klanen bör göra härnäst baserat på aktuell krigsdata.',
                       },
                       {
-                        label: 'War risk check',
-                        mode: 'opponent' as Mode,
-                        prompt: 'Assess the current war situation and tell me the biggest risks right now and what we should do to reduce them.',
+                        label: 'Våra bästa spelare',
+                        icon: Trophy,
+                        mode: 'clan' as Mode,
+                        prompt: 'Vilka av våra spelare har presterat bäst i den aktuella krigsdatan? Visa konkreta resultat.',
+                      },
+                      {
+                        label: 'Vad kan vi förbättra?',
+                        icon: Users,
+                        mode: 'clan' as Mode,
+                        prompt: 'Analysera vår nuvarande krigsdata och identifiera de viktigaste förbättringsområdena.',
                       },
                     ].map((mission) => (
                       <button
@@ -446,11 +462,21 @@ export default function AICoachPage() {
                         onClick={() => {
                           setMode(mission.mode);
                           setQuestion(mission.prompt);
-                          void analyze(mission.mode, mission.prompt);
                         }}
-                        className="rounded-xl border border-white/[.07] bg-white/[.02] px-3 py-2.5 text-left text-[11px] font-bold text-white/70 transition hover:border-[#f4c542]/20 hover:bg-[#f4c542]/[.05] hover:text-white"
+                        className="group flex min-h-[72px] items-center gap-3 rounded-2xl border border-white/[.07] bg-gradient-to-br from-white/[.045] to-white/[.015] p-3 text-left shadow-[0_8px_24px_rgba(0,0,0,.14)] transition hover:-translate-y-0.5 hover:border-[#f4c542]/30 hover:bg-[#f4c542]/[.06] hover:shadow-[0_10px_30px_rgba(244,197,66,.08)] active:translate-y-0"
                       >
-                        {mission.label}
+                        <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#f4c542]/15 bg-[#f4c542]/[.08] text-[#f4c542] transition group-hover:border-[#f4c542]/30 group-hover:bg-[#f4c542]/[.14]">
+                          <mission.icon className="size-4" />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block text-[11px] font-black leading-4 text-white">
+                            {mission.label}
+                          </span>
+                          <span className="mt-1 block text-[9px] uppercase tracking-[.12em] text-white/30">
+                            One tap
+                          </span>
+                        </span>
+                        <ArrowRight className="size-3.5 shrink-0 text-white/20 transition group-hover:translate-x-0.5 group-hover:text-[#f4c542]" />
                       </button>
                     ))}
                   </div>
