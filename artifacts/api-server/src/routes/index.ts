@@ -7,10 +7,12 @@ import settingsRouter from "./settings";
 import clanMusicRouter from "./clan-music";
 import adminRouter from "./admin";
 import clashTrendsRouter from "./clash-trends";
+import authRouter from "./auth";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
+router.use(authRouter);
 router.use(clashRouter);
 
 /*
