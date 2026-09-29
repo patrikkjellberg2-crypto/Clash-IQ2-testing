@@ -54,7 +54,9 @@ function PageLoader() {
   );
 }
 
-function AuthGate({ children }: { children: ReactNode }) { const [location,navigate]=useLocation(); const [ready,setReady]=React.useState(false); useEffect(()=>{fetch('/api/auth/me',{credentials:'include'}).then(r=>{if(!r.ok&&location!=='/login')navigate('/login');else setReady(true)}).catch(()=>{if(location!=='/login')navigate('/login');setReady(true)})},[location,navigate]); if(location==='/login')return <>{children}</>; if(!ready)return <PageLoader/>; return <>{children}</>; }\n\nfunction Router() {
+function AuthGate({ children }: { children: ReactNode }) { const [location,navigate]=useLocation(); const [ready,setReady]=React.useState(false); useEffect(()=>{fetch('/api/auth/me',{credentials:'include'}).then(r=>{if(!r.ok&&location!=='/login')navigate('/login');else setReady(true)}).catch(()=>{if(location!=='/login')navigate('/login');setReady(true)})},[location,navigate]); if(location==='/login')return <>{children}</>; if(!ready)return <PageLoader/>; return <>{children}</>; }
+
+function Router() {
   return (
     <RoutedErrorBoundary>
       <ClashIQPageBanner>
