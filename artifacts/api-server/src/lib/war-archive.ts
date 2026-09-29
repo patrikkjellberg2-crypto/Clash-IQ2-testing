@@ -233,7 +233,10 @@ function canonicalWarTime(value: string) {
 
 function archiveIdentity(row: { clanTag: string; opponentTag: string; endTime: string }) {
   const time = canonicalWarTime(row.endTime);
-  return `${normalizeTag(row.clanTag)}__${normalizeTag(row.opponentTag)}__${time || row.endTime}`;
+  // The archive is already scoped to the active clan, and legacy rows can
+  // contain slightly different clan-tag formatting. Opponent + canonical
+  // end-time is therefore the stable identity used for display deduplication.
+  return `${normalizeTag(row.opponentTag)}__${time || row.endTime}`;
 }
 
 function archiveRichness(row: { source: "live" | "warlog"; members: unknown; opponentMembers: unknown[] }) {
