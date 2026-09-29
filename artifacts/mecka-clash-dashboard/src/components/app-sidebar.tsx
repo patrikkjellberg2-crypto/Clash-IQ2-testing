@@ -266,7 +266,7 @@ export function AppSidebar({
           type="button"
           onClick={() => setInternalMobileOpen(true)}
           aria-label="Open navigation"
-          className="fixed left-4 top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur lg:hidden"
+          className="fixed left-4 top-4 z-50 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur lg:hidden"
         >
           <Menu className="size-5" />
         </button>

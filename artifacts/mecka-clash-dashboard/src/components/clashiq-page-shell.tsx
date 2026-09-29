@@ -1,5 +1,4 @@
 import { type ReactNode } from "react";
-import { Link } from "wouter";
 import { Activity, ArrowLeft, RefreshCw } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
@@ -26,20 +25,25 @@ export function ClashIQPageShell({
       <div className="flex min-h-screen bg-[#07090d]">
         <AppSidebar clanName={clanName} clanTag={clanTag} />
 
-        <main className="min-w-0 flex-1">
+        <main className="min-w-0 flex-1 relative">
           <ClashIQInlineBanner />
+
+          <button
+            type="button"
+            aria-label="Go back"
+            title="Back"
+            onClick={() => {
+              if (window.history.length > 1) window.history.back();
+              else window.location.href = '/';
+            }}
+            className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+          >
+            <ArrowLeft className="size-4" />
+          </button>
 
           <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="min-w-0">
-                <Link
-                  href="/"
-                  className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.18em] text-amber-300 transition hover:text-amber-200"
-                >
-                  <ArrowLeft className="h-4 w-4" />
-                  Command Center
-                </Link>
-
                 <div className="mt-2 flex items-center gap-2">
                   <h1 className="truncate text-2xl font-black tracking-tight">
                     {title}
