@@ -218,4 +218,131 @@ export default function StatisticsPage() {
       })}</div> : <div className="mt-4 rounded-xl border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">No completed war statistics available yet.</div>}
     </section>
   </div></main></div></div>;
+}  const leaderboards = useMemo(() => {
+    const threeStar = playerStats
+      .map(player => ({
+        tag: s(player.playerTag),
+        name: s(player.playerName, s(player.playerTag, 'Unknown')),
+        threeStars: n(player.threeStars),
+        attacks: n(player.attacksUsed),
+        rate: n(player.attacksUsed) ? Math.round(n(player.threeStars) / n(player.attacksUsed) * 100) : 0,
+      }))
+      .filter(player => player.attacks > 0)
+      .sort((a, b) => b.threeStars - a.threeStars || b.rate - a.rate || b.attacks - a.attacks)
+      .slice(0, 5);
+
+    const defenses = new Map<string, { tag: string; name: string; count: number; stars: number; destruction: number; zeroStars: number }>();
+
+    for (const war of archiveWars) {
+      const own = ownSideOf(war, clanTag);
+
+      for (const member of arr(own.members)) {
+        const tag = normalizeTag(s(member.tag));
+        if (!tag || tag === '#') continue;
+        if (!defenses.has(tag)) {
+          defenses.set(tag, {
+            tag,
+            name: s(member.name, tag),
+            count: 0,
+            stars: 0,
+            destruction: 0,
+            zeroStars: 0,
+          });
+        }
+      }
+
+      // Each attack record belongs to the attacker, but its defenderTag tells
+      // us which of our bases received the attack.
+      for (const attacker of arr(own.members)) {
+        for (const attack of arr(attacker.attacks)) {
+          const tag = normalizeTag(s(attack.defenderTag));
+          const entry = defenses.get(tag);
+          if (!entry) continue;
+          entry.count += 1;
+          entry.stars += n(attack.stars);
+          entry.destruction += Math.max(0, Math.min(100, n(attack.destructionPercentage)));
+          if (n(attack.stars) === 0) entry.zeroStars += 1;
+        }
+      }
+    }
+
+    const bestDefense = Array.from(defenses.values())
+      .filter(player => player.count > 0)
+      .map(player => ({
+        ...player,
+        avgStars: player.stars / player.count,
+        avgDestruction: player.destruction / player.count,
+      }))
+      .sort((a, b) => a.avgStars - b.avgStars || a.avgDestruction - b.avgDestruction || b.zeroStars - a.zeroStars)
+      .slice(0, 5);
+
+    return { threeStar, bestDefense };
+  }, [playerStats, archiveWars, clanTag]);
+
+  if (isLoading) return <div className="grid min-h-[100dvh] place-items-center bg-[#07090d] text-white"><p className="text-xs font-black uppercase tracking-[.2em] text-amber-300">Loading statistics...</p></div>;
+  if (isError) return <div className="grid min-h-[100dvh] place-items-center bg-[#07090d] p-6 text-white"><div className="rounded-3xl border border-white/10 bg-[#0b1119] p-8 text-center"><BarChart3 className="mx-auto size-8 text-amber-300"/><h1 className="mt-4 text-2xl font-black">Statistics Offline</h1><p className="mt-2 text-sm text-slate-500">CLASHIQ could not load the clan statistics.</p></div></div>;
+
+  return <div className="min-h-[100dvh] bg-[#07090d] text-white"><div className="flex min-h-[100dvh]"><AppSidebar clanName={s(clan.name, 'BHABE DHEMONS')} clanTag={clanTag || '#2Q0Q82C9R'}/><main className="min-w-0 flex-1"><div className="mx-auto max-w-[1400px] px-5 pb-10 pt-3 md:px-8 md:pt-4">
+    <Link href="/" className="inline-flex items-center gap-2 text-[9px] font-black uppercase tracking-[.2em] text-amber-300 hover:text-amber-200"><ArrowLeft className="size-4"/>Command Center</Link>
+    <header className="mt-4 border-b border-white/[.06] pb-5"><p className="text-[9px] font-black uppercase tracking-[.22em] text-slate-500">CLASHIQ / Intelligence</p><h1 className="mt-1 text-3xl font-black tracking-[-.04em]">Statistics</h1><p className="mt-1 max-w-2xl text-sm text-slate-500">A clear summary of the verified war data available to Clash IQ.</p></header>
+    <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <StatCard icon={Trophy} label="Win Rate" value={`${stats.winRate}%`} detail={`${stats.wins} wins · ${stats.losses} losses · ${stats.draws} draws`}/>
+      <StatCard icon={Swords} label="Completed Wars" value={String(stats.completed)} detail="Wars in the available log"/>
+      <StatCard icon={Target} label="Three-Star Rate" value={stats.threeStarRate == null ? '—' : `${stats.threeStarRate}%`} detail={stats.attacks ? `${stats.threeStars} of ${stats.attacks} archived attacks with attack-level data` : 'No attack-level data is available in the war archive yet'}/>
+      <StatCard icon={TrendingUp} label="Avg. Destruction" value={stats.avgDestruction == null ? '—' : `${stats.avgDestruction}%`} detail={stats.avgDestruction == null ? 'No valid 0–100% destruction values available' : 'Average destruction per completed war'}/>
+    </section>
+    <section className="mt-5 grid gap-5 lg:grid-cols-2">
+      <div className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Attack Leaders</p>
+        <h2 className="mt-1 text-xl font-black">Three-Star Top 5</h2>
+        <p className="mt-1 text-xs text-slate-500">Most 3★ attacks in the archived war data.</p>
+        <div className="mt-4 space-y-2">
+          {leaderboards.threeStar.length ? leaderboards.threeStar.map((player, index) => (
+            <Link key={player.tag} href={`/player/${encodeURIComponent(player.tag)}`} className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] px-3 py-3 hover:border-amber-400/25 hover:bg-white/[.04]">
+              <span className="grid size-8 place-items-center rounded-lg bg-amber-400/[.06] text-xs font-black text-amber-300">{index + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold text-white">{player.name}</span>
+                <span className="text-[10px] text-slate-500">{player.threeStars} three-stars · {player.attacks} attacks · {player.rate}% rate</span>
+              </span>
+              <span className="text-amber-300">★★★</span>
+            </Link>
+          )) : <p className="rounded-xl border border-dashed border-white/10 p-5 text-center text-sm text-slate-500">No attack-level data yet.</p>}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-white/[.08] bg-[#0b1119] p-5">
+        <p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Defense Leaders</p>
+        <h2 className="mt-1 text-xl font-black">Best Defenders</h2>
+        <p className="mt-1 text-xs text-slate-500">Lowest average stars and destruction conceded.</p>
+        <div className="mt-4 space-y-2">
+          {leaderboards.bestDefense.length ? leaderboards.bestDefense.map((player, index) => (
+            <Link key={player.tag} href={`/player/${encodeURIComponent(player.tag)}`} className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] px-3 py-3 hover:border-amber-400/25 hover:bg-white/[.04]">
+              <span className="grid size-8 place-items-center rounded-lg bg-amber-400/[.06] text-xs font-black text-amber-300">{index + 1}</span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-bold text-white">{player.name}</span>
+                <span className="text-[10px] text-slate-500">{player.count} defenses · {player.avgStars.toFixed(1)}★ conceded · {Math.round(player.avgDestruction)}% destruction</span>
+              </span>
+              <span className="text-xs font-black text-emerald-300">{player.zeroStars} × 0★</span>
+            </Link>
+          )) : <p className="rounded-xl border border-dashed border-white/10 p-5 text-center text-sm text-slate-500">No defense data yet.</p>}
+        </div>
+      </div>
+    </section>
+
+    <section className="mt-5 rounded-2xl border border-white/[.08] bg-[#0b1119] p-5"><div className="flex items-end justify-between gap-4 border-b border-white/[.06] pb-4"><div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">War History</p><h2 className="mt-1 text-xl font-black">Recent Performance</h2></div><span className="rounded-full border border-white/[.08] bg-white/[.02] px-3 py-1 text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{wars.length} wars</span></div>
+      {wars.length ? <div className="mt-4 grid gap-2 lg:grid-cols-2">{wars.slice(0,12).map(({war,result},index) => {
+        const own = ownSideOf(war, clanTag);
+        const enemy = own === d(war.clan) ? d(war.opponent) : d(war.clan);
+        const warId = archiveWarId(war, clanTag);
+        const card = <div className="flex items-center gap-3 rounded-xl border border-white/[.06] bg-white/[.02] px-4 py-3 transition hover:border-amber-400/25 hover:bg-white/[.04]">
+          <div className="grid size-9 shrink-0 place-items-center rounded-lg border border-amber-400/15 bg-amber-400/[.05] text-amber-300"><Swords className="size-4"/></div>
+          <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><p className="truncate text-sm font-bold">vs {s(enemy.name,'Unknown opponent')}</p><span className="text-[8px] font-black tracking-[.15em] text-amber-300">{result}</span></div><p className="mt-0.5 text-[10px] text-slate-500">{Math.round(Math.max(0, Math.min(100, n(own.destructionPercentage))))}% destruction</p></div>
+          <p className="text-sm font-black">{n(own.stars)} - {n(enemy.stars)}</p>
+        </div>;
+        return warId
+          ? <Link key={`${warTime(war)}-${index}`} href={`/war-archive?war=${encodeURIComponent(warId)}`} className="block">{card}</Link>
+          : <div key={`${warTime(war)}-${index}`}>{card}</div>;
+      })}</div> : <div className="mt-4 rounded-xl border border-dashed border-white/10 p-8 text-center text-sm text-slate-500">No completed war statistics available yet.</div>}
+    </section>
+  </div></main></div></div>;
 }
