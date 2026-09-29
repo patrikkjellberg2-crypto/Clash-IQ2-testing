@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
   Activity,
@@ -131,14 +131,19 @@ export default function MembersPage() {
 
   const clan = asDict(d?.clan);
 
+  const [sortBy, setSortBy] = useState<'rank' | 'active' | 'th' | 'war'>('rank');
+  const [query, setQuery] = useState('');
+
   const members = useMemo(
-    () =>
-      asArray(d?.members).sort(
-        (a, b) =>
-          num(a.clanRank, 99) -
-          num(b.clanRank, 99),
-      ),
-    [d?.members],
+    () => {
+      const filtered = asArray(d?.members).filter((m) => str(m.name).toLowerCase().includes(query.toLowerCase()) || str(m.tag).toLowerCase().includes(query.toLowerCase()));
+      return filtered.sort((a,b) => {
+        if (sortBy === 'th') return getTownHall(b) - getTownHall(a) || num(a.clanRank,99)-num(b.clanRank,99);
+        if (sortBy === 'active') return (num(b.donations)+num(b.warStars)*10) - (num(a.donations)+num(a.warStars)*10);
+        if (sortBy === 'war') return num(b.warStars)-num(a.warStars) || num(b.donations)-num(a.donations);
+        return num(a.clanRank,99)-num(b.clanRank,99);
+      });
+    }, [d?.members, query, sortBy],
   );
 
   const leaders = members.filter((member) => {
@@ -384,12 +389,18 @@ export default function MembersPage() {
                   </h2>
                 </div>
 
-                <div className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/[0.025] px-3 py-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                  <input value={query} onChange={(e)=>setQuery(e.target.value)} placeholder="Search player..." className="rounded-lg border border-white/10 bg-white/[0.025] px-3 py-2 text-xs text-white outline-none placeholder:text-slate-700 focus:border-amber-400/30" />
+                  <select value={sortBy} onChange={(e)=>setSortBy(e.target.value as typeof sortBy)} className="rounded-lg border border-white/10 bg-[#0d1117] px-3 py-2 text-xs font-bold text-slate-300 outline-none focus:border-amber-400/30">
+                    <option value="rank">Clan Rank</option><option value="active">Most Active</option><option value="th">Highest TH</option><option value="war">War Performance</option>
+                  </select>
+                  <div className="flex items-center gap-2 rounded-lg border border-white/5 bg-white/[0.025] px-3 py-2">
                   <Activity className="h-3.5 w-3.5 text-emerald-400" />
 
                   <span className="text-[9px] font-black uppercase tracking-wider text-slate-500">
                     Live data
                   </span>
+                  </div>
                 </div>
               </div>
 
