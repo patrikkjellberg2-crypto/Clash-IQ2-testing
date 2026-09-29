@@ -347,6 +347,14 @@ export default function WarArchivePage() {
           <ClashIQInlineBanner />
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-4 pb-16 pt-2 md:px-7">
+            <Link
+              href="/"
+              aria-label="Go back"
+              title="Back"
+              className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <Link
