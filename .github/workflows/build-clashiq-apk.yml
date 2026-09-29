@@ -59,11 +59,8 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Native activity override: correct WindowInsets + native splash + first-launch welcome.
           mkdir -p android/app/src/main/java/com/clashiq/app
           cp native-overrides/MainActivity.java             android/app/src/main/java/com/clashiq/app/MainActivity.java
-
-          # Native widget.
           cp native-overrides/ClashIqWidgetProvider.java             android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
 
           mkdir -p android/app/src/main/res/layout                    android/app/src/main/res/drawable                    android/app/src/main/res/xml                    android/app/src/main/res/values
@@ -74,11 +71,8 @@ jobs:
           cp native-overrides/res/xml/clash_iq_widget_info.xml             android/app/src/main/res/xml/clash_iq_widget_info.xml
           cp native-overrides/res/values/clashiq_native.xml             android/app/src/main/res/values/clashiq_native.xml
 
-          # The current Capacitor template already provides core-splashscreen.
-          # Fail early if the dependency is unexpectedly missing.
           grep -q 'core-splashscreen' android/app/build.gradle
 
-          # Use our native splash launch theme and register the real widget.
           python3 - <<'PY'
           from pathlib import Path
 
@@ -121,8 +115,6 @@ jobs:
           p.write_text(s)
           PY
 
-          # Keep the app out of fullscreen/edge-to-edge overlap while still
-          # handling dynamic WindowInsets in MainActivity.
           grep -q 'ClashIqLaunchTheme' android/app/src/main/AndroidManifest.xml
           grep -q 'ClashIqWidgetProvider' android/app/src/main/AndroidManifest.xml
           test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
@@ -136,8 +128,13 @@ jobs:
           rm -rf android/app/src/main/res/mipmap-*
           cp -a resources/res/. android/app/src/main/res/
 
-          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
-          test -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+          # Use the supplied square Clash IQ artwork directly as the launcher icon.
+          # Do not let Capacitor's adaptive-icon XML select the old foreground artwork.
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+
+          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
           test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
           test -f android/app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.png
 
@@ -159,11 +156,17 @@ jobs:
 
           cp native-overrides/res/layout/clash_iq_widget.xml             android/app/src/main/res/layout/clash_iq_widget.xml
           cp native-overrides/res/drawable/clashiq_widget_bg.xml             android/app/src/main/res/drawable/clashiq_widget_bg.xml
+          cp native-overrides/res/drawable/ic_notification.xml             android/app/src/main/res/drawable/ic_notification.xml
           cp native-overrides/res/xml/clash_iq_widget_info.xml             android/app/src/main/res/xml/clash_iq_widget_info.xml
           cp native-overrides/res/values/clashiq_native.xml             android/app/src/main/res/values/clashiq_native.xml
 
           rm -rf android/app/src/main/res/mipmap-*
           cp -a resources/res/. android/app/src/main/res/
+
+          # Re-apply the supplied square icon after Capacitor sync and remove
+          # adaptive-icon XML so the exact supplied artwork is used.
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          rm -f android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
 
           python3 - <<'PY'
           from pathlib import Path
@@ -205,6 +208,8 @@ jobs:
           test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
           test -f android/app/src/main/java/com/clashiq/app/ClashIqWidgetProvider.java
           test -f android/app/src/main/res/xml/clash_iq_widget_info.xml
+          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+          test ! -e android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
           grep -q 'ClashIqWidgetProvider' android/app/src/main/AndroidManifest.xml
           grep -q 'ClashIqLaunchTheme' android/app/src/main/AndroidManifest.xml
 
@@ -219,14 +224,8 @@ jobs:
           set -euo pipefail
           APK="app/build/outputs/apk/debug/app-debug.apk"
           test -f "$APK"
-
-          # Keep verification intentionally simple: the Gradle build is the
-          # authoritative compile check. Confirm the APK and key packaged
-          # launcher resources exist, then publish the artifact.
           unzip -l "$APK" | grep -Eq 'classes[0-9]*\.dex'
-
           echo "APK build completed successfully."
-
           sha256sum "$APK"
 
       - name: Upload Clash IQ APK
