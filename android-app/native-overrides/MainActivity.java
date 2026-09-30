@@ -28,6 +28,7 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+        setTheme(R.style.AppTheme_NoActionBar);
         super.onCreate(savedInstanceState);
 
 
@@ -49,7 +50,7 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
         createNotificationChannel();
         Intent launchIntent = getIntent();
         String clashIqPath = launchIntent != null ? launchIntent.getStringExtra("clashiq_path") : null;
-        if (clashIqPath != null && !clashIqPath.isEmpty()) {
+        if (clashIqPath != null && clashIqPath.startsWith("/") && !clashIqPath.startsWith("//")) {
             handler.postDelayed(() -> {
                 if (getBridge() != null && getBridge().getWebView() != null) {
                     getBridge().getWebView().loadUrl("https://clash-iq2-testing.onrender.com" + clashIqPath);
@@ -63,6 +64,17 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
                         != PackageManager.PERMISSION_GRANTED) {
             handler.postDelayed(() ->
                     requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 7001), 900L);
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        String path = intent.getStringExtra("clashiq_path");
+        if (path != null && path.startsWith("/") && !path.startsWith("//")
+                && getBridge() != null && getBridge().getWebView() != null) {
+            getBridge().getWebView().loadUrl("https://clash-iq2-testing.onrender.com" + path);
         }
     }
 
