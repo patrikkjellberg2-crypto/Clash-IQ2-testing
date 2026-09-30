@@ -78,21 +78,55 @@ export default function ActivityPage() {
   }, [clanTag]);
 
   const cwlSelection = useMemo(() => {
+    const members = arr(dashboard?.members);
+    const maxTownHall = Math.max(
+      ...members.map(member => n(member.townhallLevel || member.townHallLevel)),
+      ...intelligence.map(player => n(player.townHallLevel)),
+      1,
+    );
+
     return intelligence
       .map(player => {
-        const threeStarRate = n(player.threeStarRate);
-        const destruction = n(player.recentAvgDestruction || player.avgDestruction);
-        const recentStars = n(player.recentAvgStars || player.avgStars);
+        const lifetimeStars = n(player.avgStars);
+        const lifetimeThreeStarRate = n(player.threeStarRate);
+        const lifetimeDestruction = n(player.avgDestruction);
+        const recentStars = n(player.recentAvgStars || lifetimeStars);
+        const recentDestruction = n(player.recentAvgDestruction || lifetimeDestruction);
         const defenseHold = n(player.defenseHoldRate);
+        const attacks = n(player.attacksUsed);
+        const wars = n(player.warsCounted);
         const hasDefense = n(player.defenseAttacks) > 0;
-        const formMultiplier = s(player.trend) === 'improving' ? 1.04 : s(player.trend) === 'declining' ? 0.94 : 1;
-        // Transparent selection index: recent offense is weighted most,
-        // then 3-star rate, destruction and defense holds.
-        const base = recentStars / 3 * 45 + threeStarRate * 0.30 + destruction * 0.15 + (hasDefense ? defenseHold * 0.10 : 0);
-        return { ...player, cwlScore: Math.round(Math.max(0, Math.min(100, base * formMultiplier))) };
+
+        // Long-term results are the anchor. Recent form is a secondary signal.
+        const longTerm = lifetimeStars / 3 * 45 + lifetimeThreeStarRate * 0.30 + lifetimeDestruction * 0.15
+          + (hasDefense ? defenseHold * 0.10 : 0);
+        const recent = recentStars / 3 * 45 + lifetimeThreeStarRate * 0.30 + recentDestruction * 0.15
+          + (hasDefense ? defenseHold * 0.10 : 0);
+
+        // Small samples are pulled toward a neutral baseline instead of
+        // letting 1-2 perfect wars dominate established players.
+        const confidence = attacks / (attacks + 10);
+        const provenForm = 60 + (longTerm - 60) * confidence;
+        const blended = provenForm * 0.70 + recent * 0.30;
+
+        // CWL selection should account for the level of the roster being selected.
+        const townHall = n(player.townHallLevel);
+        const townHallGap = Math.max(0, maxTownHall - townHall);
+        const townHallFactor = Math.max(0.72, 1 - townHallGap * 0.07);
+        const trendMultiplier = s(player.trend) === 'improving' ? 1.02 : s(player.trend) === 'declining' ? 0.97 : 1;
+        const score = blended * trendMultiplier * townHallFactor;
+
+        return {
+          ...player,
+          cwlScore: Math.round(Math.max(0, Math.min(100, score))),
+          confidence: Math.round(confidence * 100),
+          townHall,
+          sampleAttacks: attacks,
+          sampleWars: wars,
+        };
       })
       .sort((a, b) => n(b.cwlScore) - n(a.cwlScore));
-  }, [intelligence]);
+  }, [intelligence, dashboard?.members]);
 
   const sorted = useMemo(
     () => [...players].sort((a, b) => {
@@ -164,7 +198,7 @@ export default function ActivityPage() {
                   </div>
                   <h2 className="mt-1 text-2xl font-black">Hetast just nu</h2>
                   <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
-                    Senaste krigsformen vägs mot 3★-procent, destruction och försvar. Indexet är ett urvalsstöd – inte en ersättning för lagets beslut.
+                    Långsiktig form väger tyngst. Nya spelare får lägre säkerhet tills fler attacker och krig finns i historiken. Town Hall-nivå och aktuell trend vägs också in.
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
@@ -196,13 +230,18 @@ export default function ActivityPage() {
                     <div className="min-w-0">
                       <p className="truncate font-black">{s(player.playerName, 'Unknown player')}</p>
                       <p className="font-mono text-[9px] text-slate-600">{s(player.playerTag)}</p>
-                      <span className="mt-1 inline-flex rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-slate-500">
-                        {s(player.trend, 'stable')}
-                      </span>
+                      <div className="mt-1 flex flex-wrap gap-1">
+                        <span className="inline-flex rounded-full border border-amber-400/15 bg-amber-400/[.05] px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-amber-300">
+                          TH{n(player.townHall)}
+                        </span>
+                        <span className="inline-flex rounded-full border border-white/10 bg-white/[.03] px-2 py-0.5 text-[8px] font-black uppercase tracking-wider text-slate-500">
+                          {s(player.trend, 'stable')}
+                        </span>
+                      </div>
                     </div>
                     <div>
                       <p className="text-lg font-black text-amber-300">{n(player.cwlScore)}</p>
-                      <p className="text-[8px] uppercase tracking-wider text-slate-600">CWL index</p>
+                      <p className="text-[8px] uppercase tracking-wider text-slate-600">Selection index</p>
                     </div>
                     <div>
                       <p className="text-sm font-black">{n(player.threeStarRate).toFixed(1)}%</p>
@@ -217,6 +256,7 @@ export default function ActivityPage() {
                         {n(player.defenseAttacks) ? n(player.defenseHoldRate).toFixed(1) + '%' : '—'}
                       </p>
                       <p className="text-[8px] uppercase tracking-wider text-slate-600">defense holds</p>
+                      <p className="mt-1 text-[8px] text-slate-600">{n(player.sampleAttacks)} attacks · {n(player.sampleWars)} wars</p>
                     </div>
                   </div>
                 ))}
