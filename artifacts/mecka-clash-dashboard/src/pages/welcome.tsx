@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useLocation } from "wouter";
-import { BarChart3, ChevronRight, Swords, Users } from "lucide-react";
+import { BrainCircuit, ChevronRight, Shield, Swords } from "lucide-react";
 
 const WELCOME_KEY = "clash_iq_welcome_seen_v2";
 
@@ -19,69 +19,85 @@ export default function WelcomePage() {
   }, [navigate]);
 
   const features = [
-    [Swords, "Analyze", "your wars"],
-    [BarChart3, "Improve", "your strategy"],
-    [Users, "Dominate", "your clan"],
+    [Swords, "WAR INTELLIGENCE", "Analyze every war."],
+    [Shield, "PLAYER INTELLIGENCE", "Know who is performing."],
+    [BrainCircuit, "AI COACH", "Make smarter decisions."],
   ] as const;
 
   return (
-    <main className="min-h-[100dvh] overflow-hidden bg-[#05080d] text-white">
-      <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[560px] flex-col overflow-hidden px-5 pb-5 pt-[max(22px,env(safe-area-inset-top))]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(245,184,52,.15),transparent_28%),radial-gradient(circle_at_15%_70%,rgba(20,72,108,.22),transparent_34%),linear-gradient(180deg,#07111d_0%,#05080d_72%)]" />
-        <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.035)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.035)_1px,transparent_1px)] [background-size:32px_32px]" />
+    <main className="min-h-[100dvh] overflow-hidden bg-[#030507] text-white">
+      <div className="relative mx-auto flex min-h-[100dvh] w-full max-w-[560px] flex-col overflow-hidden px-5 pb-5 pt-[max(18px,env(safe-area-inset-top))]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_18%,rgba(245,190,60,.18),transparent_28%),radial-gradient(circle_at_12%_62%,rgba(20,55,80,.30),transparent_35%),linear-gradient(180deg,#0a1119_0%,#030507_74%)]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-[58%] bg-[radial-gradient(ellipse_at_50%_5%,rgba(255,190,50,.12),transparent_55%)]" />
 
-        <header className="relative z-10 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <img src="/clash-iq-logo.webp" alt="Clash IQ" className="h-9 w-9 rounded-xl object-cover shadow-[0_0_20px_rgba(245,190,60,.18)]" />
-            <span className="font-display text-sm font-bold tracking-[.12em] text-[#f8d36a]">CLASH-IQ</span>
-          </div>
-          <button onClick={enter} className="px-2 py-2 text-sm font-semibold text-white/55 transition hover:text-white">Skip</button>
+        <header className="relative z-20 flex items-center justify-end">
+          <button
+            onClick={enter}
+            className="rounded-full border border-white/10 bg-black/30 px-4 py-2 text-[10px] font-black uppercase tracking-[.2em] text-white/45 backdrop-blur transition hover:text-white"
+          >
+            Skip
+          </button>
         </header>
 
-        <section className="relative z-10 flex flex-1 flex-col items-center pt-8 text-center">
-          <p className="text-[10px] font-black tracking-[.34em] text-[#e9b83f]">AI-POWERED WAR INTELLIGENCE</p>
-          <h1 className="mt-3 max-w-[420px] font-display text-[clamp(2.25rem,10vw,3.7rem)] font-black leading-[.94] tracking-[-.04em]">
-            WELCOME TO
-            <span className="mt-1 block bg-gradient-to-b from-[#fff4bd] via-[#f4c653] to-[#b87916] bg-clip-text text-transparent">CLASH-IQ!</span>
-          </h1>
-          <p className="mt-4 max-w-[340px] text-sm font-medium uppercase tracking-[.22em] text-white/65">Start your journey to victory.</p>
+        <section className="relative z-10 flex flex-1 flex-col items-center text-center">
+          <div className="mt-3 w-full">
+            <p className="text-[10px] font-black uppercase tracking-[.38em] text-amber-300">WAR INTELLIGENCE.</p>
+            <p className="mt-2 text-[10px] font-bold uppercase tracking-[.28em] text-white/45">Built for your clan.</p>
+          </div>
 
-          <div className="relative mt-7 w-full max-w-[430px]">
-            <div className="absolute inset-x-8 top-8 h-40 rounded-full bg-[#e6a92e]/10 blur-3xl" />
-            <div className="relative h-[230px] overflow-hidden rounded-[30px] border border-[#d7a83d]/20 bg-[linear-gradient(145deg,#111c27,#081019)] shadow-[0_25px_70px_rgba(0,0,0,.5),inset_0_1px_0_rgba(255,255,255,.06)]">
-              <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(238,190,73,.16)_1px,transparent_1px),linear-gradient(90deg,rgba(238,190,73,.16)_1px,transparent_1px)] [background-size:30px_30px] [transform:perspective(500px)_rotateX(58deg)_scale(1.35)_translateY(38px)]" />
-              <div className="absolute left-[15%] top-[24%] h-2.5 w-2.5 rounded-full bg-[#f7d269] shadow-[0_0_18px_#f7d269]" />
-              <div className="absolute left-[29%] top-[48%] h-2 w-2 rounded-full bg-[#f7d269] shadow-[0_0_15px_#f7d269]" />
-              <div className="absolute right-[28%] top-[32%] h-2.5 w-2.5 rounded-full bg-[#f7d269] shadow-[0_0_18px_#f7d269]" />
-              <div className="absolute right-[15%] bottom-[27%] h-2 w-2 rounded-full bg-[#f7d269] shadow-[0_0_15px_#f7d269]" />
-              <div className="absolute left-1/2 top-1/2 flex h-28 w-28 -translate-x-1/2 -translate-y-1/2 rotate-45 items-center justify-center rounded-[28px] border border-[#f3c34c]/50 bg-[radial-gradient(circle,#634816,#17130b_68%)] shadow-[0_0_45px_rgba(245,190,60,.22)]">
-                <Swords className="-rotate-45 h-12 w-12 text-[#f8d36a]" strokeWidth={1.6} />
+          <div className="relative mt-5 flex w-full flex-1 flex-col items-center">
+            <div className="absolute top-2 h-[310px] w-[310px] rounded-full bg-amber-400/10 blur-[80px]" />
+
+            <div className="relative mt-2 flex h-[285px] w-full max-w-[480px] items-center justify-center overflow-hidden">
+              <div className="absolute inset-x-4 top-8 h-56 rounded-[50%] bg-gradient-to-b from-amber-500/10 via-orange-500/5 to-transparent blur-2xl" />
+              <div className="absolute bottom-2 left-1/2 h-20 w-[110%] -translate-x-1/2 rounded-[50%] border border-amber-400/10 bg-gradient-to-t from-black/80 to-transparent" />
+
+              <div className="absolute top-2 h-48 w-48 rounded-full border border-amber-300/10 bg-[radial-gradient(circle_at_50%_38%,rgba(255,218,120,.28),rgba(84,53,14,.12)_45%,transparent_70%)] shadow-[0_0_80px_rgba(245,190,60,.16)]" />
+
+              <div className="relative flex h-52 w-52 items-center justify-center rounded-full border border-amber-400/25 bg-[radial-gradient(circle,rgba(74,52,18,.72),rgba(6,8,11,.96)_66%)] shadow-[0_0_70px_rgba(245,190,60,.18)]">
+                <div className="absolute inset-3 rounded-full border border-amber-300/10" />
+                <img
+                  src="/clash-iq-logo.webp"
+                  alt="Clash IQ"
+                  className="relative z-10 h-40 w-40 object-contain drop-shadow-[0_0_28px_rgba(245,190,60,.42)]"
+                />
               </div>
-              <div className="absolute bottom-4 left-4 rounded-xl border border-white/10 bg-black/35 px-3 py-2 backdrop-blur">
-                <div className="text-[8px] font-black tracking-[.22em] text-[#e8ba49]">WAR MAP</div>
-                <div className="mt-0.5 text-[11px] font-semibold text-white/70">Plan. Analyze. Win.</div>
-              </div>
+
+              <div className="absolute left-[8%] top-[32%] size-1.5 rounded-full bg-amber-200 shadow-[0_0_15px_#f7d269]" />
+              <div className="absolute right-[10%] top-[23%] size-1 rounded-full bg-amber-300 shadow-[0_0_12px_#f7d269]" />
+              <div className="absolute left-[17%] bottom-[25%] size-1 rounded-full bg-amber-200 shadow-[0_0_12px_#f7d269]" />
+              <div className="absolute right-[19%] bottom-[20%] size-1.5 rounded-full bg-amber-300 shadow-[0_0_15px_#f7d269]" />
+            </div>
+
+            <div className="mt-1">
+              <h1 className="font-display text-[clamp(2.4rem,12vw,4.2rem)] font-black leading-none tracking-[-.055em]">
+                CLASH <span className="text-amber-300">IQ</span>
+              </h1>
+              <p className="mt-3 text-[11px] font-black uppercase tracking-[.32em] text-amber-300/90">Elite War Command</p>
+            </div>
+
+            <div className="mt-7 grid w-full max-w-[470px] grid-cols-3 gap-2">
+              {features.map(([Icon, title, subtitle]) => (
+                <div key={title} className="rounded-2xl border border-amber-400/15 bg-black/25 px-2 py-3.5 backdrop-blur-md">
+                  <div className="mx-auto grid size-9 place-items-center rounded-xl border border-amber-400/25 bg-amber-400/[.06]">
+                    <Icon className="size-4 text-amber-300" />
+                  </div>
+                  <p className="mt-2 text-[8px] font-black uppercase tracking-[.13em] text-white/85">{title}</p>
+                  <p className="mt-1 text-[9px] leading-3.5 text-white/40">{subtitle}</p>
+                </div>
+              ))}
             </div>
           </div>
 
-          <div className="mt-6 grid w-full max-w-[430px] grid-cols-3 gap-2.5">
-            {features.map(([Icon, title, subtitle]) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-white/[.035] px-2 py-3.5 backdrop-blur-sm">
-                <Icon className="mx-auto h-5 w-5 text-[#f3c34c]" strokeWidth={1.8} />
-                <div className="mt-2 text-[11px] font-bold text-white/90">{title}</div>
-                <div className="text-[10px] leading-4 text-white/45">{subtitle}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-auto w-full max-w-[430px] pt-6">
-            <button onClick={enter} className="group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-[#f5d477]/70 bg-gradient-to-b from-[#ffe9a1] via-[#f3c75c] to-[#d39a27] text-[17px] font-black tracking-wide text-[#17120a] shadow-[0_12px_35px_rgba(224,164,43,.22)] transition active:scale-[.985]">
-              GET STARTED
-              <ChevronRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
+          <div className="relative z-10 mt-6 w-full max-w-[470px]">
+            <button
+              onClick={enter}
+              className="group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-amber-200/80 bg-gradient-to-b from-[#ffe8a0] via-[#f3c75c] to-[#c98e20] text-[16px] font-black tracking-[.08em] text-[#17120a] shadow-[0_12px_45px_rgba(224,164,43,.24)] transition hover:brightness-105 active:scale-[.985]"
+            >
+              ENTER CLASH IQ
+              <ChevronRight className="size-5 transition-transform group-hover:translate-x-1" />
             </button>
-            <button onClick={enter} className="mt-4 w-full py-2 text-sm text-white/65">
-              Already have an account? <span className="font-bold text-[#f2c653]">LOG IN</span>
-            </button>
+            <p className="mt-4 text-[9px] font-bold uppercase tracking-[.28em] text-white/30">Your clan. Your data. Your war.</p>
           </div>
         </section>
       </div>
