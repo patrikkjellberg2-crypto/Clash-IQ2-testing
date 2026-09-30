@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
   Activity,
+  ArrowLeft,
   Bell,
   Bot,
   Check,
