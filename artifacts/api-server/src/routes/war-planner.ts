@@ -15,8 +15,8 @@ const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
 
-const MAX_INPUT_CHARS = 8000;
-const MAX_OUTPUT_TOKENS = 1800;
+const MAX_INPUT_CHARS = 5500;
+const MAX_OUTPUT_TOKENS = 900;
 
 type AnyObject = Record<string, any>;
 
@@ -88,19 +88,8 @@ async function clashKingGet<T>(path: string): Promise<T> {
   return fetchJson<T>(CLASHKING_API_BASE, path);
 }
 
-function compactAttack(attack: AnyObject) {
-  return {
-    defenderPosition: num(attack?.defenderMapPosition ?? attack?.defenderPosition),
-    stars: num(attack?.stars),
-    destruction: num(attack?.destructionPercentage),
-    order: num(attack?.order),
-  };
-}
-
 function compactMember(member: AnyObject) {
-  const attacks = Array.isArray(member?.attacks)
-    ? member.attacks.slice(0, 2).map(compactAttack)
-    : [];
+  const attacks = Array.isArray(member?.attacks) ? member.attacks : [];
 
   return {
     tag: str(member?.tag),
@@ -108,13 +97,10 @@ function compactMember(member: AnyObject) {
     position: num(member?.mapPosition ?? member?.clanRank),
     townHall: num(member?.townhallLevel ?? member?.townHallLevel),
     attacksUsed: attacks.length,
-    attacks,
     bestOpponentAttack: member?.bestOpponentAttack
       ? {
           stars: num(member.bestOpponentAttack.stars),
-          destruction: num(
-            member.bestOpponentAttack.destructionPercentage,
-          ),
+          destruction: num(member.bestOpponentAttack.destructionPercentage),
         }
       : null,
   };
@@ -126,9 +112,7 @@ function compactSide(side: AnyObject | null) {
   const members = Array.isArray(clan?.members)
     ? clan.members
         .map(compactMember)
-        .sort(
-          (a: AnyObject, b: AnyObject) => a.position - b.position,
-        )
+        .sort((a: AnyObject, b: AnyObject) => a.position - b.position)
         .slice(0, 12)
     : [];
 
@@ -141,7 +125,6 @@ function compactSide(side: AnyObject | null) {
     members,
   };
 }
-
 function compactWar(war: AnyObject) {
   return {
     state: str(war?.state, "unknown"),
@@ -207,7 +190,7 @@ async function callGeminiModel(model: string, prompt: string): Promise<string> {
       systemInstruction: { parts: [{ text: "You are CLASHIQ AI War Coach. Use only supplied verified Clash data. Always finish the requested JSON. Never invent missing facts." }] },
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
-        maxOutputTokens: 3000,
+        maxOutputTokens: MAX_OUTPUT_TOKENS,
         temperature: 0.1,
         responseMimeType: "application/json",
         thinkingConfig: { thinkingLevel: "low" },
