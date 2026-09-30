@@ -9,7 +9,7 @@ on:
         required: true
       version_name:
         description: "Version name"
-        default: "1.2.0"
+        default: "1.2.1"
         required: true
   push:
     branches:
@@ -125,6 +125,15 @@ jobs:
               if '</application>' not in s:
                   raise SystemExit('</application> not found')
               s = s.replace('</application>', receiver + '    </application>', 1)
+
+          if 'android:scheme="clash' + 'iq"' not in s:
+              activity = re.search(r'(?ms)(\s*<activity\\b(?=[^>]*android:name="\\.MainActivity")[^>]*>.*?</activity>)', s)
+              if not activity:
+                  raise SystemExit('MainActivity activity block not found')
+              scheme = 'clash' + 'iq'
+              deep_link_filter = f'''\n              <intent-filter>\n                  <action android:name="android.intent.action.VIEW" />\n                  <category android:name="android.intent.category.DEFAULT" />\n                  <category android:name="android.intent.category.BROWSABLE" />\n                  <data android:scheme="{scheme}" android:host="open" />\n              </intent-filter>'''
+              block = activity.group(1)
+              s = s[:activity.start(1)] + block[:-len('</activity>')] + deep_link_filter + '\n        </activity>' + s[activity.end(1):]
 
           p.write_text(s)
           PY
