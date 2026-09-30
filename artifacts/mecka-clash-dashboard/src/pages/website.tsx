@@ -76,7 +76,7 @@ export default function Website() {
             <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-blue-300/25 bg-blue-400/10 px-4 py-2 text-xs font-black uppercase tracking-[.2em] text-blue-100"><Smartphone className="h-4 w-4"/> Android app</div>
             <h2 className="mt-4 text-3xl font-black sm:text-5xl">Download Clash IQ for Android</h2>
             <p className="mx-auto mt-4 max-w-2xl leading-7 text-white/50">Download the latest Android beta and join the testing program. The beta is updated regularly.</p>
-            <a href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing/releases/latest" target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-yellow-300 px-8 py-4 font-black text-black hover:bg-yellow-200"><Download className="h-5 w-5"/> Download Android Beta</a>
+            <a href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing/releases/latest/download/app-debug.apk" target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-yellow-300 px-8 py-4 font-black text-black hover:bg-yellow-200"><Download className="h-5 w-5"/> Download Android Beta</a>
           </div>
         </section>
       </main>
