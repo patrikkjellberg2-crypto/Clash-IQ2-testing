@@ -40,17 +40,13 @@ export default function AccountPage(){
  return <div className="min-h-screen bg-[#05070b] text-white">
   <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070b]/95 backdrop-blur-xl"><div className="mx-auto flex min-h-[76px] max-w-6xl items-center justify-between gap-4 px-5">
    <div className="flex items-center gap-3">
-    <button onClick={()=>navigate("/")} className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/[.04] px-3 py-2.5 text-xs font-black text-white/80 hover:border-amber-400/30 hover:text-amber-200" title="Back to dashboard"><span className="text-base leading-none">←</span><span>Dashboard</span></button>
+    <button onClick={()=>navigate("/")} className="inline-flex h-12 items-center gap-2.5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 text-sm font-black text-amber-100 shadow-[0_0_20px_rgba(245,190,60,.08)] transition hover:border-amber-300/60 hover:bg-amber-400/15 hover:text-white active:scale-[.98]" title="Back to dashboard"><span className="text-lg leading-none">←</span><span>Back to Dashboard</span></button>
     <div className="hidden h-8 w-px bg-white/10 sm:block"/>
     <div className="flex items-center gap-2.5"><img src="/clash-iq-logo.webp" className="h-10 w-10 rounded-xl object-cover" alt="Clash IQ"/><div className="hidden sm:block"><p className="text-lg font-black">Clash IQ</p><p className="text-[9px] font-bold uppercase tracking-[.2em] text-white/35">Account Center</p></div></div>
    </div>
    <div className="flex items-center gap-2"><button onClick={()=>void load(true)} disabled={refreshing} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60" title="Refresh account"><RefreshCw className={refreshing?"size-4 animate-spin":"size-4"}/></button><button onClick={openClashIQ} className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-xs font-black text-amber-200 hover:bg-amber-400/15">Open Clash IQ</button><button onClick={()=>void logout()} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/55" title="Log out"><LogOut className="size-4"/></button></div>
   </div></header>
   <main className="mx-auto max-w-6xl space-y-5 px-5 py-7 md:py-9">
-   <div className="flex items-center justify-between gap-3 rounded-2xl border border-amber-400/15 bg-amber-400/[.04] px-4 py-3">
-    <div><p className="text-[10px] font-black uppercase tracking-[.2em] text-amber-300/70">Account Center</p><p className="mt-1 text-sm font-bold text-white/75">Choose where you want to go next.</p></div>
-    <button onClick={()=>navigate("/")} className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-amber-300 px-4 py-2.5 text-xs font-black text-black hover:bg-amber-200"><span className="text-base leading-none">←</span> Back to Dashboard</button>
-   </div>
    {error&&<div className="rounded-2xl border border-red-400/20 bg-red-400/5 px-4 py-3 text-sm text-red-200">{error}</div>}
    <section className="relative overflow-hidden rounded-[2rem] border border-amber-400/20 bg-gradient-to-br from-[#1b160a] via-[#0f131a] to-[#080b11] p-6 shadow-2xl md:p-8"><div className="absolute -right-20 -top-24 h-72 w-72 rounded-full bg-amber-400/10 blur-3xl"/><div className="relative flex flex-col gap-6 md:flex-row md:items-center">
     {user?.picture?<img src={user.picture} className="size-20 rounded-3xl border border-white/10 object-cover" alt=""/>:<div className="grid size-20 place-items-center rounded-3xl border border-amber-400/20 bg-amber-400/10 text-amber-300"><Crown className="size-9"/></div>}
