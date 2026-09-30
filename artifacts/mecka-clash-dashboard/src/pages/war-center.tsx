@@ -682,6 +682,12 @@ export default function WarCenterPage() {
               </article>
             </section>
 
+            <details className="group overflow-hidden rounded-2xl border border-white/[.08] bg-[#0b1119]/80 shadow-[0_16px_50px_rgba(0,0,0,.16)]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 hover:bg-white/[.025] [&::-webkit-details-marker]:hidden">
+                <div><p className="section-kicker">Deep battlefield data</p><h2 className="mt-1 font-black tracking-tight">Target map & defensive attacks</h2><p className="mt-1 text-xs text-muted-foreground">Open the full enemy board and incoming attack history when you need the detail.</p></div>
+                <span className="rounded-lg border border-amber-400/20 bg-amber-400/[.06] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-300 transition group-open:rotate-180">⌄</span>
+              </summary>
+              <div className="space-y-5 border-t border-white/[.06] p-4 md:p-5">
             <article
               className="premium-card overflow-hidden rounded-2xl"
               data-testid="card-target-map"
@@ -813,6 +819,8 @@ export default function WarCenterPage() {
                 </div>
               )}
             </article>
+              </div>
+            </details>
 
             <footer className="flex flex-col justify-between gap-2 border-t border-border/70 pt-5 text-[11px] text-muted-foreground sm:flex-row">
               <Link
