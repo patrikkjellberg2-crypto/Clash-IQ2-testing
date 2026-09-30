@@ -299,4 +299,6 @@ html.clashiq-compact .sidebar-nav {
   .clashiq-landscape-mobile-trigger { display: none !important; }
   .clashiq-landscape-mobile-overlay { display: none !important; }
   .clashiq-landscape-no-top-clearance { padding-top: 0 !important; }
+  .clashiq-landscape-back-button { left: 278px !important; }
+  .clashiq-landscape-sidebar + * { min-width: 0; }
 }
