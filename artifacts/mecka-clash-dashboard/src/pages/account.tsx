@@ -17,6 +17,15 @@ function openClashIQ(){
  window.location.assign("clashiq://open");
 }
 
+function openClashIQ(){
+ const isAndroid=/Android/i.test(navigator.userAgent);
+ if(!isAndroid){window.location.assign("/");return;}
+ let fallback=window.setTimeout(()=>window.location.assign("/"),1800);
+ const cancel=()=>{window.clearTimeout(fallback);document.removeEventListener("visibilitychange",cancel);};
+ document.addEventListener("visibilitychange",cancel,{once:true});
+ window.location.assign(["clashiq","open"].join("://"));
+}
+
 export default function AccountPage(){
  const[,navigate]=useLocation(); const[user,setUser]=useState<User|null>(null); const[player,setPlayer]=useState<R|null>(null); const[loading,setLoading]=useState(true); const[refreshing,setRefreshing]=useState(false); const[error,setError]=useState("");
  async function load(refresh=false){
