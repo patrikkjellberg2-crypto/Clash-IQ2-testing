@@ -1,92 +1,99 @@
-import { ArrowRight, Bot, Crown, Shield, Swords, BarChart3, Sparkles } from "lucide-react";
+import { ArrowRight, Bot, Crown, Shield, Swords, BarChart3, Sparkles, Play, FlaskConical } from "lucide-react";
 import { useLocation } from "wouter";
+
+const LOGO = "data:image/webp;base64,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";
 
 export default function Website() {
   const [, navigate] = useLocation();
-
   const goLogin = () => navigate("/login");
 
   return (
     <div className="min-h-screen bg-[#05070b] text-white overflow-x-hidden">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070b]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5">
+        <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-between px-5">
           <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-3">
-            <img src="/clash-iq-logo.webp" className="h-10 w-10 rounded-xl object-cover" alt="Clash IQ" />
-            <span className="text-xl font-black tracking-tight">Clash IQ</span>
+            <img src={LOGO} className="h-12 w-12 rounded-2xl object-cover shadow-[0_0_22px_rgba(250,190,40,.25)]" alt="Clash IQ" />
+            <span className="text-2xl font-black tracking-tight">Clash IQ</span>
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={goLogin} className="rounded-full px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/10">Log in</button>
-            <button onClick={goLogin} className="rounded-full bg-white px-5 py-2 text-sm font-bold text-black hover:bg-white/90">Create account</button>
+            <button onClick={goLogin} className="rounded-full border border-white/10 px-4 py-2 text-sm font-semibold text-white/80 hover:bg-white/10">Log in</button>
+            <button onClick={goLogin} className="rounded-full bg-yellow-300 px-5 py-2.5 text-sm font-black text-black hover:bg-yellow-200">Create account</button>
           </div>
         </div>
       </header>
 
       <main>
-        <section className="relative isolate">
-          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_50%_10%,rgba(234,179,8,.16),transparent_34%),radial-gradient(circle_at_80%_50%,rgba(59,130,246,.10),transparent_30%)]" />
-          <div className="mx-auto grid max-w-6xl items-center gap-12 px-5 pb-24 pt-20 lg:grid-cols-[1.05fr_.95fr] lg:pt-28">
-            <div>
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-semibold text-yellow-200">
-                <Sparkles className="h-4 w-4" /> WAR INTELLIGENCE FOR CLANS
+        <section className="relative isolate overflow-hidden">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_30%_15%,rgba(250,190,40,.18),transparent_32%),radial-gradient(circle_at_85%_35%,rgba(37,99,235,.12),transparent_30%)]" />
+          <div className="mx-auto max-w-7xl px-5 pb-20 pt-12 lg:pb-28 lg:pt-16">
+            <div className="grid items-center gap-12 lg:grid-cols-[.9fr_1.1fr]">
+              <div>
+                <div className="mb-7 flex justify-center lg:justify-start">
+                  <div className="rounded-[2.5rem] border border-yellow-300/20 bg-black/30 p-4 shadow-[0_0_70px_rgba(250,190,40,.14)]">
+                    <img src={LOGO} className="h-52 w-52 rounded-[2rem] object-cover sm:h-60 sm:w-60 lg:h-72 lg:w-72" alt="Clash IQ logo" />
+                  </div>
+                </div>
+                <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-bold tracking-wide text-yellow-200">
+                  <Sparkles className="h-4 w-4" /> WAR INTELLIGENCE FOR CLANS
+                </div>
+                <h1 className="max-w-3xl text-5xl font-black leading-[.95] tracking-tight sm:text-6xl lg:text-7xl">
+                  Play smarter.
+                  <span className="block text-yellow-300">Know your game.</span>
+                </h1>
+                <p className="mt-7 max-w-xl text-lg leading-8 text-white/60">
+                  Clash IQ turns your Clash of Clans data into clear war intelligence, player insights and practical recommendations for your clan.
+                </p>
+                <div className="mt-9 flex flex-wrap gap-3">
+                  <button onClick={goLogin} className="group inline-flex items-center gap-2 rounded-full bg-yellow-300 px-6 py-3.5 font-black text-black hover:bg-yellow-200">
+                    Start with Clash IQ <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </button>
+                  <button onClick={goLogin} className="rounded-full border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white hover:bg-white/10">Log in</button>
+                </div>
+                <p className="mt-4 text-xs text-white/35">New here? Create your account with Google in seconds.</p>
               </div>
-              <h1 className="max-w-3xl text-5xl font-black leading-[.95] tracking-tight sm:text-6xl lg:text-7xl">
-                Play smarter.
-                <span className="block text-yellow-300">Know your game.</span>
-              </h1>
-              <p className="mt-7 max-w-xl text-lg leading-8 text-white/60">
-                Clash IQ turns your Clash of Clans data into clear war intelligence, player insights and practical recommendations for your clan.
-              </p>
-              <div className="mt-9 flex flex-wrap gap-3">
-                <button onClick={goLogin} className="group inline-flex items-center gap-2 rounded-full bg-yellow-300 px-6 py-3.5 font-black text-black hover:bg-yellow-200">
-                  Start with Clash IQ <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                </button>
-                <button onClick={goLogin} className="rounded-full border border-white/15 bg-white/5 px-6 py-3.5 font-semibold text-white hover:bg-white/10">
-                  Log in
-                </button>
-              </div>
-              <p className="mt-4 text-xs text-white/35">New here? Create your account with Google in seconds.</p>
-            </div>
 
-            <div className="relative">
-              <div className="absolute -inset-8 -z-10 rounded-[3rem] bg-yellow-400/10 blur-3xl" />
-              <div className="rounded-[2rem] border border-white/10 bg-[#0b1018] p-4 shadow-2xl shadow-black/50">
-                <div className="rounded-[1.5rem] border border-white/10 bg-[#080c12] p-5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-[.2em] text-white/35">Clash IQ</p>
-                      <h2 className="mt-1 text-2xl font-black">War Center</h2>
-                    </div>
-                    <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-300"><Swords /></div>
-                  </div>
-                  <div className="mt-6 grid grid-cols-3 gap-3">
-                    <Stat label="War score" value="91%" />
-                    <Stat label="Stars" value="28" />
-                    <Stat label="Attacks" value="32" />
-                  </div>
-                  <div className="mt-4 rounded-2xl border border-white/10 bg-white/[.03] p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-xl bg-blue-400/10 p-2 text-blue-300"><Bot className="h-5 w-5" /></div>
+              <div className="relative">
+                <div className="absolute -inset-10 -z-10 rounded-[4rem] bg-yellow-400/10 blur-3xl" />
+                <div className="rounded-[2rem] border border-white/10 bg-[#0b1018]/90 p-4 shadow-2xl shadow-black/60">
+                  <div className="rounded-[1.5rem] border border-white/10 bg-[#080c12] p-5">
+                    <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-bold">Mecka AI Coach</p>
-                        <p className="text-xs text-white/40">Analysis ready for your next attack.</p>
+                        <p className="text-xs uppercase tracking-[.2em] text-white/35">Clash IQ</p>
+                        <h2 className="mt-1 text-2xl font-black">War Center</h2>
+                      </div>
+                      <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-300"><Swords /></div>
+                    </div>
+                    <div className="mt-6 grid grid-cols-3 gap-3">
+                      <Stat label="War score" value="91%" /><Stat label="Stars" value="28" /><Stat label="Attacks" value="32" />
+                    </div>
+                    <div className="mt-4 rounded-2xl border border-white/10 bg-white/[.03] p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="rounded-xl bg-blue-400/10 p-2 text-blue-300"><Bot className="h-5 w-5" /></div>
+                        <div><p className="text-sm font-bold">Mecka AI Coach</p><p className="text-xs text-white/40">Analysis ready for your next attack.</p></div>
                       </div>
                     </div>
-                  </div>
-                  <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10">
-                    <div className="h-full w-[82%] rounded-full bg-yellow-300" />
+                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full w-[82%] rounded-full bg-yellow-300" /></div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:max-w-3xl">
+              <button type="button" aria-disabled="true" className="group flex items-center gap-4 rounded-2xl border border-yellow-300/30 bg-yellow-300/10 px-5 py-4 text-left shadow-[0_0_30px_rgba(250,190,40,.08)] transition hover:bg-yellow-300/15">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-black/40 text-yellow-300"><Play className="h-6 w-6 fill-current" /></div>
+                <div><p className="text-xs font-bold uppercase tracking-wider text-yellow-200/70">Coming soon</p><p className="text-lg font-black">Get it on Google Play</p><p className="text-xs text-white/40">Store link will be added later.</p></div>
+              </button>
+              <button type="button" aria-disabled="true" className="group flex items-center gap-4 rounded-2xl border border-blue-400/30 bg-blue-400/10 px-5 py-4 text-left shadow-[0_0_30px_rgba(59,130,246,.08)] transition hover:bg-blue-400/15">
+                <div className="grid h-12 w-12 place-items-center rounded-xl bg-black/40 text-blue-300"><FlaskConical className="h-6 w-6" /></div>
+                <div><p className="text-xs font-bold uppercase tracking-wider text-blue-200/70">Beta testing</p><p className="text-lg font-black">Clash IQ Beta – Test</p><p className="text-xs text-white/40">Test access will be connected later.</p></div>
+              </button>
             </div>
           </div>
         </section>
 
         <section className="border-y border-white/10 bg-white/[.02]">
-          <div className="mx-auto max-w-6xl px-5 py-20">
-            <div className="max-w-2xl">
-              <p className="text-xs font-bold uppercase tracking-[.2em] text-yellow-300">Built for serious clans</p>
-              <h2 className="mt-3 text-3xl font-black sm:text-4xl">Everything you need to understand the war.</h2>
-            </div>
+          <div className="mx-auto max-w-7xl px-5 py-20">
+            <div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[.2em] text-yellow-300">Built for serious clans</p><h2 className="mt-3 text-3xl font-black sm:text-4xl">Everything you need to understand the war.</h2></div>
             <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
               <Feature icon={<Swords />} title="War Center" text="See the current war, attacks and key opportunities in one place." />
               <Feature icon={<Bot />} title="AI Coach" text="Turn clan and opponent data into useful attack intelligence." />
@@ -96,13 +103,13 @@ export default function Website() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-6xl px-5 py-20">
+        <section className="mx-auto max-w-7xl px-5 py-20">
           <div className="rounded-[2rem] border border-yellow-400/15 bg-gradient-to-br from-yellow-400/10 to-transparent p-8 sm:p-12">
             <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
               <div>
-                <div className="flex items-center gap-2 text-yellow-300"><Crown className="h-5 w-5" /><span className="font-bold">Ready when you are</span></div>
-                <h2 className="mt-3 text-3xl font-black">Create your Clash IQ account.</h2>
-                <p className="mt-3 max-w-xl text-white/55">Sign in with Google. New users are created automatically and can connect their Clash account afterwards.</p>
+                <div className="flex items-center gap-2 text-yellow-300"><Crown className="h-5 w-5" /><span className="font-bold">Account setup</span></div>
+                <h2 className="mt-3 text-3xl font-black">One account. Then connect your player.</h2>
+                <p className="mt-3 max-w-2xl text-white/55">When a new user signs in with Google, Clash IQ creates the app account automatically. After that, users without a player tag are sent to Connect Player to link their Clash of Clans player tag.</p>
               </div>
               <button onClick={goLogin} className="shrink-0 rounded-full bg-white px-7 py-3.5 font-black text-black hover:bg-white/90">Log in / Register</button>
             </div>
@@ -111,9 +118,8 @@ export default function Website() {
       </main>
 
       <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 text-sm text-white/35 sm:flex-row sm:items-center sm:justify-between">
-          <span>© 2026 Clash IQ</span>
-          <button onClick={goLogin} className="text-white/55 hover:text-white">Log in / Register</button>
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-5 text-sm text-white/35 sm:flex-row sm:items-center sm:justify-between">
+          <span>© 2026 Clash IQ</span><button onClick={goLogin} className="text-white/55 hover:text-white">Log in / Register</button>
         </div>
       </footer>
     </div>
@@ -121,20 +127,8 @@ export default function Website() {
 }
 
 function Feature({ icon, title, text }: { icon: React.ReactNode; title: string; text: string }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-[#0a0e15] p-5">
-      <div className="mb-5 inline-flex rounded-xl border border-white/10 bg-white/5 p-3 text-yellow-300">{icon}</div>
-      <h3 className="font-bold">{title}</h3>
-      <p className="mt-2 text-sm leading-6 text-white/45">{text}</p>
-    </div>
-  );
+  return <div className="rounded-2xl border border-white/10 bg-[#0a0e15] p-5"><div className="mb-5 inline-flex rounded-xl border border-white/10 bg-white/5 p-3 text-yellow-300">{icon}</div><h3 className="font-bold">{title}</h3><p className="mt-2 text-sm leading-6 text-white/45">{text}</p></div>;
 }
-
 function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/[.03] p-3">
-      <p className="text-[10px] uppercase tracking-wider text-white/30">{label}</p>
-      <p className="mt-1 text-xl font-black">{value}</p>
-    </div>
-  );
+  return <div className="rounded-xl border border-white/10 bg-white/[.03] p-3"><p className="text-[10px] uppercase tracking-wider text-white/30">{label}</p><p className="mt-1 text-xl font-black">{value}</p></div>;
 }
