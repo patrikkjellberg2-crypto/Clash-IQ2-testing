@@ -1,7 +1,12 @@
 import { type ReactNode } from 'react';
+import { useLocation } from 'wouter';
 
-// The dashboard owns its banner. Other routes render without a banner.
-// Mobile pages reserve space at the top so the menu/back controls never overlap page text.
 export function ClashIQPageBanner({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+  const [location] = useLocation();
+  const needsTopClearance = !['/', '/welcome', '/login'].includes(location);
+  return (
+    <div className={needsTopClearance ? 'clashiq-route-frame pt-16 lg:pt-0' : 'clashiq-route-frame'}>
+      {children}
+    </div>
+  );
 }
