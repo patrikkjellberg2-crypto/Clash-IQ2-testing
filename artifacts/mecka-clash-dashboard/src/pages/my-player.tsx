@@ -3,7 +3,6 @@ import { Link, useLocation } from "wouter";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
   Activity,
-  ArrowLeft,
   BarChart3,
   Crown,
   Crosshair,
@@ -148,7 +147,6 @@ export default function MyPlayerPage() {
   return (
     <div className="min-h-screen bg-[#07090d] p-4 text-white sm:p-6">
       <AppSidebar clanName={user?.name || "CLASH IQ"} clanTag={user?.player_tag || "#2Q0Q82C9R"} />
-      <button type="button" aria-label="Go back" title="Back" onClick={() => { if (window.history.length > 1) window.history.back(); else window.location.href = "/"; }} className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-amber-400/40 bg-[#0b0d12]/95 text-amber-300 shadow-[0_0_18px_rgba(245,190,60,.18)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-200 active:scale-95 lg:left-[278px]"><ArrowLeft className="size-4" /></button>
       <div className="mx-auto max-w-7xl space-y-5">
         <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
