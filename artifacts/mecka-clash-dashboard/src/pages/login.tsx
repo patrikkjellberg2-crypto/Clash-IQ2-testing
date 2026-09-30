@@ -6,6 +6,15 @@ import {Crown,ShieldCheck} from "lucide-react";
 
 declare global{interface Window{google?:any}}
 
+function launchNativeClashIQ(){
+  if(!/Android/i.test(navigator.userAgent)) return false;
+  let fallback=window.setTimeout(()=>{ window.location.assign("/account"); },1800);
+  const cancel=()=>{ window.clearTimeout(fallback); document.removeEventListener("visibilitychange",cancel); };
+  document.addEventListener("visibilitychange",cancel,{once:true});
+  window.location.assign(["clashiq","open"].join("://"));
+  return true;
+}
+
 export default function Login(){
   const[,nav]=useLocation();
   const ref=useRef<HTMLDivElement>(null);
@@ -49,7 +58,7 @@ export default function Login(){
             });
             const d=await r.json();
             if(!r.ok)throw Error(d.error);
-            nav("/account");
+            if(!launchNativeClashIQ()) nav("/account");
           }catch(e){
             setError(e instanceof Error?e.message:"Google login failed");
           }
@@ -90,7 +99,7 @@ export default function Login(){
       });
       const d=await r.json();
       if(!r.ok)throw Error(d.error);
-      nav("/account");
+      if(!launchNativeClashIQ()) nav("/account");
     }catch(e){
       setError(e instanceof Error?e.message:"Google login failed");
     }
