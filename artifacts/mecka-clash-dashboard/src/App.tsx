@@ -11,7 +11,7 @@ import { WarArchiver } from '@/components/war-archiver';
 
 import NotFound from '@/pages/not-found';
 const LoginPage = lazy(() => import('@/pages/login'));
-const WebsitePage = lazy(() => import('@/pages/website'));
+const WebsitePage = lazy(() => import('@/pages/website'));\nconst AccountPage = lazy(() => import('@/pages/account'));
 const WelcomePage = lazy(() => import('@/pages/welcome'));
 const ConnectPlayerPage = lazy(() => import('@/pages/connect-player'));
 const MyPlayerPage = lazy(() => import('@/pages/my-player'));
@@ -67,7 +67,7 @@ function Router() {
       <ClashIQPageBanner>
         <Suspense fallback={<PageLoader />}>
         <Switch>
-          <Route path="/website" component={WebsitePage} />
+          <Route path="/website" component={WebsitePage} />\n          <Route path="/account" component={AccountPage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/welcome" component={WelcomePage} />
           <Route path="/connect-player" component={ConnectPlayerPage} />
