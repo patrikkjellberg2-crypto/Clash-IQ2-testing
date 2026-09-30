@@ -8,6 +8,15 @@ const val=(v:unknown,f="—")=>v===null||v===undefined||v===""?f:String(v);
 const num=(v:unknown)=>typeof v==="number"&&Number.isFinite(v)?v:0;
 const dateText=(v:unknown)=>{if(!v)return "";const d=new Date(String(v));return Number.isNaN(d.getTime())?String(v):d.toLocaleDateString("sv-SE",{year:"numeric",month:"long",day:"numeric"});};
 
+function openClashIQ(){
+ const isAndroid=/Android/i.test(navigator.userAgent);
+ if(!isAndroid){window.location.assign("/");return;}
+ let fallback=window.setTimeout(()=>window.location.assign("/"),1800);
+ const cancel=()=>{window.clearTimeout(fallback);document.removeEventListener("visibilitychange",cancel);};
+ document.addEventListener("visibilitychange",cancel,{once:true});
+ window.location.assign("clashiq://open");
+}
+
 export default function AccountPage(){
  const[,navigate]=useLocation(); const[user,setUser]=useState<User|null>(null); const[player,setPlayer]=useState<R|null>(null); const[loading,setLoading]=useState(true); const[refreshing,setRefreshing]=useState(false); const[error,setError]=useState("");
  async function load(refresh=false){
@@ -31,7 +40,7 @@ export default function AccountPage(){
  return <div className="min-h-screen bg-[#05070b] text-white">
   <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070b]/90 backdrop-blur-xl"><div className="mx-auto flex min-h-[76px] max-w-6xl items-center justify-between gap-4 px-5">
    <button onClick={()=>navigate("/website")} className="flex items-center gap-3"><img src="/clash-iq-logo.webp" className="h-12 w-12 rounded-2xl object-cover" alt="Clash IQ"/><div className="hidden sm:block"><p className="text-lg font-black">Clash IQ</p><p className="text-[9px] font-bold uppercase tracking-[.2em] text-white/35">Account Center</p></div></button>
-   <div className="flex items-center gap-2"><button onClick={()=>void load(true)} disabled={refreshing} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60"><RefreshCw className={refreshing?"size-4 animate-spin":"size-4"}/></button><button onClick={()=>navigate("/")} className="hidden rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-2.5 text-xs font-black text-amber-200 sm:inline-flex">Open Clash IQ</button><button onClick={()=>void logout()} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/55" title="Log out"><LogOut className="size-4"/></button></div>
+   <div className="flex items-center gap-2"><button onClick={()=>void load(true)} disabled={refreshing} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60"><RefreshCw className={refreshing?"size-4 animate-spin":"size-4"}/></button><button onClick={openClashIQ} className="hidden rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-2.5 text-xs font-black text-amber-200 sm:inline-flex">Open Clash IQ</button><button onClick={()=>void logout()} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/55" title="Log out"><LogOut className="size-4"/></button></div>
   </div></header>
   <main className="mx-auto max-w-6xl space-y-5 px-5 py-7 md:py-9">
    {error&&<div className="rounded-2xl border border-red-400/20 bg-red-400/5 px-4 py-3 text-sm text-red-200">{error}</div>}
