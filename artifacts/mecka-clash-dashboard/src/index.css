@@ -322,3 +322,11 @@ html.clashiq-compact .sidebar-nav {
     top: 16px !important;
   }
 }
+
+
+/* Android tablet split-screen: the physical device is landscape even when the app window is portrait-shaped. */
+.clashiq-compact-landscape .clashiq-global-back {
+  left: 68px !important;
+  right: auto !important;
+  top: 16px !important;
+}
