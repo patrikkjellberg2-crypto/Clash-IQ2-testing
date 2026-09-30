@@ -60,6 +60,35 @@ jobs:
       - name: Install Capacitor
         run: npm install --no-audit --no-fund
 
+      - name: Patch Google reauth retry for Capacitor 7
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java')
+          s = p.read_text()
+          if 'REAUTH_RETRY_FLAG' not in s:
+              s = s.replace(
+                  '    private static final String LOG_TAG = "GoogleProvider";\n',
+                  '    private static final String LOG_TAG = "GoogleProvider";\n'
+                  '    private static final String REAUTH_RETRY_FLAG = "_googleReauthRetry";\n',
+                  1,
+              )
+              old = '''    private void handleSignInError(GetCredentialException e, PluginCall call, JSONObject config) {\n        Log.e(LOG_TAG, "Google Sign-In failed", e);\n        boolean isBottomUi = false;\n'''
+              new = '''    private boolean isAccountReauthFailed(String message) {\n        return message != null && message.contains("Account reauth failed");\n    }\n\n    private boolean isReauthRetry(PluginCall call) {\n        return call.getData().optBoolean(REAUTH_RETRY_FLAG, false);\n    }\n\n    private void markReauthRetry(PluginCall call) {\n        call.getData().put(REAUTH_RETRY_FLAG, true);\n    }\n\n    private void clearCredentialManagerState(CredentialManagerCallback<Void, Exception> handler) {\n        ClearCredentialStateRequest request = new ClearCredentialStateRequest();\n        Executor executor = Executors.newSingleThreadExecutor();\n        credentialManager.clearCredentialStateAsync(\n            request, null, executor,\n            new CredentialManagerCallback<Void, ClearCredentialException>() {\n                @Override public void onResult(Void result) { handler.onResult(null); }\n                @Override public void onError(@NonNull ClearCredentialException e) { handler.onError(e); }\n            }\n        );\n    }\n\n    private void retryLoginAfterReauthFailure(PluginCall call, JSONObject config, JSONObject options) {\n        try {\n            options.put("style", "standard");\n            options.put("filterByAuthorizedAccounts", false);\n            call.getData().put("options", options);\n        } catch (JSONException ex) {\n            call.reject("Google Sign-In failed: " + ex.getMessage());\n            return;\n        }\n        login(call, config);\n    }\n\n    private void handleAccountReauthFailed(PluginCall call, JSONObject config, JSONObject options) {\n        String errorMessage = "Account reauth failed";\n        if (isReauthRetry(call)) {\n            call.reject("Google Sign-In failed: [16] Account reauth failed after retry. Credential Manager state was cleared and the standard account picker was retried.");\n            return;\n        }\n        Log.w(LOG_TAG, "Account reauth failed; clearing Credential Manager state and retrying with standard sign-in.");\n        markReauthRetry(call);\n        clearCredentialManagerState(\n            new CredentialManagerCallback<Void, Exception>() {\n                @Override public void onResult(Void unused) { retryLoginAfterReauthFailure(call, config, options); }\n                @Override public void onError(@NonNull Exception clearError) {\n                    Log.w(LOG_TAG, "Could not clear Credential Manager state; retrying sign-in anyway.", clearError);\n                    retryLoginAfterReauthFailure(call, config, options);\n                }\n            }\n        );\n    }\n\n    private void handleSignInError(GetCredentialException e, PluginCall call, JSONObject config) {\n        Log.e(LOG_TAG, "Google Sign-In failed", e);\n        boolean isBottomUi = false;\n'''
+              if old not in s:
+                  raise SystemExit('Expected GoogleProvider handleSignInError block not found')
+              s = s.replace(old, new, 1)
+              old2 = '''        if (e instanceof NoCredentialException) {\n'''
+              new2 = '''        if (isAccountReauthFailed(e.getMessage())) {\n            handleAccountReauthFailed(call, config, options);\n            return;\n        }\n        if (e instanceof NoCredentialException) {\n'''
+              if old2 not in s:
+                  raise SystemExit('Expected NoCredentialException block not found')
+              s = s.replace(old2, new2, 1)
+              p.write_text(s)
+              print('Applied Google error 16 retry patch.')
+          else:
+              print('Google error 16 retry patch already present.')
+          PY
+
       - name: Point the app at the hosted dashboard
         run: |
           node -e 'const fs=require("fs"); const c=JSON.parse(fs.readFileSync("capacitor.config.json","utf8")); c.server.url=process.env.SERVER_URL; fs.writeFileSync("capacitor.config.json",JSON.stringify(c,null,2));'
