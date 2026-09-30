@@ -6,25 +6,15 @@
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "corepack pnpm install --no-frozen-lockfile && corepack pnpm --filter @workspace/mecka-clash-dashboard run build && corepack pnpm --filter @workspace/api-server exec node ./build.mjs",
     "typecheck:libs": "corepack pnpm -r --filter \"./lib/**\" --if-present run typecheck",
-    "typecheck": "corepack pnpm run typecheck:libs && corepack pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck",
+    "typecheck": "corepack pnpm run typecheck:libs && corepack pnpm --filter @workspace/mecka-clash-dashboard run typecheck",
     "start": "corepack pnpm --filter @workspace/db run init-test-db || true; corepack pnpm --filter @workspace/api-server start"
   },
   "private": true,
   "packageManager": "pnpm@10.34.5",
   "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "@replit/connectors-sdk"
-    ]
+    "onlyBuiltDependencies": ["esbuild", "@replit/connectors-sdk"]
   },
-  "dependencies": {
-    "@replit/connectors-sdk": "^0.4.3"
-  },
-  "devDependencies": {
-    "prettier": "^3.9.6",
-    "typescript": "~5.9.3"
-  },
-  "engines": {
-    "node": ">=24 <25"
-  }
+  "dependencies": {"@replit/connectors-sdk": "^0.4.3"},
+  "devDependencies": {"prettier": "^3.9.6", "typescript": "~5.9.3"},
+  "engines": {"node": ">=24 <25"}
 }
