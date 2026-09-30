@@ -8,7 +8,7 @@ const CLASH_API_BASE_URL = process.env.CLASH_API_BASE_URL || "https://cocproxy.r
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
-const MAX_PROMPT_CHARS = 12000;
+const MAX_PROMPT_CHARS = 8000;
 const MAX_OUTPUT_TOKENS = 5000;
 
 type Dict = Record<string, any>;
@@ -353,6 +353,37 @@ function memberLine(m: Dict) {
   return `#${number(m?.mapPosition)} ${String(m?.name || "Unknown").slice(0, 28)} TH${number(m?.townhallLevel ?? m?.townHallLevel)}: ${attackText}`;
 }
 
+function compactOpponentWarText(war: Dict | null, clanTag: string) {
+  if (!war || !war.clan || !war.opponent) return "No active war is available right now.";
+
+  const ourTag = normalizeTag(clanTag);
+  const ourSide = normalizeTag(String(war.clan.tag || "")) === ourTag ? war.clan : war.opponent;
+  const enemySide = ourSide === war.clan ? war.opponent : war.clan;
+  const ourMembers = Array.isArray(ourSide.members) ? ourSide.members : [];
+  const enemyMembers = Array.isArray(enemySide.members) ? enemySide.members : [];
+  const attacksPerMember = number(war.attacksPerMember, 2);
+  const ourUsed = number(ourSide.attacks);
+  const enemyUsed = number(enemySide.attacks);
+  const teamSize = number(war.teamSize, Math.max(ourMembers.length, enemyMembers.length));
+  const maxAttacks = teamSize * attacksPerMember;
+
+  const rosterLine = (m: Dict) => {
+    const attacks = Array.isArray(m?.attacks) ? m.attacks : [];
+    const recorded = attacks.map((a: Dict) =>
+      `->#${number(a?.defender?.mapPosition ?? a?.defenderMapPosition) || "?"} ${number(a?.stars)}★ ${number(a?.destructionPercentage)}%`
+    ).join(" | ");
+    return `#${number(m?.mapPosition)} ${String(m?.name || "Unknown").slice(0, 22)} TH${number(m?.townhallLevel ?? m?.townHallLevel)}${recorded ? ` ${recorded}` : ""}`;
+  };
+
+  return [
+    `STATE=${war.state || "unknown"} SIZE=${teamSize} ATTACKS_PER_MEMBER=${attacksPerMember}`,
+    `OUR: ${ourSide.name || "Us"} stars=${number(ourSide.stars)} destruction=${number(ourSide.destructionPercentage)}% used=${ourUsed} remaining=${Math.max(0, maxAttacks - ourUsed)}`,
+    `ENEMY: ${enemySide.name || "Opponent"} stars=${number(enemySide.stars)} destruction=${number(enemySide.destructionPercentage)}% used=${enemyUsed} remaining=${Math.max(0, maxAttacks - enemyUsed)}`,
+    `OUR ROSTER:\n${ourMembers.slice(0, 30).map(rosterLine).join("\n") || "No member data."}`,
+    `ENEMY ROSTER:\n${enemyMembers.slice(0, 30).map(rosterLine).join("\n") || "No member data."}`,
+  ].join("\n");
+}
+
 function currentWarText(war: Dict | null, clanTag: string) {
   if (!war || !war.clan || !war.opponent) return "No active war is available right now.";
 
@@ -432,8 +463,8 @@ function buildPrompt(data: Dict, mode: "clan" | "opponent" | "question", questio
 
   const opponentFacts = [
     clanSummary,
-    `CURRENT WAR:\n${currentWarText(data.currentWar, clanTag)}`,
-    `RECENT WAR LOG (compact):\n${warlogText(data.warlog, clanTag).split("\n").slice(0, 6).join("\n")}`,
+    `CURRENT WAR COMPACT:\n${compactOpponentWarText(data.currentWar, clanTag)}`,
+    `RECENT WAR LOG (last 6):\n${warlogText(data.warlog, clanTag).split("\n").slice(0, 6).join("\n")}`,
   ].join("\n\n");
 
   const instructions = mode === "question"
