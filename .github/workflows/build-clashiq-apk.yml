@@ -33,7 +33,7 @@ jobs:
         working-directory: android-app
     env:
       SERVER_URL: ${{ inputs.server_url || 'https://clash-iq2-testing.onrender.com' }}
-      VERSION_NAME: ${{ inputs.version_name || '1.2.0' }}
+      VERSION_NAME: ${{ inputs.version_name || '1.2.2' }}
 
     steps:
       - uses: actions/checkout@v4
