@@ -11,6 +11,7 @@ import { WarArchiver } from '@/components/war-archiver';
 
 import NotFound from '@/pages/not-found';
 const LoginPage = lazy(() => import('@/pages/login'));
+const WebsitePage = lazy(() => import('@/pages/website'));
 const WelcomePage = lazy(() => import('@/pages/welcome'));
 const ConnectPlayerPage = lazy(() => import('@/pages/connect-player'));
 const MyPlayerPage = lazy(() => import('@/pages/my-player'));
@@ -58,7 +59,7 @@ function PageLoader() {
   );
 }
 
-function AuthGate({ children }: { children: ReactNode }) { const [location,navigate]=useLocation(); const [ready,setReady]=React.useState(false); useEffect(()=>{if(location==='/login'||location==='/welcome'){setReady(true);return;} try{if(location==='/'&&localStorage.getItem('clash_iq_welcome_seen_v2')!=='true'){navigate('/welcome');return;}}catch{} fetch('/api/auth/me',{credentials:'include'}).then(r=>{if(!r.ok&&location!=='/login')navigate('/login');else setReady(true)}).catch(()=>{if(location!=='/login')navigate('/login');setReady(true)})},[location,navigate]); if(location==='/login'||location==='/welcome')return <>{children}</>; if(!ready)return <PageLoader/>; return <>{children}</>; }
+function AuthGate({ children }: { children: ReactNode }) { const [location,navigate]=useLocation(); const [ready,setReady]=React.useState(false); useEffect(()=>{if(location==='/login'||location==='/welcome'||location==='/website'){setReady(true);return;} try{if(location==='/'&&localStorage.getItem('clash_iq_welcome_seen_v2')!=='true'){navigate('/welcome');return;}}catch{} fetch('/api/auth/me',{credentials:'include'}).then(r=>{if(!r.ok&&location!=='/login')navigate('/login');else setReady(true)}).catch(()=>{if(location!=='/login')navigate('/login');setReady(true)})},[location,navigate]); if(location==='/login'||location==='/welcome')return <>{children}</>; if(!ready)return <PageLoader/>; return <>{children}</>; }
 
 function Router() {
   return (
@@ -66,6 +67,7 @@ function Router() {
       <ClashIQPageBanner>
         <Suspense fallback={<PageLoader />}>
         <Switch>
+          <Route path="/website" component={WebsitePage} />
           <Route path="/login" component={LoginPage} />
           <Route path="/welcome" component={WelcomePage} />
           <Route path="/connect-player" component={ConnectPlayerPage} />
