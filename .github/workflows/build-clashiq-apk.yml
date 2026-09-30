@@ -93,6 +93,12 @@ jobs:
           from pathlib import Path
           p=Path('android/app/src/main/AndroidManifest.xml')
           s=p.read_text()
+          notification_permission='    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\\n'
+          if 'android.permission.POST_NOTIFICATIONS' not in s:
+              marker='    <uses-permission android:name="android.permission.INTERNET" />\\n'
+              if marker not in s:
+                  raise SystemExit('INTERNET permission marker not found')
+              s=s.replace(marker, marker + notification_permission, 1)
           receiver='''        <receiver android:name=".ClashIQWidgetProvider" android:exported="true">
               <intent-filter>
                   <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
