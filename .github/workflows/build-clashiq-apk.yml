@@ -91,14 +91,19 @@ jobs:
 
           python3 - <<'PY'
           from pathlib import Path
+          import re
+
           p=Path('android/app/src/main/AndroidManifest.xml')
           s=p.read_text()
-          notification_permission='    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\\n'
+
+          # Add notification permission next to INTERNET, tolerating generated-manifest whitespace.
           if 'android.permission.POST_NOTIFICATIONS' not in s:
-              marker='    <uses-permission android:name="android.permission.INTERNET" />\\n'
-              if marker not in s:
-                  raise SystemExit('INTERNET permission marker not found')
-              s=s.replace(marker, marker + notification_permission, 1)
+              internet = re.search(r'(?m)^\\s*<uses-permission\\s+android:name="android\\.permission\\.INTERNET"\\s*/>\\s*$', s)
+              if not internet:
+                  raise SystemExit('INTERNET permission not found in generated AndroidManifest.xml')
+              notification_permission='    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'
+              s=s[:internet.end()] + '\\n' + notification_permission + s[internet.end():]
+
           receiver='''        <receiver android:name=".ClashIQWidgetProvider" android:exported="true">
               <intent-filter>
                   <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -108,7 +113,10 @@ jobs:
           </receiver>
           '''
           if 'ClashIQWidgetProvider' not in s:
-              s=s.replace('</application>', receiver+'    </application>')
+              if '</application>' not in s:
+                  raise SystemExit('</application> not found in generated AndroidManifest.xml')
+              s=s.replace('</application>', receiver+'    </application>', 1)
+
           p.write_text(s)
           PY
 
