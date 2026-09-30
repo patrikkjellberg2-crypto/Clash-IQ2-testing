@@ -14,15 +14,6 @@ function openClashIQ(){
  let fallback=window.setTimeout(()=>window.location.assign("/"),1800);
  const cancel=()=>{window.clearTimeout(fallback);document.removeEventListener("visibilitychange",cancel);};
  document.addEventListener("visibilitychange",cancel,{once:true});
- window.location.assign("clashiq://open");
-}
-
-function openClashIQ(){
- const isAndroid=/Android/i.test(navigator.userAgent);
- if(!isAndroid){window.location.assign("/");return;}
- let fallback=window.setTimeout(()=>window.location.assign("/"),1800);
- const cancel=()=>{window.clearTimeout(fallback);document.removeEventListener("visibilitychange",cancel);};
- document.addEventListener("visibilitychange",cancel,{once:true});
  window.location.assign(["clashiq","open"].join("://"));
 }
 
