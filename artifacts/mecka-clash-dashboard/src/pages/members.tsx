@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
 import {
   Activity,
@@ -133,17 +133,47 @@ export default function MembersPage() {
 
   const [sortBy, setSortBy] = useState<'rank' | 'active' | 'th' | 'war'>('rank');
   const [query, setQuery] = useState('');
+  const [performance, setPerformance] = useState<Dict[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/clash/war-intelligence', {
+      credentials: 'include',
+      headers: { Accept: 'application/json' },
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error('War intelligence unavailable');
+        return response.json();
+      })
+      .then((payload) => {
+        if (!cancelled) setPerformance(asArray(payload?.players));
+      })
+      .catch(() => {
+        if (!cancelled) setPerformance([]);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const members = useMemo(
     () => {
-      const filtered = asArray(d?.members).filter((m) => str(m.name).toLowerCase().includes(query.toLowerCase()) || str(m.tag).toLowerCase().includes(query.toLowerCase()));
+      const filtered = asArray(d?.members)
+        .map((member) => {
+          const tag = str(member.tag).toUpperCase();
+          const intel = performance.find((row) => str(row.playerTag).toUpperCase() === tag);
+          return intel ? { ...member, performance: intel } : member;
+        })
+        .filter((m) => str(m.name).toLowerCase().includes(query.toLowerCase()) || str(m.tag).toLowerCase().includes(query.toLowerCase()));
       return filtered.sort((a,b) => {
         if (sortBy === 'th') return getTownHall(b) - getTownHall(a) || num(a.clanRank,99)-num(b.clanRank,99);
         if (sortBy === 'active') return (num(b.donations)+num(b.warStars)*10) - (num(a.donations)+num(a.warStars)*10);
         if (sortBy === 'war') return num(b.warStars)-num(a.warStars) || num(b.donations)-num(a.donations);
         return num(a.clanRank,99)-num(b.clanRank,99);
       });
-    }, [d?.members, query, sortBy],
+    }, [d?.members, performance, query, sortBy],
   );
 
   const leaders = members.filter((member) => {
@@ -440,6 +470,18 @@ export default function MembersPage() {
                     const trophies = num(member.trophies);
                     const donations = num(member.donations);
                     const warStars = num(member.warStars);
+                    const intel = asDict(member.performance);
+                    const threeStarRate = num(intel.threeStarRate);
+                    const avgDestruction = num(intel.avgDestruction);
+                    const recentAvgStars = num(intel.recentAvgStars);
+                    const recentAvgDestruction = num(intel.recentAvgDestruction);
+                    const trend = str(intel.trend, 'stable');
+                    const trendLabel = trend === 'improving' ? 'Improving' : trend === 'declining' ? 'Declining' : 'Stable';
+                    const trendClass = trend === 'improving'
+                      ? 'border-emerald-400/20 bg-emerald-400/10 text-emerald-300'
+                      : trend === 'declining'
+                        ? 'border-red-400/20 bg-red-400/10 text-red-300'
+                        : 'border-white/10 bg-white/[0.03] text-slate-400';
 
                     return (
                       <Link
@@ -478,32 +520,49 @@ export default function MembersPage() {
                               </span>
                             </div>
 
-                            <div className="mt-3 grid grid-cols-3 gap-2">
+                            <div className="mt-3 rounded-xl border border-amber-400/10 bg-amber-400/[0.025] p-3">
+                              <div className="flex items-center justify-between gap-2">
+                                <p className="text-[8px] font-black uppercase tracking-[0.16em] text-amber-300/70">
+                                  Recent form
+                                </p>
+                                <span className={`rounded-full border px-2 py-0.5 text-[8px] font-black uppercase tracking-wider ${trendClass}`}>
+                                  {trendLabel}
+                                </span>
+                              </div>
+
+                              <div className="mt-2 flex items-end justify-between gap-3">
+                                <div>
+                                  <p className="text-lg font-black text-white">
+                                    {intel.recentWars ? recentAvgStars.toFixed(2) : '—'}
+                                    <span className="ml-1 text-[10px] text-slate-500">★ / attack</span>
+                                  </p>
+                                  <p className="text-[8px] text-slate-600">
+                                    Last {num(intel.recentWars)} wars · {Math.round(recentAvgDestruction)}% destruction
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">3★ rate</p>
+                                  <p className="text-xl font-black text-amber-300">
+                                    {intel.threeStarRate ? `${threeStarRate}%` : '—'}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="mt-2 grid grid-cols-3 gap-2">
                               <div className="rounded-lg border border-white/5 bg-white/[0.02] p-2">
-                                <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">
-                                  Donations
-                                </p>
-                                <p className="mt-1 text-xs font-black text-slate-300">
-                                  {donations.toLocaleString('en-US')}
-                                </p>
+                                <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">Destruction</p>
+                                <p className="mt-1 text-xs font-black text-slate-300">{intel.avgDestruction ? `${avgDestruction}%` : '—'}</p>
                               </div>
 
                               <div className="rounded-lg border border-white/5 bg-white/[0.02] p-2">
-                                <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">
-                                  War Stars
-                                </p>
-                                <p className="mt-1 text-xs font-black text-slate-300">
-                                  {warStars.toLocaleString('en-US')}
-                                </p>
+                                <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">War Stars</p>
+                                <p className="mt-1 text-xs font-black text-slate-300">{warStars.toLocaleString('en-US')}</p>
                               </div>
 
                               <div className="rounded-lg border border-white/5 bg-white/[0.02] p-2">
-                                <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">
-                                  Town Hall
-                                </p>
-                                <p className="mt-1 text-xs font-black text-slate-300">
-                                  TH{townHall}
-                                </p>
+                                <p className="text-[8px] font-black uppercase tracking-wider text-slate-600">Donations</p>
+                                <p className="mt-1 text-xs font-black text-slate-300">{donations.toLocaleString('en-US')}</p>
                               </div>
                             </div>
                           </div>
