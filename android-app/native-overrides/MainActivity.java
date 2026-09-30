@@ -34,6 +34,8 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
         launchStartedAt = System.currentTimeMillis();
 
         SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+        super.onCreate(savedInstanceState);
+
         boolean firstLaunch = !getSharedPreferences("clash_iq_prefs", Context.MODE_PRIVATE)
                 .getBoolean("splash_seen", false);
         long splashDuration = firstLaunch ? 3000L : 1800L;
@@ -48,7 +50,6 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
                     .withEndAction(splashProvider::remove)
                     .start();
         });
-        super.onCreate(savedInstanceState);
 
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         getWindow().setStatusBarColor(Color.rgb(7, 9, 13));
