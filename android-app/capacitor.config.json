@@ -4,6 +4,6 @@
   "webDir":"www",
   "backgroundColor":"#07090d",
   "server":{"url":"https://clash-iq2-testing.onrender.com","cleartext":false,"errorPath":"error.html"},
-  "android":{"allowMixedContent":false,"webContentsDebuggingEnabled":false},
+  "android":{"allowMixedContent":false,"webContentsDebuggingEnabled":true},
   "plugins":{"SocialLogin":{"providers":{"google":true,"facebook":false,"apple":false,"twitter":false},"logLevel":1}}
 }
