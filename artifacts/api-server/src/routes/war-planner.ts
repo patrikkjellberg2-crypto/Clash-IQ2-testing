@@ -15,7 +15,7 @@ const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
 
-const MAX_INPUT_CHARS = 14000;
+const MAX_INPUT_CHARS = 10000;
 const MAX_OUTPUT_TOKENS = 1800;
 
 type AnyObject = Record<string, any>;
@@ -90,8 +90,7 @@ async function clashKingGet<T>(path: string): Promise<T> {
 
 function compactAttack(attack: AnyObject) {
   return {
-    attackerTag: str(attack?.attackerTag),
-    defenderTag: str(attack?.defenderTag),
+    defenderPosition: num(attack?.defenderMapPosition ?? attack?.defenderPosition),
     stars: num(attack?.stars),
     destruction: num(attack?.destructionPercentage),
     order: num(attack?.order),
@@ -130,7 +129,7 @@ function compactSide(side: AnyObject | null) {
         .sort(
           (a: AnyObject, b: AnyObject) => a.position - b.position,
         )
-        .slice(0, 30)
+        .slice(0, 20)
     : [];
 
   return {
@@ -341,7 +340,7 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
     const compact = compactWar(war);
     const performance = await listPlayerPerformance(clanTag).catch(() => []);
     const performanceByTag = new Map(performance.map((row: any) => [String(row.playerTag || "").toUpperCase(), row]));
-    const performanceData = compact.clan.members.map((member: AnyObject) => {
+    const performanceData = compact.clan.members.slice(0, 20).map((member: AnyObject) => {
       const row = performanceByTag.get(String(member.tag || "").toUpperCase());
       if (!row) return null;
       return { tag: row.playerTag, name: row.playerName, form: row.trend, recentWars: num(row.recentWars), recentAvgStars: num(row.recentAvgStars), recentAvgDestruction: num(row.recentAvgDestruction), threeStarRate: num(row.threeStarRate), attacksUsed: num(row.attacksUsed), missedAttacks: num(row.missedAttacks) };
