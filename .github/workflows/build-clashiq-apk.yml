@@ -127,7 +127,7 @@ jobs:
               s = s.replace('</application>', receiver + '    </application>', 1)
 
           if 'android:scheme="clash' + 'iq"' not in s:
-              activity = re.search(r'(?ms)(\s*<activity\\b(?=[^>]*android:name="\\.MainActivity")[^>]*>.*?</activity>)', s)
+              activity = re.search(r'(?ms)(\s*<activity(?=[^>]*android:name="\.MainActivity")[^>]*>.*?</activity>)', s)
               if not activity:
                   raise SystemExit('MainActivity activity block not found')
               scheme = 'clash' + 'iq'
