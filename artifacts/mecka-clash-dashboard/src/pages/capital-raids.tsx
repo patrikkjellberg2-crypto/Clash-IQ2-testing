@@ -206,7 +206,13 @@ export default function CapitalRaidsPage() {
                 <MiniCard label="League" value={league} />
               </div>
 
-              <div className="mt-6 flex items-center justify-between border-b border-white/[0.06] pb-3">
+              <details className="group mt-6 overflow-hidden rounded-2xl border border-white/[0.06] bg-white/[0.015]">
+                <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3 hover:bg-white/[.025] [&::-webkit-details-marker]:hidden">
+                  <div><p className="text-[9px] font-black uppercase tracking-[0.15em] text-amber-300">Detailed roster</p><h3 className="mt-1 text-sm font-bold">Participants</h3></div>
+                  <span className="rounded-lg border border-amber-400/20 bg-amber-400/[.06] px-2.5 py-1 text-[10px] font-black text-amber-300">members.length players · ⌄</span>
+                </summary>
+                <div className="border-t border-white/[.06] px-4 pb-2">
+
                 <div className="flex items-center gap-2">
                   <Users className="size-4 text-amber-300" />
                   <h3 className="text-sm font-bold">Participants</h3>
@@ -251,7 +257,9 @@ export default function CapitalRaidsPage() {
                 <p className="mt-4 text-sm text-slate-500">
                   No member details are available for this season.
                 </p>
-              )}
+              )}                </div>
+              </details>
+
             </article>
           </section>
         </>
