@@ -329,6 +329,7 @@ export type PlayerPerformanceRow = {
   defenseAvgStarsConceded: number;
   defenseAvgDestructionConceded: number;
   defenseHoldRate: number;
+  townHallLevel: number;
 };
 
 /**
@@ -352,7 +353,7 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
     .orderBy(desc(warArchiveTable.endTime));
 
   type AttackSample = { stars: number; destruction: number };
-  type PlayerSample = { name: string; possible: number; attacks: AttackSample[] };
+  type PlayerSample = { name: string; townHallLevel: number; possible: number; attacks: AttackSample[] };
   type DefenseSample = { stars: number; destruction: number };
   const byPlayer = new Map<string, { name: string; wars: PlayerSample[]; defenses: DefenseSample[] }>();
 
@@ -374,6 +375,7 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
       const attacks = Array.isArray(member?.attacks) ? member.attacks : [];
       const sample: PlayerSample = {
         name: str(member?.name),
+        townHallLevel: num(member?.townhallLevel),
         possible: possiblePerPlayer,
         attacks: attacks.map((attack: Dict) => ({
           stars: num(attack?.stars),
@@ -479,6 +481,7 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
             1,
           )
         : 0,
+      townHallLevel: Math.max(...counted.map((war) => war.townHallLevel), 0),
     });
   }
 
