@@ -3,7 +3,6 @@ import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import {
   ArrowLeft,
   BarChart3,
@@ -376,7 +375,6 @@ export default function WarCenterPage() {
         <AppSidebar clanName={label(asDict(dashboard.clan).name, 'Mecka Clash')} clanTag={label(dashboard.clanTag, '#2Q0Q82C9R')} />
 
         <main className="min-w-0 flex-1">
-          <ClashIQInlineBanner />
           <button
             type="button"
             aria-label="Go back"
