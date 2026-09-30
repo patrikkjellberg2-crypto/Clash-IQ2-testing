@@ -3,7 +3,6 @@ import { Link } from 'wouter';
 import { ArrowLeft, RefreshCw, Trophy, WifiOff } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { publishWarChatMessage } from '@/lib/war-chat';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import {
   WARS_EVENT,
   readWars,
@@ -344,7 +343,6 @@ export default function WarArchivePage() {
         <AppSidebar clanName="CLASHIQ" clanTag="" />
 
         <main className="min-w-0 flex-1">
-          <ClashIQInlineBanner />
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-4 pb-16 pt-2 md:px-7">
             <Link
