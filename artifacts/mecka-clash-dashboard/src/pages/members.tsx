@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 
 type Dict = Record<string, unknown>;
 
@@ -188,7 +187,6 @@ export default function MembersPage() {
         />
 
         <main className="min-w-0 flex-1 !pt-0">
-          <ClashIQInlineBanner />
           {/* Header */}
           <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between">
