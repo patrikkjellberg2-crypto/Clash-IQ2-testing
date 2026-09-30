@@ -196,9 +196,9 @@ export default function ActivityPage() {
                     <Flame className="size-5 text-amber-300" />
                     <p className="text-[9px] font-black uppercase tracking-[.22em] text-amber-300">CWL Selection</p>
                   </div>
-                  <h2 className="mt-1 text-2xl font-black">Hetast just nu</h2>
+                  <h2 className="mt-1 text-2xl font-black">Hottest right now</h2>
                   <p className="mt-1 max-w-2xl text-xs leading-5 text-slate-500">
-                    Långsiktig form väger tyngst. Nya spelare får lägre säkerhet tills fler attacker och krig finns i historiken. Town Hall-nivå och aktuell trend vägs också in.
+                    Long-term form carries the most weight. New players have lower confidence until more attacks and wars are in the history. Town Hall level and current trend are also included.
                   </p>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
