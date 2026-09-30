@@ -183,6 +183,7 @@ jobs:
           grep -n -A4 -B2 'android:name=".MainActivity"' android/app/src/main/AndroidManifest.xml
           grep -q 'android:theme="@style/AppTheme.NoActionBar"' android/app/src/main/AndroidManifest.xml
           grep -q 'parent="Theme.AppCompat.DayNight.NoActionBar"' android/app/src/main/res/values/styles.xml
+          grep -q 'android.permission.POST_NOTIFICATIONS' android/app/src/main/AndroidManifest.xml
 
       - name: Build debug APK
         working-directory: android-app/android
