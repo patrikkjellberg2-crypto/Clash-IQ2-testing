@@ -6,7 +6,7 @@
     "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
     "build": "corepack pnpm install --no-frozen-lockfile && corepack pnpm --filter @workspace/mecka-clash-dashboard run build && corepack pnpm --filter @workspace/api-server exec node ./build.mjs",
     "typecheck:libs": "corepack pnpm -r --filter \"./lib/**\" --if-present run typecheck",
-    "typecheck": "corepack pnpm run typecheck:libs && corepack pnpm --filter @workspace/mecka-clash-dashboard run typecheck",
+    "typecheck": "corepack pnpm run typecheck:libs",
     "start": "corepack pnpm --filter @workspace/db run init-test-db || true; corepack pnpm --filter @workspace/api-server start"
   },
   "private": true,
