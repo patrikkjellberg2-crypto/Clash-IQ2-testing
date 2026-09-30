@@ -5,6 +5,7 @@ import { MemberDetailsDialog } from "@/components/member-details-dialog";
 import WarTimer from "@/components/WarTimer";
 import { AppSidebar } from "@/components/app-sidebar";
 import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
+import { CommandIntelligenceStrip } from "@/components/command-intelligence-strip";
 import {
   ArrowRight,
   BrainCircuit,
@@ -833,6 +834,18 @@ export default function DashboardPage() {
                 </div>
               </div>
             </header>
+
+            <CommandIntelligenceStrip
+              eyebrow="Command snapshot"
+              title="What matters right now"
+              description="A compact readout of the live clan, war and Capital picture before the deeper dashboard data."
+              items={[
+                { label: "War state", value: s(war.state, "No active war"), detail: s(warOpponent.name, "No opponent") },
+                { label: "War score", value: String(n(warClan.stars)) + "–" + String(n(warOpponent.stars)), detail: "Current stars" },
+                { label: "Clan roster", value: memberCount !== null ? String(memberCount) + "/50" : "—", detail: "Live members" },
+                { label: "Capital", value: compact(n(latest.capitalTotalLoot)), detail: "Latest season loot" },
+              ]}
+            />
 
             <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-6">
               <Stat

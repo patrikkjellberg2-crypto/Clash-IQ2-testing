@@ -3,6 +3,7 @@ import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { sendClashIQNotification } from '@/lib/notifications';
 import WarTimer from '@/components/WarTimer';
+import { CommandIntelligenceStrip } from '@/components/command-intelligence-strip';
 import { publishWarChatMessage } from '@/lib/war-chat';
 import {
   ArrowRight,
@@ -341,6 +342,18 @@ export default function AICoachPage() {
                 <WarTimer currentWar={war} compact />
               </div>
             </section>
+
+            <CommandIntelligenceStrip
+              eyebrow="AI command snapshot"
+              title="Give the coach the right context"
+              description="The coach works from the current war board and your selected analysis mode."
+              items={[
+                { label: "Mode", value: mode, detail: "Current analysis focus" },
+                { label: "Opponent", value: opponentName, detail: s(war.state, "No active war") },
+                { label: "Clan tag", value: clanTag || "—", detail: "Data source" },
+                { label: "Status", value: loading ? "Analyzing" : answer ? "Analysis ready" : "Ready", detail: error ? "Attention required" : "AI Coach" },
+              ]}
+            />
 
             <section className="grid gap-5 xl:grid-cols-[.8fr_1.2fr]">
               <article className="rounded-2xl border border-white/[.07] bg-[#06111b]/90 p-5 shadow-[0_12px_45px_rgba(0,0,0,.2)]">

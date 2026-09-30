@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
+import { CommandIntelligenceStrip } from '@/components/command-intelligence-strip';
 
 type Dict = Record<string, unknown>;
 
@@ -221,6 +222,17 @@ export default function MembersPage() {
           </header>
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
+            <CommandIntelligenceStrip
+              eyebrow="Roster snapshot"
+              title="Who needs attention"
+              description="Start with roster size and composition before drilling into individual members."
+              items={[
+                { label: "Members", value: String(members.length), detail: "Visible roster" },
+                { label: "Leadership", value: String(leaders), detail: "Leader / Co-Leader" },
+                { label: "Avg TH", value: averageTownHall, detail: "Roster average" },
+                { label: "Trophies", value: totalTrophies.toLocaleString(), detail: "Combined trophies" },
+              ]}
+            />
             {/* Hero */}
             <section className="relative overflow-hidden rounded-3xl border border-amber-400/15 bg-gradient-to-br from-[#17130b] via-[#0e1117] to-[#090b10] p-6 shadow-2xl md:p-8">
               <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-amber-400/10 blur-3xl" />

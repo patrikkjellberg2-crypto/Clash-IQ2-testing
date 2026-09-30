@@ -3,6 +3,7 @@ import { ArrowLeft, BarChart3, Swords, Target, Trophy, TrendingUp } from 'lucide
 import { Link } from 'wouter';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
+import { CommandIntelligenceStrip } from '@/components/command-intelligence-strip';
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => v && typeof v === 'object' ? (v as Dict) : {};
@@ -362,6 +363,18 @@ export default function StatisticsPage() {
     <button type="button" aria-label="Go back" title="Back" onClick={() => { if (window.history.length > 1) window.history.back(); else window.location.href = '/'; }} className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-amber-400/40 bg-[#0b0d12]/95 text-amber-300 shadow-[0_0_18px_rgba(245,190,60,.18)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-200 active:scale-95 lg:left-[278px]"><ArrowLeft className="size-4"/></button>
     <div className="mx-auto max-w-[1400px] px-5 pb-10 pt-3 md:px-8 md:pt-4">
     <header className="border-b border-white/[.06] pb-5"><p className="text-[9px] font-black uppercase tracking-[.22em] text-slate-500">CLASHIQ / Intelligence</p><h1 className="mt-1 text-3xl font-black tracking-[-.04em]">Statistics</h1><p className="mt-1 max-w-2xl text-sm text-slate-500">A clear summary of the verified war data available to Clash IQ.</p></header>
+    <CommandIntelligenceStrip
+      eyebrow="Performance snapshot"
+      title="The numbers to watch"
+      description="Start with the current record, then open the deeper history and roster analysis below."
+      items={[
+        { label: "Win rate", value: String(stats.winRate) + "%", detail: String(stats.wins) + " wins · " + String(stats.losses) + " losses" },
+        { label: "Wars tracked", value: String(stats.completed), detail: "Completed wars" },
+        { label: "Three-star rate", value: stats.threeStarRate == null ? "—" : String(stats.threeStarRate) + "%", detail: String(stats.threeStars) + " three-stars" },
+        { label: "Avg destruction", value: stats.avgDestruction == null ? "—" : String(stats.avgDestruction) + "%", detail: "Per completed war" },
+      ]}
+    />
+
     <section className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
       <StatCard icon={Trophy} label="Win Rate" value={`${stats.winRate}%`} detail={`${stats.wins} wins · ${stats.losses} losses · ${stats.draws} draws`}/>
       <StatCard icon={Swords} label="Completed Wars" value={String(stats.completed)} detail="Wars in the available log"/>

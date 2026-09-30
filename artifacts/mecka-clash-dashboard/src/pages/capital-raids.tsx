@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Castle, Coins, RefreshCw, Swords, Trophy, Users } from "lucide-react";
 import { useGetClashDashboard } from "@workspace/api-client-react";
 import { ClashIQPageShell } from "@/components/clashiq-page-shell";
+import { CommandIntelligenceStrip } from "@/components/command-intelligence-strip";
 
 type D = Record<string, any>;
 const obj = (v: any): D => v && typeof v === "object" ? v : {};
@@ -136,6 +137,18 @@ export default function CapitalRaidsPage() {
           </div>
         </div>
       </section>
+
+      <CommandIntelligenceStrip
+        eyebrow="Capital snapshot"
+        title="Raid weekend at a glance"
+        description="Use the headline numbers first, then inspect the selected season and player contribution below."
+        items={[
+          { label: "Seasons", value: String(seasons.length), detail: "Raid seasons tracked" },
+          { label: "Total loot", value: compact(totalLoot), detail: "Across archived seasons" },
+          { label: "Average loot", value: compact(averageLoot), detail: "Per season" },
+          { label: "Raids", value: String(totalRaids), detail: "Completed raids" },
+        ]}
+      />
 
       {seasons.length === 0 ? (
         <section className="rounded-2xl border border-white/[0.07] bg-[#0b1119] p-8 text-center">

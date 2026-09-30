@@ -3,6 +3,7 @@ import { useGetClashDashboard } from '@workspace/api-client-react';
 import { Link } from 'wouter';
 import { AppSidebar } from '@/components/app-sidebar';
 import WarTimer from '@/components/WarTimer';
+import { CommandIntelligenceStrip } from '@/components/command-intelligence-strip';
 import {
   ArrowLeft,
   BarChart3,
@@ -368,6 +369,8 @@ export default function WarCenterPage() {
   const stars = num(clan.stars);
   const opponentStars = num(opponent.stars);
   const destruction = Math.round(num(clan.destructionPercentage));
+  const totalAttacksUsed = memberStats.reduce((sum, item) => sum + item.attacksUsed, 0);
+  const totalAttacksRemaining = memberStats.reduce((sum, item) => sum + item.attacksRemaining, 0);
 
   return (
     <div className="clashiq-overview min-h-screen bg-[#07090d] text-white">
@@ -390,6 +393,17 @@ export default function WarCenterPage() {
 
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-5 py-6 md:px-8 md:py-8">
+            <CommandIntelligenceStrip
+              eyebrow="Battlefield snapshot"
+              title="War command overview"
+              description="The four signals that should drive the next attack decision."
+              items={[
+                { label: "War state", value: str(currentWar.state, "Unknown"), detail: "Current board status" },
+                { label: "Score", value: String(stars) + "–" + String(opponentStars), detail: String(destruction) + "% destruction" },
+                { label: "Attacks used", value: String(totalAttacksUsed), detail: String(totalAttacksRemaining) + " remaining" },
+                { label: "Targets", value: String(opponentMembers.length), detail: String(memberStats.filter(item => item.attacksRemaining > 0).length) + " players with attacks left" },
+              ]}
+            />
             <section
               className="premium-card war-command-card overflow-hidden rounded-2xl"
               data-testid="card-war-hero"
