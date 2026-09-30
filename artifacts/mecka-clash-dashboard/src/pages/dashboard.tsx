@@ -903,8 +903,6 @@ export default function DashboardPage() {
               />
             </section>
 
-            <RecentAttacksWidget war={war} />
-
             <section className="grid gap-5 xl:grid-cols-2 2xl:grid-cols-[1.35fr_.9fr_.8fr]">
               <WarCard
                 war={war}
@@ -971,7 +969,18 @@ export default function DashboardPage() {
               clanName={clanName}
             />
 
-            <section className="premium-card overflow-hidden rounded-2xl">
+            <details className="group overflow-hidden rounded-2xl border border-white/[.08] bg-[#0b1119]/80 shadow-[0_16px_50px_rgba(0,0,0,.16)]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 hover:bg-white/[.025] [&::-webkit-details-marker]:hidden">
+                <div>
+                  <p className="section-kicker">Deeper intelligence</p>
+                  <h2 className="mt-1 font-black tracking-tight">Clan details</h2>
+                  <p className="mt-1 text-xs text-muted-foreground">Member activity, roster, recent wars and quick actions.</p>
+                </div>
+                <span className="rounded-lg border border-amber-400/20 bg-amber-400/[.06] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-300 transition group-open:rotate-180">⌄</span>
+              </summary>
+              <div className="space-y-5 border-t border-white/[.06] p-4 md:p-5">
+                <RecentAttacksWidget war={war} />
+                <section className="premium-card overflow-hidden rounded-2xl">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-5 py-4">
                 <div>
                   <div>
@@ -1241,7 +1250,9 @@ export default function DashboardPage() {
                   )}
                 </div>
               </article>
-            </section>
+              </section>
+              </div>
+            </details>
 
             <footer className="flex justify-between border-t border-white/10 pt-4 text-[10px] text-muted-foreground">
               <span>
