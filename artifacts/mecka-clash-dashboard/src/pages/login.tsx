@@ -49,7 +49,7 @@ export default function Login(){
             });
             const d=await r.json();
             if(!r.ok)throw Error(d.error);
-            nav(d.user?.player_tag?"/":"/connect-player");
+            nav("/account");
           }catch(e){
             setError(e instanceof Error?e.message:"Google login failed");
           }
