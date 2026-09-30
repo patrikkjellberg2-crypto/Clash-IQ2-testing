@@ -340,17 +340,38 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
     const compact = compactWar(war);
     const performance = await listPlayerPerformance(clanTag).catch(() => []);
     const performanceByTag = new Map(performance.map((row: any) => [String(row.playerTag || "").toUpperCase(), row]));
-    const performanceData = compact.clan.members.slice(0, 12).map((member: AnyObject) => {
+    let performanceData = compact.clan.members.slice(0, 12).map((member: AnyObject) => {
       const row = performanceByTag.get(String(member.tag || "").toUpperCase());
       if (!row) return null;
-      return { tag: row.playerTag, name: row.playerName, form: row.trend, recentWars: num(row.recentWars), recentAvgStars: num(row.recentAvgStars), recentAvgDestruction: num(row.recentAvgDestruction), threeStarRate: num(row.threeStarRate), attacksUsed: num(row.attacksUsed), missedAttacks: num(row.missedAttacks) };
+      return {
+        tag: row.playerTag,
+        name: row.playerName,
+        form: row.trend,
+        recentWars: num(row.recentWars),
+        recentAvgStars: num(row.recentAvgStars),
+        recentAvgDestruction: num(row.recentAvgDestruction),
+        threeStarRate: num(row.threeStarRate),
+        attacksUsed: num(row.attacksUsed),
+        missedAttacks: num(row.missedAttacks),
+      };
     }).filter(Boolean);
-    const warData = JSON.stringify(compact);
-    const intelligenceData = JSON.stringify(performanceData);
 
-    if ((warData.length + intelligenceData.length + plannerData.length) > MAX_INPUT_CHARS) {
+    const warData = JSON.stringify(compact);
+
+    // Player-form intelligence is optional; keep the complete war roster first.
+    while (
+      warData.length + JSON.stringify(performanceData).length + plannerData.length > MAX_INPUT_CHARS &&
+      performanceData.length > 0
+    ) {
+      performanceData = performanceData.slice(0, -1);
+    }
+
+    const intelligenceData = JSON.stringify(performanceData);
+    const totalInputChars = warData.length + intelligenceData.length + plannerData.length;
+
+    if (totalInputChars > MAX_INPUT_CHARS) {
       return res.status(413).json({
-        error: `War-data är fortfarande för stor efter komprimering (${warData.length + intelligenceData.length + plannerData.length} tecken).`,
+        error: `War-data är för stor även efter komprimering (${totalInputChars} tecken).`,
       });
     }
 
