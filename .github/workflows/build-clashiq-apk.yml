@@ -96,11 +96,19 @@ jobs:
           p=Path('android/app/src/main/AndroidManifest.xml')
           s=p.read_text()
 
-          # Add notification permission next to INTERNET, tolerating generated-manifest whitespace.
+          # Ensure INTERNET permission exists inside <manifest>, outside <application>.
+          if 'android.permission.INTERNET' not in s:
+              application = re.search(r'(?m)^\\s*<application\\b', s)
+              if not application:
+                  raise SystemExit('<application> not found in generated AndroidManifest.xml')
+              internet_permission='    <uses-permission android:name="android.permission.INTERNET" />\\n'
+              s=s[:application.start()] + internet_permission + s[application.start():]
+
+          # Add notification permission next to INTERNET.
           if 'android.permission.POST_NOTIFICATIONS' not in s:
               internet = re.search(r'(?m)^\\s*<uses-permission\\s+android:name="android\\.permission\\.INTERNET"\\s*/>\\s*$', s)
               if not internet:
-                  raise SystemExit('INTERNET permission not found in generated AndroidManifest.xml')
+                  raise SystemExit('INTERNET permission could not be located after insertion')
               notification_permission='    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />'
               s=s[:internet.end()] + '\\n' + notification_permission + s[internet.end():]
 
