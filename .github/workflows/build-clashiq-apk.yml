@@ -174,8 +174,8 @@ jobs:
 
           p = Path('android/app/src/main/AndroidManifest.xml')
           s = p.read_text()
-          pattern = r'(<activity\\b(?=[^>]*android:name="\\.MainActivity")[^>]*\\bandroid:theme=")[^"]+(")'
-          updated, count = re.subn(pattern, r'\\1@style/AppTheme.NoActionBarLaunch\\2', s, count=1)
+          pattern = r'(<activity\b(?=[^>]*android:name="\.MainActivity")[^>]*\bandroid:theme=")[^"]+(")'
+          updated, count = re.subn(pattern, r'\1@style/AppTheme.NoActionBarLaunch\2', s, count=1)
           if count != 1:
               raise SystemExit('Could not set MainActivity theme in AndroidManifest.xml')
           p.write_text(updated)
