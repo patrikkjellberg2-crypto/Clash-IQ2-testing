@@ -295,11 +295,30 @@ html.clashiq-compact .sidebar-nav {
 
 /* Tablet landscape uses the full command-center sidebar instead of the mobile overlay. */
 @media (orientation: landscape) and (min-width: 700px) and (max-width: 1600px) {
-  /* Tablet landscape only: use the command-center shell, not the mobile overlay. */
-  .clashiq-landscape-sidebar { display: flex !important; }
+  /* Tablet landscape only: keep the command-center sidebar fixed and put every
+     page beside it. Portrait/mobile layouts are intentionally untouched. */
+  .clashiq-landscape-sidebar {
+    display: flex !important;
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: 260px !important;
+    height: 100dvh !important;
+    z-index: 40 !important;
+  }
   .clashiq-landscape-mobile-trigger { display: none !important; }
   .clashiq-landscape-mobile-overlay { display: none !important; }
   .clashiq-landscape-no-top-clearance { padding-top: 0 !important; }
-  .clashiq-global-back { left: 278px !important; top: 16px !important; }
-  .clashiq-landscape-sidebar + * { min-width: 0; }
+
+  /* AppSidebar is the first child on these command-center pages. */
+  .clashiq-landscape-sidebar ~ main,
+  .clashiq-landscape-sidebar ~ div {
+    margin-left: 260px !important;
+    min-width: 0 !important;
+  }
+
+  /* Keep fixed controls aligned with the right edge of the sidebar. */
+  .clashiq-global-back {
+    left: 278px !important;
+    top: 16px !important;
+  }
 }
