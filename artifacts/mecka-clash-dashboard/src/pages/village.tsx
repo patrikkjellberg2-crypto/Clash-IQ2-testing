@@ -15,7 +15,6 @@ import {
   Zap,
 } from 'lucide-react';
 import { AppSidebar } from '@/components/app-sidebar';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import { getUpgradeCost, type UpgradeCost } from '@/lib/upgrade-catalog';
 
 type Dict = Record<string, any>;
@@ -636,7 +635,6 @@ export default function VillagePage() {
         <AppSidebar clanName="CLASHIQ" clanTag={String(village?.tag || '')} />
 
         <main className="min-w-0 flex-1">
-          <ClashIQInlineBanner />
 
           <div className="mx-auto max-w-[1400px] space-y-6 px-4 pb-16 pt-2 md:px-7">
             <div>
