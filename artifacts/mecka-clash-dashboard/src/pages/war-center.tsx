@@ -127,15 +127,6 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           The official Clash of Clans service did not respond. Try again when the connection is available.
         </p>
-        <button
-          type="button"
-          onClick={onRetry}
-          className="mt-6 inline-flex h-10 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition hover:brightness-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          data-testid="button-retry-war-center"
-        >
-          <RefreshCw className="size-4" />
-          Try again
-        </button>
       </section>
     </div>
   );
