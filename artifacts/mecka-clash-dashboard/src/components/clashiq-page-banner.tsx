@@ -1,9 +1,23 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { ArrowLeft } from 'lucide-react';
 
 export function ClashIQPageBanner({ children }: { children: ReactNode }) {
   const [location] = useLocation();
+
+  useEffect(() => {
+    const compactLandscape =
+      window.screen.width > window.screen.height &&
+      window.innerWidth < 1024;
+    document.documentElement.classList.toggle(
+      'clashiq-compact-landscape',
+      compactLandscape,
+    );
+    return () => {
+      document.documentElement.classList.remove('clashiq-compact-landscape');
+    };
+  }, []);
+
   const needsTopClearance = !['/', '/welcome', '/login'].includes(location);
   const publicRoute = ['/', '/welcome', '/login', '/website', '/account'].includes(location);
   return (
