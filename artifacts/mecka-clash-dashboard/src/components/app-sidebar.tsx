@@ -246,7 +246,7 @@ export function AppSidebar({
 
   return (
     <>
-      <aside className={mobileOnly ? "hidden" : "hidden h-[100dvh] w-[260px] shrink-0 border-r border-white/[0.06] bg-[#07090d] lg:flex"}>
+      <aside className={mobileOnly ? "hidden" : "hidden h-[100dvh] w-[260px] shrink-0 border-r border-white/[0.06] bg-[#07090d] lg:flex clashiq-landscape-sidebar"}>
         <SidebarContent
           clanName={clanName}
           clanTag={clanTag}
@@ -259,7 +259,7 @@ export function AppSidebar({
           type="button"
           onClick={() => setInternalMobileOpen(true)}
           aria-label="Open navigation"
-          className="fixed left-4 top-4 z-50 grid size-11 place-items-center rounded-xl border border-amber-400/40 bg-[#0b0d12]/95 text-amber-300 shadow-[0_0_18px_rgba(245,190,60,.18)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-200 active:scale-95 lg:hidden"
+          className="fixed left-4 top-4 z-50 grid size-11 place-items-center rounded-xl border border-amber-400/40 bg-[#0b0d12]/95 text-amber-300 shadow-[0_0_18px_rgba(245,190,60,.18)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-200 active:scale-95 lg:hidden clashiq-landscape-mobile-trigger"
         >
           <Menu className="size-5" />
         </button>
