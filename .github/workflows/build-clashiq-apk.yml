@@ -37,9 +37,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+
       - name: Verify web app typecheck and build
         working-directory: .
         run: |
@@ -47,20 +49,26 @@ jobs:
           corepack pnpm install --no-frozen-lockfile
           corepack pnpm run typecheck
           corepack pnpm run build
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
+
       - uses: gradle/actions/setup-gradle@v4
+
       - name: Install Capacitor
         run: npm install --no-audit --no-fund
+
       - name: Point the app at the hosted dashboard
         run: |
           node -e 'const fs=require("fs"); const c=JSON.parse(fs.readFileSync("capacitor.config.json","utf8")); c.server.url=process.env.SERVER_URL; fs.writeFileSync("capacitor.config.json",JSON.stringify(c,null,2));'
+
       - name: Generate Android project
         run: |
           npx cap add android
           npx cap sync android
+
       - name: Install native Clash IQ Android overrides
         run: |
           mkdir -p android/app/src/main/java/com/clashiq/app
@@ -68,6 +76,7 @@ jobs:
           mkdir -p android/app/src/main/res/drawable
           mkdir -p android/app/src/main/res/xml
           mkdir -p android/app/src/main/res/values
+
           cp native-overrides/MainActivity.java android/app/src/main/java/com/clashiq/app/MainActivity.java
           cp native-overrides/widget/ClashIQWidgetProvider.java android/app/src/main/java/com/clashiq/app/ClashIQWidgetProvider.java
           cp native-overrides/widget/ClashIQWidgetUpdater.java android/app/src/main/java/com/clashiq/app/ClashIQWidgetUpdater.java
@@ -75,15 +84,34 @@ jobs:
           cp native-overrides/widget/widget_bg.xml android/app/src/main/res/drawable/widget_bg.xml
           cp native-overrides/widget/widget_info.xml android/app/src/main/res/xml/widget_info.xml
           cp native-overrides/widget/widget_strings.xml android/app/src/main/res/values/widget_strings.xml
+
           python3 - <<'PY'
           from pathlib import Path
           p=Path('android/app/src/main/AndroidManifest.xml')
           s=p.read_text()
-          receiver='''        <receiver android:name=".ClashIQWidgetProvider" android:exported="true">\n            <intent-filter>\n                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />\n                <action android:name="com.clashiq.app.WIDGET_UPDATE" />\n            </intent-filter>\n            <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info" />\n        </receiver>\n'''
+          receiver='''        <receiver android:name=".ClashIQWidgetProvider" android:exported="true">
+              <intent-filter>
+                  <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                  <action android:name="com.clashiq.app.WIDGET_UPDATE" />
+              </intent-filter>
+              <meta-data android:name="android.appwidget.provider" android:resource="@xml/widget_info" />
+          </receiver>
+          '''
           if 'ClashIQWidgetProvider' not in s:
               s=s.replace('</application>', receiver+'    </application>')
           p.write_text(s)
           PY
+
+          test -f android/app/src/main/java/com/clashiq/app/MainActivity.java
+          grep -q 'implements ModifiedMainActivityForSocialLoginPlugin' android/app/src/main/java/com/clashiq/app/MainActivity.java
+          grep -q 'handleGoogleLoginIntent' android/app/src/main/java/com/clashiq/app/MainActivity.java
+          echo "Verified generated MainActivity contains Social Login bridge implementation."
+
+      - name: Install fixed debug keystore
+        run: |
+          cp debug.keystore android/debug.keystore
+          chmod 600 android/debug.keystore
+          keytool -list -v -keystore android/debug.keystore -alias androiddebugkey -storepass android | grep -E 'Alias name:|SHA1:|SHA-1:'
 
       - name: Update Android toolchain for Social Login
         run: |
@@ -92,6 +120,33 @@ jobs:
           sed -i -E 's/compileSdk[[:space:]]*=[[:space:]]*[0-9]+/compileSdk = 36/' android/variables.gradle
           sed -i 's/targetSdk = [0-9]*/targetSdk = 35/' android/variables.gradle
           sed -i 's#gradle-[0-9.]*-bin.zip#gradle-8.11.1-bin.zip#' android/gradle/wrapper/gradle-wrapper.properties
+
+      - name: Configure fixed debug signing
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('android/app/build.gradle')
+          s=p.read_text()
+          marker='android {'
+          block='''android {
+              signingConfigs {
+                  debug {
+                      storeFile file("${rootProject.projectDir}/debug.keystore")
+                      storePassword "android"
+                      keyAlias "androiddebugkey"
+                      keyPassword "android"
+                      storeType "JKS"
+                  }
+              }
+          '''
+          if 'storeFile file("${rootProject.projectDir}/debug.keystore")' not in s:
+              if marker not in s:
+                  raise SystemExit('android { block not found')
+              s=s.replace(marker, block, 1)
+          p.write_text(s)
+          PY
+          grep -n -A8 'signingConfigs' android/app/build.gradle
+
       - name: Force AndroidX Browser version for Social Login
         run: |
           cat > android/force-browser.gradle <<'EOF'
@@ -101,6 +156,7 @@ jobs:
             }
           }
           EOF
+
       - name: Apply icon resources and version
         run: |
           cp -r resources/res/. android/app/src/main/res/
@@ -108,9 +164,17 @@ jobs:
           sed -i -E "s/versionCode [0-9]+/versionCode ${VERSION_CODE}/" android/app/build.gradle
           sed -i -E "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" android/app/build.gradle
           grep -n "versionCode\|versionName" android/app/build.gradle
+
       - name: Build debug APK
         working-directory: android-app/android
         run: ./gradlew -I force-browser.gradle assembleDebug --no-daemon --stacktrace
+
+      - name: Verify APK signing certificate
+        working-directory: android-app/android
+        run: |
+          apksigner verify --verbose app/build/outputs/apk/debug/app-debug.apk
+          apksigner verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep -E 'Signer #1 certificate SHA-256 digest|Signer #1 certificate SHA-1 digest'
+
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
