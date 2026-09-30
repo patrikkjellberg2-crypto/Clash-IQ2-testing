@@ -412,15 +412,28 @@ function buildPrompt(data: Dict, mode: "clan" | "opponent" | "question", questio
   const clan = data.clan || {};
   const clanTag = normalizeTag(String(clan.tag || data.clanTag || DEFAULT_CLAN_TAG));
 
-  const facts = [
+  // Keep prompts intentionally compact. Opponent analysis only needs the live
+  // battlefield; sending the full roster, player details, war log and Capital
+  // history at the same time made the prompt unnecessarily large on mobile.
+  const clanSummary = [
     `CLAN: ${clan.name || "Unknown"} ${clanTag}`,
     `LEVEL=${number(clan.clanLevel)} MEMBERS=${number(clan.members)} WAR_WINS=${number(clan.warWins)} WAR_LOSSES=${number(clan.warLosses)} WIN_STREAK=${number(clan.warWinStreak)}`,
     `WAR_LEAGUE=${clan.warLeague?.name || "unknown"} CAPITAL_LEAGUE=${clan.capitalLeague?.name || "unknown"} CLAN_POINTS=${number(clan.clanPoints)} CAPITAL_POINTS=${number(clan.clanCapitalPoints)}`,
+  ].join("\n");
+
+  const fullFacts = [
+    clanSummary,
     `ROSTER (official member order):\n${rosterText(clan)}`,
     `DETAILED PLAYER DATA (first five members):\n${data.playerDetailsText || "No individual player detail was available."}`,
     `CURRENT WAR:\n${currentWarText(data.currentWar, clanTag)}`,
     `RECENT WAR LOG:\n${warlogText(data.warlog, clanTag)}`,
     `CAPITAL RAID HISTORY:\n${capitalText(data.capital)}`,
+  ].join("\n\n");
+
+  const opponentFacts = [
+    clanSummary,
+    `CURRENT WAR:\n${currentWarText(data.currentWar, clanTag)}`,
+    `RECENT WAR LOG (compact):\n${warlogText(data.warlog, clanTag).split("\n").slice(0, 6).join("\n")}`,
   ].join("\n\n");
 
   const instructions = mode === "question"
@@ -443,7 +456,7 @@ HARD THREAT RULES — THESE OVERRIDE ANY GENERAL WAR-STRATEGY HEURISTIC:
 - Unused attacks are FUTURE ATTACK CAPACITY, not active attacks and not proof that a particular player is dangerous.
 - If a player has no recorded attacks, describe them only as inactive/unplayed if relevant.
 - When recorded attacks exist, compare actual attack results. A lower Town Hall player with stronger recorded results can receive more threat attention than a higher Town Hall player with weaker or no recorded results.
-- Never invent target priorities from Town Hall level alone. If the API does not provide enough board evidence to establish a meaningful target order, explicitly say that target priority is not available from the current API data and state what must be checked in-game.
+- Never invent target priorities from Town Hall level alone. If the API does not provide enough board evidence to establish a meaningful target order, explicitly say that target priority is not available from the current API data and state what must be checked in-game before attacking.
 
 IMPORTANT OUTPUT RULES:
 - Use plain text only. Do NOT use Markdown symbols such as **, ##, backticks or tables.
@@ -517,9 +530,9 @@ Use only the supplied Capital Raid data. If unavailable, say so.
 Give exactly three short, concrete actions the clan should take next.`;
 
   const userQuestion = String(question || "").trim().slice(0, 1500);
+  const facts = mode === "opponent" ? opponentFacts : fullFacts;
   return `${instructions}\n\n${userQuestion ? `USER QUESTION:\n${userQuestion}\n\n` : ""}VERIFIED LIVE CLASH DATA:\n${facts}`;
 }
-
 async function getClanData(clanTag: string) {
   const encoded = encodeURIComponent(clanTag);
   const [clan, currentWar, warlog, capital] = await Promise.all([
