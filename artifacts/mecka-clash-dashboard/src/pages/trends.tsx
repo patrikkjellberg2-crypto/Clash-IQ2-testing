@@ -13,7 +13,6 @@ import {
 import { TrendingDown, TrendingUp, Minus, BarChart3, ArrowLeft } from "lucide-react";
 import { useGetClashDashboard } from "@workspace/api-client-react";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
 import { useLocation } from "wouter";
 
 type Dict = Record<string, unknown>;
@@ -104,7 +103,7 @@ export default function TrendsPage() {
     return (
       <div className="min-h-screen bg-[#07090d] text-white">
         <AppSidebar clanName={s(clan.name, "ClashIQ Clan")} clanTag={clanTag} />
-        <main className="min-w-0 lg:pl-0"><ClashIQInlineBanner /><div className="p-8 text-sm text-white/40">Loading Trends…</div></main>
+        <main className="min-w-0 lg:pl-0"><div className="p-8 text-sm text-white/40">Loading Trends…</div></main>
       </div>
     );
   }
@@ -115,7 +114,6 @@ export default function TrendsPage() {
     <div className="min-h-[100dvh] overflow-x-hidden bg-[#07090d] text-white">
       <AppSidebar clanName={clanName} clanTag={clanTag} />
       <main className="min-w-0 lg:pl-0">
-        <ClashIQInlineBanner />
 
         <button
           type="button"
