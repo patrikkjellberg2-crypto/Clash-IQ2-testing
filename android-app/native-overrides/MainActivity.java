@@ -1,7 +1,6 @@
 package com.clashiq.app;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -26,7 +25,6 @@ import ee.forgr.capacitor.social.login.SocialLoginPlugin;
 
 public class MainActivity extends BridgeActivity implements ModifiedMainActivityForSocialLoginPlugin {
     private final Handler handler = new Handler(Looper.getMainLooper());
-    private long launchStartedAt;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -65,11 +63,6 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
                         != PackageManager.PERMISSION_GRANTED) {
             handler.postDelayed(() ->
                     requestPermissions(new String[]{Manifest.permission.POST_NOTIFICATIONS}, 7001), 900L);
-        }
-
-        if (firstLaunch) {
-            getSharedPreferences("clash_iq_prefs", Context.MODE_PRIVATE)
-                    .edit().putBoolean("splash_seen", true).apply();
         }
     }
 
