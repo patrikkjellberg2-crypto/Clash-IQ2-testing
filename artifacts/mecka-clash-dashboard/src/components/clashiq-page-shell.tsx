@@ -25,19 +25,6 @@ export function ClashIQPageShell({
         <AppSidebar clanName={clanName} clanTag={clanTag} />
 
         <main className="min-w-0 flex-1 relative">
-          <button
-            type="button"
-            aria-label="Go back"
-            title="Back"
-            onClick={() => {
-              if (window.history.length > 1) window.history.back();
-              else window.location.href = '/';
-            }}
-            className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl clashiq-landscape-back-button border border-amber-400/40 bg-[#0b0d12]/95 text-amber-300 shadow-[0_0_18px_rgba(245,190,60,.18)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-200 active:scale-95 lg:left-[278px]"
-          >
-            <ArrowLeft className="size-4" />
-          </button>
-
           <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="min-w-0">
