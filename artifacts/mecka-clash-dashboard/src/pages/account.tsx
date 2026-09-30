@@ -38,13 +38,8 @@ export default function AccountPage(){
  const townHall=num(player?.townHallLevel??player?.town_hall_level), trophies=num(player?.trophies), best=num(player?.bestTrophies), warStars=num(player?.warStars), attacks=num(stats.totalAttacks), avg=num(stats.averageStarsPerAttack), three=attacks?Math.round(num(stats.threeStarAttacks)/attacks*100):0, activityScore=num(activity.score);
  const heroes=Array.isArray(player?.heroes)?player.heroes.length:0, troops=Array.isArray(player?.troops)?player.troops.length:0, achievements=Array.isArray(player?.achievements)?player.achievements.length:0;
  return <div className="min-h-screen bg-[#05070b] text-white">
-  <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070b]/95 backdrop-blur-xl"><div className="mx-auto flex min-h-[76px] max-w-6xl items-center justify-between gap-4 px-5">
-   <div className="flex items-center gap-3">
+  <header className="border-b border-white/10 bg-[#05070b]/95"><div className="mx-auto flex min-h-[76px] max-w-6xl items-center px-5">
     <button onClick={()=>navigate("/")} className="inline-flex h-12 items-center gap-2.5 rounded-xl border border-amber-400/30 bg-amber-400/10 px-5 text-sm font-black text-amber-100 shadow-[0_0_20px_rgba(245,190,60,.08)] transition hover:border-amber-300/60 hover:bg-amber-400/15 hover:text-white active:scale-[.98]" title="Back to dashboard"><span className="text-lg leading-none">←</span><span>Back to Dashboard</span></button>
-    <div className="hidden h-8 w-px bg-white/10 sm:block"/>
-    <div className="flex items-center gap-2.5"><img src="/clash-iq-logo.webp" className="h-10 w-10 rounded-xl object-cover" alt="Clash IQ"/><div className="hidden sm:block"><p className="text-lg font-black">Clash IQ</p><p className="text-[9px] font-bold uppercase tracking-[.2em] text-white/35">Account Center</p></div></div>
-   </div>
-   <div className="flex items-center gap-2"><button onClick={()=>void load(true)} disabled={refreshing} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/60" title="Refresh account"><RefreshCw className={refreshing?"size-4 animate-spin":"size-4"}/></button><button onClick={openClashIQ} className="rounded-xl border border-amber-400/30 bg-amber-400/10 px-4 py-2.5 text-xs font-black text-amber-200 hover:bg-amber-400/15">Open Clash IQ</button><button onClick={()=>void logout()} className="grid size-10 place-items-center rounded-xl border border-white/10 bg-white/[.04] text-white/55" title="Log out"><LogOut className="size-4"/></button></div>
   </div></header>
   <main className="mx-auto max-w-6xl space-y-5 px-5 py-7 md:py-9">
    {error&&<div className="rounded-2xl border border-red-400/20 bg-red-400/5 px-4 py-3 text-sm text-red-200">{error}</div>}
