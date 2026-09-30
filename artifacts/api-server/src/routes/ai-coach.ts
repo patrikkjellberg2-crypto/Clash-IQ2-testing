@@ -8,7 +8,7 @@ const CLASH_API_BASE_URL = process.env.CLASH_API_BASE_URL || "https://cocproxy.r
 const GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-3.8-flash";
 const GEMINI_FALLBACK_MODEL = "gemini-3.5-flash-lite";
-const MAX_PROMPT_CHARS = 24000;
+const MAX_PROMPT_CHARS = 12000;
 const MAX_OUTPUT_TOKENS = 5000;
 
 type Dict = Record<string, any>;
@@ -359,8 +359,8 @@ function currentWarText(war: Dict | null, clanTag: string) {
   const ourTag = normalizeTag(clanTag);
   const ourSide = normalizeTag(String(war.clan.tag || "")) === ourTag ? war.clan : war.opponent;
   const enemySide = ourSide === war.clan ? war.opponent : war.clan;
-  const ourMembers = Array.isArray(ourSide.members) ? ourSide.members : [];
-  const enemyMembers = Array.isArray(enemySide.members) ? enemySide.members : [];
+  const ourMembers = Array.isArray(ourSide.members) ? ourSide.members.slice(0, 30) : [];
+  const enemyMembers = Array.isArray(enemySide.members) ? enemySide.members.slice(0, 30) : [];
   const attacksPerMember = number(war.attacksPerMember, 2);
   const ourUsed = number(ourSide.attacks);
   const enemyUsed = number(enemySide.attacks);
@@ -403,7 +403,7 @@ function rosterText(clan: Dict) {
   const members = Array.isArray(clan?.memberList) ? clan.memberList : [];
   if (!members.length) return "No roster data available.";
 
-  return members.slice(0, 50).map((m: Dict) =>
+  return members.slice(0, 30).map((m: Dict) =>
     `${String(m?.name || "Unknown").slice(0, 28)} | TH${number(m?.townHallLevel ?? m?.townhallLevel)} | rank=${number(m?.clanRank)} | trophies=${number(m?.trophies)} | donations=${number(m?.donations)} | received=${number(m?.donationsReceived)} | league=${m?.league?.name || "unknown"}`
   ).join("\n");
 }
@@ -423,9 +423,9 @@ function buildPrompt(data: Dict, mode: "clan" | "opponent" | "question", questio
 
   const fullFacts = [
     clanSummary,
-    `ROSTER (official member order):\n${rosterText(clan)}`,
+    `ROSTER (official member order, first 30):\n${rosterText(clan)}`,
     `DETAILED PLAYER DATA (first five members):\n${data.playerDetailsText || "No individual player detail was available."}`,
-    `CURRENT WAR:\n${currentWarText(data.currentWar, clanTag)}`,
+    `CURRENT WAR (first 30 positions per side):\n${currentWarText(data.currentWar, clanTag)}`,
     `RECENT WAR LOG:\n${warlogText(data.warlog, clanTag)}`,
     `CAPITAL RAID HISTORY:\n${capitalText(data.capital)}`,
   ].join("\n\n");
@@ -531,7 +531,11 @@ Give exactly three short, concrete actions the clan should take next.`;
 
   const userQuestion = String(question || "").trim().slice(0, 1500);
   const facts = mode === "opponent" ? opponentFacts : fullFacts;
-  return `${instructions}\n\n${userQuestion ? `USER QUESTION:\n${userQuestion}\n\n` : ""}VERIFIED LIVE CLASH DATA:\n${facts}`;
+  const available = Math.max(0, MAX_PROMPT_CHARS - instructions.length - userQuestion.length - 120);
+  const compactFacts = facts.length > available
+    ? facts.slice(0, available) + "\n[Additional low-priority data omitted to stay within the AI context limit.]"
+    : facts;
+  return `${instructions}\n\n${userQuestion ? `USER QUESTION:\n${userQuestion}\n\n` : ""}VERIFIED LIVE CLASH DATA:\n${compactFacts}`;
 }
 async function getClanData(clanTag: string) {
   const encoded = encodeURIComponent(clanTag);
