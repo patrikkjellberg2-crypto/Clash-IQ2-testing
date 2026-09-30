@@ -2,7 +2,7 @@ import { Bot, Shield, Swords, BarChart3, Sparkles, Download, Users, X, Maximize2
 import { useState } from "react";
 
 const LOGO = "/clash-iq-logo.webp";
-const SCREENSHOTS = "/clash-iq-screenshots.webp";
+const SCREENSHOTS = "https://raw.githubusercontent.com/patrikkjellberg2-crypto/Clash-IQ2-testing/dev-v3.1/screenshots/mecka-clash-dashboard-desktop.jpg";
 
 export default function Website() {
   const [open, setOpen] = useState(false);
