@@ -61,6 +61,32 @@ export default function Website() {
           </div>
         </section>
 
+        <section className="relative overflow-hidden border-y border-yellow-400/20 bg-gradient-to-r from-yellow-400/[.08] via-[#0b1018] to-blue-400/[.08]">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_20%_50%,rgba(250,190,40,.16),transparent_30%),radial-gradient(circle_at_80%_50%,rgba(37,99,235,.10),transparent_30%)]" />
+          <div className="mx-auto max-w-7xl px-5 py-16 sm:py-20">
+            <div className="mx-auto max-w-4xl rounded-[2rem] border border-yellow-400/20 bg-[#080c12]/80 p-7 text-center shadow-2xl shadow-black/40 sm:p-10">
+              <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-yellow-400/25 bg-yellow-400/10 px-4 py-2 text-xs font-black uppercase tracking-[.2em] text-yellow-200">
+                <FlaskConical className="h-4 w-4" /> Beta Program
+              </div>
+              <h2 className="mt-6 text-5xl font-black uppercase tracking-tight text-yellow-300 sm:text-6xl lg:text-7xl">Test Pilot</h2>
+              <p className="mt-5 text-xl font-bold text-white sm:text-2xl">Become a Clash IQ Test Pilot</p>
+              <p className="mx-auto mt-4 max-w-2xl text-base leading-8 text-white/60">
+                Want to help us improve Clash IQ before the public release? Contact us at
+                <a href="mailto:Clashiq.app@gmail.com" className="mx-1 font-black text-yellow-300 hover:text-yellow-200">Clashiq.app@gmail.com</a>
+                to become a beta test pilot.
+              </p>
+              <div className="mx-auto mt-6 max-w-xl rounded-2xl border border-yellow-400/20 bg-yellow-400/[.06] px-5 py-4">
+                <p className="text-sm leading-7 text-white/75">
+                  As a thank-you for helping us test, give feedback and improve the app, <span className="font-black text-yellow-200">Test Pilots are offered Lifetime Premium</span> at no cost.
+                </p>
+              </div>
+              <a href="mailto:Clashiq.app@gmail.com?subject=Clash%20IQ%20Test%20Pilot" className="mt-7 inline-flex items-center gap-2 rounded-full bg-yellow-300 px-8 py-4 font-black text-black shadow-lg shadow-yellow-400/10 hover:bg-yellow-200">
+                Become a Test Pilot <Sparkles className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+        </section>
+
         <section className="border-y border-white/10 bg-white/[.02]">
           <div className="mx-auto max-w-7xl px-5 py-20">
             <div className="max-w-3xl">
