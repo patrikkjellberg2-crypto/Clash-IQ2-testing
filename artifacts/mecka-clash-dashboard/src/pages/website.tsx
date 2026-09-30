@@ -8,13 +8,6 @@ export default function Website() {
   const [open, setOpen] = useState(false);
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#05070b] text-white">
-      <header className="border-b border-white/10 bg-[#05070b]/90 backdrop-blur-xl">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <div className="flex items-center gap-3"><img src={LOGO} alt="Clash IQ" className="h-12 w-12 rounded-xl object-cover"/><div><b>Clash IQ</b><div className="text-[10px] font-bold uppercase tracking-[.2em] text-white/35">Clash of Clans Intelligence</div></div></div>
-          <a href="#download" className="inline-flex items-center gap-2 rounded-full bg-yellow-300 px-5 py-2.5 text-sm font-black text-black hover:bg-yellow-200"><Download className="h-4 w-4"/> Download Beta</a>
-        </div>
-      </header>
-
       <main>
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_25%_15%,rgba(250,190,40,.18),transparent_32%),radial-gradient(circle_at_85%_30%,rgba(37,99,235,.14),transparent_32%)]"/>
