@@ -165,7 +165,7 @@ jobs:
           sed -i -E "s/versionName \"[^\"]*\"/versionName \"${VERSION_NAME}\"/" android/app/build.gradle
           grep -n "versionCode\|versionName" android/app/build.gradle
 
-      - name: Apply native splash theme and activity theme
+      - name: Apply AppCompat activity theme
         run: |
           cp native-overrides/styles.xml android/app/src/main/res/values/styles.xml
           python3 - <<'PY'
@@ -175,14 +175,13 @@ jobs:
           p = Path('android/app/src/main/AndroidManifest.xml')
           s = p.read_text()
           pattern = r'(<activity\b(?=[^>]*android:name="\.MainActivity")[^>]*\bandroid:theme=")[^"]+(")'
-          updated, count = re.subn(pattern, r'\1@style/AppTheme.NoActionBarLaunch\2', s, count=1)
+          updated, count = re.subn(pattern, r'\1@style/AppTheme.NoActionBar\2', s, count=1)
           if count != 1:
               raise SystemExit('Could not set MainActivity theme in AndroidManifest.xml')
           p.write_text(updated)
           PY
           grep -n -A4 -B2 'android:name=".MainActivity"' android/app/src/main/AndroidManifest.xml
-          grep -n -A5 'AppTheme.NoActionBarLaunch' android/app/src/main/res/values/styles.xml
-          grep -q 'postSplashScreenTheme">@style/AppTheme.NoActionBar' android/app/src/main/res/values/styles.xml
+          grep -q 'android:theme="@style/AppTheme.NoActionBar"' android/app/src/main/AndroidManifest.xml
           grep -q 'parent="Theme.AppCompat.DayNight.NoActionBar"' android/app/src/main/res/values/styles.xml
 
       - name: Build debug APK
