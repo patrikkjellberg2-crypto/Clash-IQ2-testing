@@ -400,6 +400,12 @@ export default function StatisticsPage() {
       </div>
     </section>
 
+    <details className="group mt-5 overflow-hidden rounded-2xl border border-white/[.08] bg-[#0b1119]">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 hover:bg-white/[.025] [&::-webkit-details-marker]:hidden">
+        <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">Deep statistics</p><h2 className="mt-1 text-xl font-black">Detailed history & roster analysis</h2><p className="mt-1 text-xs text-slate-500">CWL, roster trends, top performers and additional history.</p></div>
+        <span className="rounded-lg border border-amber-400/20 bg-amber-400/[.06] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-300 transition group-open:rotate-180">⌄</span>
+      </summary>
+      <div className="space-y-5 border-t border-white/[.06] p-4 md:p-5">
     {cwlInsights ? <section className="mt-5 rounded-2xl border border-amber-400/15 bg-[#0b1119] p-5">
       <div className="flex items-end justify-between gap-4 border-b border-white/[.06] pb-4">
         <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">CWL</p><h2 className="mt-1 text-xl font-black">Clan War League</h2></div>
@@ -467,6 +473,8 @@ export default function StatisticsPage() {
       </div>
     </section>
 
+      </div>
+    </details>
     <section className="mt-5 rounded-2xl border border-white/[.08] bg-[#0b1119] p-5"><div className="flex items-end justify-between gap-4 border-b border-white/[.06] pb-4"><div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300">War History</p><h2 className="mt-1 text-xl font-black">Recent Performance</h2></div><span className="rounded-full border border-white/[.08] bg-white/[.02] px-3 py-1 text-[9px] font-black uppercase tracking-[.16em] text-slate-500">{wars.length} wars</span></div>
       {wars.length ? <div className="mt-4 grid gap-2 lg:grid-cols-2">{wars.slice(0,12).map(({war,result},index) => {
         const own = ownSideOf(war, clanTag);
