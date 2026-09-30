@@ -26,37 +26,8 @@ export default function Website() {
                 <p className="mt-7 max-w-xl text-lg leading-8 text-white/60">
                   Clash IQ is an intelligence and analytics app for Clash of Clans players and clans. Analyze wars, players and performance and turn your game data into useful information.
                 </p>
-                <div className="mt-9 flex flex-wrap items-center gap-3">
-                  <a href="#download" className="inline-flex items-center gap-2 rounded-full bg-yellow-300 px-7 py-3.5 font-black text-black hover:bg-yellow-200">
-                    <Download className="h-5 w-5" /> Download Beta Test
-                  </a>
-                  <a href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-7 py-3.5 font-black text-white hover:bg-white/10">
-                    <Github className="h-5 w-5" /> GitHub
-                  </a>
-                </div>
               </div>
 
-              <div className="relative">
-                <div className="absolute -inset-10 -z-10 rounded-[4rem] bg-yellow-400/10 blur-3xl" />
-                <div className="rounded-[2rem] border border-white/10 bg-[#0b1018]/90 p-4 shadow-2xl shadow-black/60">
-                  <div className="rounded-[1.5rem] border border-white/10 bg-[#080c12] p-5">
-                    <div className="flex items-center justify-between">
-                      <div><p className="text-xs uppercase tracking-[.2em] text-white/35">Clash IQ</p><h2 className="mt-1 text-2xl font-black">War Center</h2></div>
-                      <div className="rounded-xl border border-yellow-400/20 bg-yellow-400/10 p-3 text-yellow-300"><Swords /></div>
-                    </div>
-                    <div className="mt-6 grid grid-cols-3 gap-3">
-                      <Stat label="War score" value="91%" /><Stat label="Stars" value="28" /><Stat label="Attacks" value="32" />
-                    </div>
-                    <div className="mt-4 rounded-2xl border border-white/10 bg-white/[.03] p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="rounded-xl bg-blue-400/10 p-2 text-blue-300"><Bot className="h-5 w-5" /></div>
-                        <div><p className="text-sm font-bold">AI Coach</p><p className="text-xs text-white/40">Analysis for your next attack.</p></div>
-                      </div>
-                    </div>
-                    <div className="mt-4 h-2 overflow-hidden rounded-full bg-white/10"><div className="h-full w-[82%] rounded-full bg-yellow-300" /></div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </section>
