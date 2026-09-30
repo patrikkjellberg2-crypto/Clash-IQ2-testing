@@ -12,7 +12,7 @@ export default function Website() {
       <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070b]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-between px-5">
           <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="flex items-center gap-3">
-            <img src={LOGO} className="h-12 w-12 rounded-2xl object-cover shadow-[0_0_22px_rgba(250,190,40,.25)]" alt="Clash IQ" />
+            <img src="/clash-iq-logo.webp" className="h-12 w-12 rounded-2xl object-cover shadow-[0_0_22px_rgba(250,190,40,.25)]" alt="Clash IQ" />
             <span className="text-2xl font-black tracking-tight">Clash IQ</span>
           </button>
           <div className="flex items-center gap-2">
@@ -30,7 +30,7 @@ export default function Website() {
               <div>
                 <div className="mb-7 flex justify-center lg:justify-start">
                   <div className="rounded-[2.5rem] border border-yellow-300/20 bg-black/30 p-4 shadow-[0_0_70px_rgba(250,190,40,.14)]">
-                    <img src={LOGO} className="h-52 w-52 rounded-[2rem] object-cover sm:h-60 sm:w-60 lg:h-72 lg:w-72" alt="Clash IQ logo" />
+                    <img src="/clash-iq-logo.webp" className="h-52 w-52 rounded-[2rem] object-cover sm:h-60 sm:w-60 lg:h-72 lg:w-72" alt="Clash IQ logo" />
                   </div>
                 </div>
                 <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-bold tracking-wide text-yellow-200">
