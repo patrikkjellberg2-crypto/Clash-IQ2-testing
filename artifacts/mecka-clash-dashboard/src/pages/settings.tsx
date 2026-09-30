@@ -254,7 +254,7 @@ export default function SettingsPage() {
       <div className="flex min-h-screen bg-[#07090d]">
         <AppSidebar />
         <main className="min-w-0 flex-1 relative">
-          <button type="button" aria-label="Go back" title="Back" onClick={() => { if (window.history.length > 1) window.history.back(); else window.location.href = '/'; }} className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-amber-400/40 bg-[#0b0d12]/95 text-amber-300 shadow-[0_0_18px_rgba(245,190,60,.18)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-200 active:scale-95 lg:left-[278px]"><ArrowLeft className="size-4"/></button>
+          <button type="button" onClick={() => navigate('/dashboard')} className="fixed left-[4.75rem] top-3 z-40 inline-flex h-11 items-center gap-2 rounded-xl border border-amber-400/35 bg-[#0b0d12]/95 px-4 text-xs font-black uppercase tracking-wider text-amber-200 shadow-[0_0_18px_rgba(245,190,60,.16)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-100 active:scale-[.98] lg:left-[278px]"><ArrowLeft className="size-4"/><span>Back to Dashboard</span></button>
           <header className="border-b border-white/5 bg-[#07090d]/85 px-5 py-4 backdrop-blur-xl">
             <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4">
               <div className="min-w-0">
@@ -283,34 +283,6 @@ export default function SettingsPage() {
               {loadError}
             </div>
           ) : null}
-
-            <section className="relative overflow-hidden rounded-3xl border border-amber-400/15 bg-gradient-to-br from-[#17130b] via-[#0e1117] to-[#090b10] p-6 shadow-2xl md:p-8">
-              <div className="absolute -right-24 -top-24 h-80 w-80 rounded-full bg-amber-400/10 blur-3xl" />
-              <div className="absolute -bottom-28 left-1/3 h-72 w-72 rounded-full bg-blue-500/5 blur-3xl" />
-              <div className="relative flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
-                <div className="max-w-3xl">
-                  <div className="mb-4 flex items-center gap-2">
-                    <div className="grid h-10 w-10 place-items-center rounded-xl border border-amber-400/20 bg-amber-400/10">
-                      <SettingsIcon className="h-5 w-5 text-amber-300" />
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.25em] text-amber-300">Command configuration</span>
-                  </div>
-                  <h2 className="text-4xl font-black tracking-tight sm:text-5xl">
-                    CLAN COMMAND
-                    <span className="block text-amber-300">SETTINGS</span>
-                  </h2>
-                  <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
-                    Control how Clash IQ behaves, how often data refreshes and which tactical alerts and AI features are active.
-                  </p>
-                </div>
-
-                <div className="hidden h-36 w-36 shrink-0 place-items-center rounded-full border border-amber-400/20 bg-black/20 lg:grid">
-                  <div className="relative grid h-24 w-24 place-items-center rounded-full border border-amber-400/10">
-                    <SettingsIcon className="h-10 w-10 text-amber-300/80" />
-                  </div>
-                </div>
-              </div>
-            </section>
 
             <section className="grid gap-3 sm:grid-cols-3">
               <StatusCard icon={Wifi} label="Clash data" value="Connected" tone="green" />
