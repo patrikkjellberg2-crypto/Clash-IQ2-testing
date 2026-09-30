@@ -57,7 +57,7 @@ export default function WelcomePage() {
               <div className="relative flex h-52 w-52 items-center justify-center rounded-full border border-amber-400/25 bg-[radial-gradient(circle,rgba(74,52,18,.72),rgba(6,8,11,.96)_66%)] shadow-[0_0_70px_rgba(245,190,60,.18)]">
                 <div className="absolute inset-3 rounded-full border border-amber-300/10" />
                 <img
-                  src="/clash-iq-logo.webp"
+                  src="/clash-iq-icon.svg"
                   alt="Clash IQ"
                   className="relative z-10 h-40 w-40 object-contain drop-shadow-[0_0_28px_rgba(245,190,60,.42)]"
                 />
