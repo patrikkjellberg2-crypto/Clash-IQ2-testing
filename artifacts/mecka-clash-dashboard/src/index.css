@@ -330,3 +330,15 @@ html.clashiq-compact .sidebar-nav {
   right: auto !important;
   top: 16px !important;
 }
+
+
+/* Shared back navigation: one position for every page, with tablet-landscape overrides above. */
+.clashiq-global-back {
+  left: 68px !important;
+  top: 16px !important;
+}
+@media (min-width: 1024px) {
+  .clashiq-global-back {
+    left: 278px !important;
+  }
+}
