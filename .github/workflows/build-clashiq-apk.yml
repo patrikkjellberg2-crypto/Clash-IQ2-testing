@@ -239,3 +239,4 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 # Trigger current dev-v3.1 APK build with native Google SocialLogin bridge
+# Force a clean APK build after launcher icon update
