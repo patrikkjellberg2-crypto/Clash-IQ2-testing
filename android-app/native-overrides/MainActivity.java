@@ -12,7 +12,6 @@ import android.os.Looper;
 import android.view.View;
 
 import androidx.core.graphics.Insets;
-import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -31,25 +30,8 @@ public class MainActivity extends BridgeActivity implements ModifiedMainActivity
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        launchStartedAt = System.currentTimeMillis();
-
-        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
 
-        boolean firstLaunch = !getSharedPreferences("clash_iq_prefs", Context.MODE_PRIVATE)
-                .getBoolean("splash_seen", false);
-        long splashDuration = firstLaunch ? 3000L : 1800L;
-
-        splashScreen.setKeepOnScreenCondition(() ->
-                System.currentTimeMillis() - launchStartedAt < splashDuration);
-        splashScreen.setOnExitAnimationListener(splashProvider -> {
-            View splashView = splashProvider.getView();
-            splashView.animate()
-                    .alpha(0f)
-                    .setDuration(420L)
-                    .withEndAction(splashProvider::remove)
-                    .start();
-        });
 
         WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         getWindow().setStatusBarColor(Color.rgb(7, 9, 13));
