@@ -1,4 +1,4 @@
-import { Bot, Shield, Swords, BarChart3, Sparkles, FlaskConical, Download } from "lucide-react";
+import { Bot, Shield, Swords, BarChart3, Sparkles, FlaskConical, Download, Github } from "lucide-react";
 
 const LOGO = "/clash-iq-logo.webp";
 
@@ -6,11 +6,10 @@ export default function Website() {
   return (
     <div className="min-h-screen bg-[#05070b] text-white overflow-x-hidden">
       <header className="border-b border-white/10 bg-[#05070b]/90 backdrop-blur-xl">
-        <div className="mx-auto flex h-[74px] max-w-7xl items-center px-5">
-          <div className="flex items-center gap-3">
-            <img src={LOGO} className="h-12 w-12 rounded-2xl object-cover shadow-[0_0_22px_rgba(250,190,40,.25)]" alt="Clash IQ" />
-            <span className="text-2xl font-black tracking-tight">Clash IQ</span>
-          </div>
+        <div className="mx-auto flex h-[74px] max-w-7xl items-center justify-end px-5">
+          <a href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-5 py-2.5 text-sm font-bold text-white/80 hover:bg-white/10 hover:text-white">
+            <Github className="h-4 w-4" /> GitHub
+          </a>
         </div>
       </header>
 
@@ -101,12 +100,7 @@ export default function Website() {
             <p className="mx-auto mt-4 max-w-2xl leading-7 text-white/50">
               Download the Android beta and test the latest Clash IQ features. This is a test version and may be updated regularly.
             </p>
-            <a
-              href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing/releases/latest"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-yellow-300 px-7 py-3.5 font-black text-black hover:bg-yellow-200"
-            >
+            <a href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing/releases/latest" target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-yellow-300 px-7 py-3.5 font-black text-black hover:bg-yellow-200">
               <Download className="h-5 w-5" /> Download Beta Test
             </a>
           </div>
@@ -114,7 +108,7 @@ export default function Website() {
       </main>
 
       <footer className="border-t border-white/10 py-8">
-        <div className="mx-auto flex max-w-7xl max-w-7xl flex-col gap-2 px-5 text-sm text-white/35 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto flex max-w-7xl flex-col gap-2 px-5 text-sm text-white/35 sm:flex-row sm:items-center sm:justify-between">
           <span>© 2026 Clash IQ</span>
           <span>Clash of Clans analytics &amp; war intelligence</span>
         </div>
