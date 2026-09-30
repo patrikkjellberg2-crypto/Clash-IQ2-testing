@@ -3,7 +3,6 @@ import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
 import { sendClashIQNotification } from '@/lib/notifications';
 import WarTimer from '@/components/WarTimer';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import { publishWarChatMessage } from '@/lib/war-chat';
 import {
   ArrowRight,
@@ -307,7 +306,6 @@ export default function AICoachPage() {
         />
 
         <main className="min-w-0 flex-1">
-          <ClashIQInlineBanner />
           <button
             type="button"
             aria-label="Go back"
