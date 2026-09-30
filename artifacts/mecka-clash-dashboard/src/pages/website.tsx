@@ -2,7 +2,11 @@ import { Bot, Shield, Swords, BarChart3, Sparkles, Download, Users, X, Maximize2
 import { useState } from "react";
 
 const LOGO = "/clash-iq-logo.webp";
-const SCREENSHOTS = "https://raw.githubusercontent.com/patrikkjellberg2-crypto/Clash-IQ2-testing/dev-v3.1/screenshots/mecka-clash-dashboard-desktop.jpg";
+const SCREENSHOTS = [
+  "https://raw.githubusercontent.com/patrikkjellberg2-crypto/Clash-IQ2-testing/dev-v3.1/screenshots/clash-iq-stars.jpg",
+  "https://raw.githubusercontent.com/patrikkjellberg2-crypto/Clash-IQ2-testing/dev-v3.1/screenshots/clash-iq-members.jpg",
+  "https://raw.githubusercontent.com/patrikkjellberg2-crypto/Clash-IQ2-testing/dev-v3.1/screenshots/clash-iq-account-center.jpg",
+];
 
 export default function Website() {
   const [open, setOpen] = useState(false);
@@ -47,7 +51,7 @@ export default function Website() {
             <div><p className="text-xs font-black uppercase tracking-[.22em] text-blue-300">Inside the app</p><h2 className="mt-3 text-3xl font-black sm:text-4xl">See Clash IQ in action.</h2><p className="mt-4 max-w-2xl leading-7 text-white/50">Real Clash IQ screens. Tap the gallery to open them larger.</p></div>
             <button onClick={()=>setOpen(true)} className="inline-flex w-fit items-center gap-2 rounded-full border border-white/10 bg-white/[.04] px-5 py-3 text-sm font-bold"><Maximize2 className="h-4 w-4"/> View screenshots</button>
           </div>
-          <button onClick={()=>setOpen(true)} className="group mt-10 block w-full overflow-hidden rounded-[2rem] border border-white/10 bg-[#090d14] shadow-2xl"><img src={SCREENSHOTS} alt="Clash IQ app screenshots" className="w-full transition duration-500 group-hover:scale-[1.01]"/></button>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">{SCREENSHOTS.map((src,i)=><button key={src} onClick={()=>setOpen(true)} className="group overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#090d14] shadow-2xl"><img src={src} alt={`Clash IQ Android app screenshot ${i+1}`} className="w-full transition duration-500 group-hover:scale-[1.02]"/></button>)}</div>
         </section>
 
         <section className="border-y border-yellow-400/20 bg-gradient-to-r from-yellow-400/[.08] via-[#0b1018] to-blue-400/[.08]">
@@ -83,7 +87,7 @@ export default function Website() {
 
       {open && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4 backdrop-blur-md" onClick={()=>setOpen(false)}>
         <button aria-label="Close screenshots" onClick={()=>setOpen(false)} className="absolute right-5 top-5 z-10 grid size-12 place-items-center rounded-full border border-white/15 bg-black/70 text-white"><X className="h-6 w-6"/></button>
-        <img src={SCREENSHOTS} alt="Clash IQ screenshots enlarged" className="max-h-[92vh] max-w-[96vw] rounded-2xl object-contain shadow-2xl" onClick={e=>e.stopPropagation()}/>
+        <div className="grid max-h-[92vh] max-w-[96vw] gap-4 overflow-auto sm:grid-cols-2" onClick={e=>e.stopPropagation()}>{SCREENSHOTS.map(src=><img key={src} src={src} alt="Clash IQ Android app screenshot enlarged" className="w-full rounded-2xl object-contain shadow-2xl"/>)}</div>
       </div>}
     </div>
   );
