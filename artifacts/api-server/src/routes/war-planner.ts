@@ -316,7 +316,7 @@ router.post("/ai/war-planner", async (req: Request, res: Response) => {
             completed: Boolean(item?.completed),
           }))
           .filter((item: any) => item.attackerTag)
-          .slice(0, 30)
+          .slice(0, 15)
       : [];
 
     const plannerData = JSON.stringify(plannerAssignments);
