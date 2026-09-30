@@ -135,20 +135,6 @@ function SidebarContent({
 
   return (
     <div className="flex h-full min-w-0 flex-col overflow-hidden">
-      <div className="border-b border-white/[0.06] px-4 py-4">
-        <div className="flex min-w-0 items-center gap-3">
-          <ClanMark />
-          <div className="min-w-0 flex-1">
-            <p className="truncate font-display text-lg font-black tracking-[-0.04em] text-white">
-              CLASHIQ
-            </p>
-            <span className="mt-1 inline-block rounded-full border border-amber-400/25 bg-amber-400/10 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.18em] text-amber-300">
-              Elite Mode
-            </span>
-          </div>
-        </div>
-      </div>
-
       <div className="px-4 pt-5">
         <div className="rounded-2xl border border-white/[0.07] bg-white/[0.025] p-3.5">
           <p className="truncate text-sm font-bold text-white">{clanName}</p>
