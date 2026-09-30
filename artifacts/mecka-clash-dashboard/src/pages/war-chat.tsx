@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { AppSidebar } from '@/components/app-sidebar';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import { clearWarChatMessages, getWarChatMessages, publishWarChatMessage, removeWarChatMessage, type WarChatMessage } from '@/lib/war-chat';
 import { ArrowLeft, Copy, MessageSquareText, Trash2, Users, Swords, BrainCircuit, Trophy, Plus, X } from 'lucide-react';
 import { useLocation } from 'wouter';
@@ -52,7 +51,6 @@ export default function WarChatPage() {
     <div className="min-h-[100dvh] overflow-x-hidden bg-[#07090d] text-white">
       <AppSidebar />
       <main className="min-w-0 lg:pl-0">
-        <ClashIQInlineBanner />
 
         <button
           type="button"
