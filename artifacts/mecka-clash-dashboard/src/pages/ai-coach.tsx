@@ -323,18 +323,6 @@ export default function AICoachPage() {
         />
 
         <main className="min-w-0 flex-1">
-          <button
-            type="button"
-            aria-label="Go back"
-            title="Back"
-            onClick={() => {
-              if (window.history.length > 1) window.history.back();
-              else window.location.href = '/';
-            }}
-            className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-amber-400/40 bg-[#0b0d12]/95 text-amber-300 shadow-[0_0_18px_rgba(245,190,60,.18)] backdrop-blur-xl transition hover:border-amber-300/70 hover:bg-amber-400/10 hover:text-amber-200 active:scale-95 lg:left-[278px]"
-          >
-            <ArrowLeft className="size-4" />
-          </button>
           <div className="mx-auto max-w-[1400px] space-y-5 p-4 md:p-8">
             <section className="overflow-hidden rounded-2xl border border-white/[.07] bg-[#06111b]/90 shadow-[0_12px_45px_rgba(0,0,0,.2)]">
               <div className="border-b border-white/[.06] px-5 py-4">
