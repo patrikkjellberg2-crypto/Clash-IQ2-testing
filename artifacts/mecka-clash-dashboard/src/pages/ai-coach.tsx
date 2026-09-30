@@ -26,6 +26,22 @@ const d = (value: unknown): Dict =>
 const s = (value: unknown, fallback = '') =>
   typeof value === 'string' ? value : fallback;
 
+const AI_CLIENT_ID_KEY = 'clash-iq-ai-client-id';
+
+function getAiClientId() {
+  if (typeof window === 'undefined') return 'server';
+
+  const existing = window.localStorage.getItem(AI_CLIENT_ID_KEY);
+  if (existing) return existing;
+
+  const id =
+    globalThis.crypto?.randomUUID?.() ||
+    `clashiq-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  window.localStorage.setItem(AI_CLIENT_ID_KEY, id);
+  return id;
+}
+
 type Mode = 'clan' | 'opponent' | 'question';
 type WarTestScenario = {
   id: string;
