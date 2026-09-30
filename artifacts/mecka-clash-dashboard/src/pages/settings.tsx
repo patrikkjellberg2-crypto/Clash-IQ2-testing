@@ -26,7 +26,12 @@ import { notificationPermission, sendTestNotification } from '@/lib/notification
 
 function Toggle({ enabled, onClick }: { enabled: boolean; onClick: () => void }) {
   return (
-    <button type="button" onClick={onClick} aria-pressed={enabled} className={`relative h-7 w-12 rounded-full border transition ${enabled ? 'border-yellow-300/50 bg-yellow-300/20' : 'border-white/10 bg-white/5'}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={enabled}
+      className={`relative h-7 w-12 rounded-full border transition ${enabled ? 'border-yellow-300/50 bg-yellow-300/20' : 'border-white/10 bg-white/5'}`}
+    >
       <span className={`absolute top-1 size-5 rounded-full transition ${enabled ? 'left-6 bg-yellow-300' : 'left-1 bg-white/40'}`} />
     </button>
   );
