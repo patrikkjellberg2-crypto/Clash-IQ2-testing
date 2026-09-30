@@ -3,7 +3,6 @@ import { Activity, ArrowLeft, ArrowUpDown, Swords, Users } from 'lucide-react';
 import { Link } from 'wouter';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 import { MemberDetailsDialog } from '@/components/member-details-dialog';
 
 type Dict = Record<string, unknown>;
@@ -110,7 +109,6 @@ export default function ActivityPage() {
         </button>
 
         <div className="mx-auto max-w-[1155px] px-4 pb-10 sm:px-7">
-          <ClashIQInlineBanner />
 
           <div className="mb-5">
             <p className="text-[9px] font-black uppercase tracking-[.22em] text-amber-300">CLASH IQ / War activity</p>
