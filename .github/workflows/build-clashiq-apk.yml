@@ -85,6 +85,10 @@ jobs:
           cp native-overrides/widget/widget_info.xml android/app/src/main/res/xml/widget_info.xml
           cp native-overrides/widget/widget_strings.xml android/app/src/main/res/values/widget_strings.xml
 
+          test -f android/app/src/main/java/com/clashiq/app/ClashIQWidgetProvider.java
+          test -f android/app/src/main/res/xml/widget_info.xml
+          echo "Verified Clash IQ widget provider and widget metadata resources."
+
           python3 - <<'PY'
           from pathlib import Path
           p=Path('android/app/src/main/AndroidManifest.xml')
