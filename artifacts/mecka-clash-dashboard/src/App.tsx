@@ -52,6 +52,63 @@ const queryClient = new QueryClient({
   },
 });
 
+function AppUpdateBanner() {
+  const [update, setUpdate] = React.useState<{ latestVersion: string; releaseUrl: string; notes?: string } | null>(null);
+
+  useEffect(() => {
+    const match = navigator.userAgent.match(/ClashIQ\\/([0-9]+(?:\\.[0-9]+){0,2})/i);
+    const currentVersion = match?.[1];
+    if (!currentVersion) return;
+
+    const versionParts = (value: string) => value.split('.').map((part) => Number.parseInt(part, 10) || 0);
+    const isNewer = (latest: string, current: string) => {
+      const a = versionParts(latest);
+      const b = versionParts(current);
+      for (let i = 0; i < 3; i += 1) {
+        if ((a[i] ?? 0) > (b[i] ?? 0)) return true;
+        if ((a[i] ?? 0) < (b[i] ?? 0)) return false;
+      }
+      return false;
+    };
+
+    fetch('/app-version.json?ts=' + Date.now(), { cache: 'no-store' })
+      .then((response) => response.ok ? response.json() : Promise.reject(new Error('version check failed')))
+      .then((data) => {
+        if (data?.latestVersion && data?.releaseUrl && isNewer(String(data.latestVersion), currentVersion)) {
+          setUpdate({
+            latestVersion: String(data.latestVersion),
+            releaseUrl: String(data.releaseUrl),
+            notes: data.notes ? String(data.notes) : undefined,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  if (!update) return null;
+
+  return (
+    <div className="fixed inset-x-3 bottom-3 z-[100] mx-auto max-w-xl rounded-2xl border border-amber-400/30 bg-[#10141b]/95 p-4 shadow-2xl backdrop-blur-xl">
+      <div className="flex items-start gap-3">
+        <div className="grid size-10 shrink-0 place-items-center rounded-xl border border-amber-400/25 bg-amber-400/10 text-amber-300">↑</div>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-black uppercase tracking-wider text-amber-300">New Clash IQ version</p>
+          <p className="mt-1 text-sm font-bold text-white">Version {update.latestVersion} is available.</p>
+          {update.notes ? <p className="mt-1 text-xs text-slate-500">{update.notes}</p> : null}
+        </div>
+        <a
+          href={update.releaseUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="shrink-0 rounded-xl border border-amber-400/25 bg-amber-400/10 px-3 py-2 text-[10px] font-black uppercase tracking-wider text-amber-200 transition hover:bg-amber-400/15"
+        >
+          Update
+        </a>
+      </div>
+    </div>
+  );
+}
+
 function PageLoader() {
   return (
     <div className="grid min-h-[60dvh] place-items-center text-sm text-white/60">
@@ -246,6 +303,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <ClashIQPreferences />
       <ClashIQWarNotifications />
+      <AppUpdateBanner />
       <TooltipProvider>
         <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
           <AuthGate><Router /></AuthGate>
