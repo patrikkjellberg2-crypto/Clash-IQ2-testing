@@ -83,6 +83,7 @@ async function recomputePlayerStats(clanTag: string) {
   const wars = await db
     .select({
       members: warArchiveTable.members,
+      opponentMembers: warArchiveTable.opponentMembers,
       attacksPerMember: warArchiveTable.attacksPerMember,
       source: warArchiveTable.source,
       state: warArchiveTable.state,
@@ -324,6 +325,10 @@ export type PlayerPerformanceRow = {
   recentAvgDestruction: number;
   previousAvgDestruction: number;
   trend: "improving" | "declining" | "stable";
+  defenseAttacks: number;
+  defenseAvgStarsConceded: number;
+  defenseAvgDestructionConceded: number;
+  defenseHoldRate: number;
 };
 
 /**
@@ -348,7 +353,8 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
 
   type AttackSample = { stars: number; destruction: number };
   type PlayerSample = { name: string; possible: number; attacks: AttackSample[] };
-  const byPlayer = new Map<string, { name: string; wars: PlayerSample[] }>();
+  type DefenseSample = { stars: number; destruction: number };
+  const byPlayer = new Map<string, { name: string; wars: PlayerSample[]; defenses: DefenseSample[] }>();
 
   for (const war of wars) {
     // Use every completed live archive. Some older rows can have a state
@@ -374,9 +380,22 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
           destruction: num(attack?.destructionPercentage),
         })),
       };
-      const entry = byPlayer.get(playerTag) ?? { name: sample.name, wars: [] };
+      const entry = byPlayer.get(playerTag) ?? { name: sample.name, wars: [], defenses: [] };
       entry.name = sample.name || entry.name;
       entry.wars.push(sample);
+
+      const opponentMembers = Array.isArray(war.opponentMembers)
+        ? (war.opponentMembers as Dict[])
+        : [];
+      for (const opponentMember of opponentMembers) {
+        for (const attack of Array.isArray(opponentMember?.attacks) ? opponentMember.attacks : []) {
+          if (normalizeTag(str(attack?.defenderTag)) !== playerTag) continue;
+          entry.defenses.push({
+            stars: num(attack?.stars),
+            destruction: num(attack?.destructionPercentage),
+          });
+        }
+      }
       byPlayer.set(playerTag, entry);
     }
   }
@@ -441,6 +460,25 @@ export async function listPlayerPerformance(clanTag: string): Promise<PlayerPerf
       recentAvgDestruction: round(recent.avgDestruction, 1),
       previousAvgDestruction: round(previous.avgDestruction, 1),
       trend,
+      defenseAttacks: player.defenses.length,
+      defenseAvgStarsConceded: round(
+        player.defenses.length
+          ? player.defenses.reduce((sum, attack) => sum + attack.stars, 0) / player.defenses.length
+          : 0,
+        2,
+      ),
+      defenseAvgDestructionConceded: round(
+        player.defenses.length
+          ? player.defenses.reduce((sum, attack) => sum + attack.destruction, 0) / player.defenses.length
+          : 0,
+        1,
+      ),
+      defenseHoldRate: player.defenses.length
+        ? round(
+            player.defenses.filter((attack) => attack.stars <= 1).length / player.defenses.length * 100,
+            1,
+          )
+        : 0,
     });
   }
 
