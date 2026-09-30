@@ -1,7 +1,6 @@
 import { type ReactNode } from "react";
 import { Activity, ArrowLeft, RefreshCw } from "lucide-react";
 import { AppSidebar } from "@/components/app-sidebar";
-import { ClashIQInlineBanner } from "@/components/clashiq-inline-banner";
 
 type ClashIQPageShellProps = {
   clanName?: string;
@@ -26,8 +25,6 @@ export function ClashIQPageShell({
         <AppSidebar clanName={clanName} clanTag={clanTag} />
 
         <main className="min-w-0 flex-1 relative">
-          <ClashIQInlineBanner />
-
           <button
             type="button"
             aria-label="Go back"
