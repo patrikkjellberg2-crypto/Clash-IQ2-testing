@@ -3,7 +3,6 @@ import { ArrowLeft, BarChart3, Swords, Target, Trophy, TrendingUp } from 'lucide
 import { Link } from 'wouter';
 import { useGetClashDashboard } from '@workspace/api-client-react';
 import { AppSidebar } from '@/components/app-sidebar';
-import { ClashIQInlineBanner } from '@/components/clashiq-inline-banner';
 
 type Dict = Record<string, unknown>;
 const d = (v: unknown): Dict => v && typeof v === 'object' ? (v as Dict) : {};
@@ -359,7 +358,7 @@ export default function StatisticsPage() {
   if (isLoading) return <div className="grid min-h-[100dvh] place-items-center bg-[#07090d] text-white"><p className="text-xs font-black uppercase tracking-[.2em] text-amber-300">Loading statistics...</p></div>;
   if (isError) return <div className="grid min-h-[100dvh] place-items-center bg-[#07090d] p-6 text-white"><div className="rounded-3xl border border-white/10 bg-[#0b1119] p-8 text-center"><BarChart3 className="mx-auto size-8 text-amber-300"/><h1 className="mt-4 text-2xl font-black">Statistics Offline</h1><p className="mt-2 text-sm text-slate-500">CLASHIQ could not load the clan statistics.</p></div></div>;
 
-  return <div className="min-h-[100dvh] bg-[#07090d] text-white"><div className="flex min-h-[100dvh]"><AppSidebar clanName={s(clan.name, 'BHABE DHEMONS')} clanTag={clanTag || '#2Q0Q82C9R'}/><main className="min-w-0 flex-1 relative"><ClashIQInlineBanner />
+  return <div className="min-h-[100dvh] bg-[#07090d] text-white"><div className="flex min-h-[100dvh]"><AppSidebar clanName={s(clan.name, 'BHABE DHEMONS')} clanTag={clanTag || '#2Q0Q82C9R'}/><main className="min-w-0 flex-1 relative">
     <button type="button" aria-label="Go back" title="Back" onClick={() => { if (window.history.length > 1) window.history.back(); else window.location.href = '/'; }} className="fixed left-[4.75rem] top-4 z-40 grid size-11 place-items-center rounded-xl border border-white/10 bg-[#07090d]/95 text-slate-300 shadow-xl backdrop-blur-xl transition hover:border-amber-400/30 hover:bg-white/[.08] hover:text-white active:scale-95 lg:left-[278px]"><ArrowLeft className="size-4"/></button>
     <div className="mx-auto max-w-[1400px] px-5 pb-10 pt-3 md:px-8 md:pt-4">
     <header className="border-b border-white/[.06] pb-5"><p className="text-[9px] font-black uppercase tracking-[.22em] text-slate-500">CLASHIQ / Intelligence</p><h1 className="mt-1 text-3xl font-black tracking-[-.04em]">Statistics</h1><p className="mt-1 max-w-2xl text-sm text-slate-500">A clear summary of the verified war data available to Clash IQ.</p></header>
