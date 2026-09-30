@@ -1,4 +1,4 @@
-import { Bot, Shield, Swords, BarChart3, Sparkles, Download, Users, X, Maximize2, Target, Trophy, BrainCircuit } from "lucide-react";
+import { Bot, Shield, Swords, BarChart3, Sparkles, Download, Users, X, Maximize2, Target, Trophy, BrainCircuit, Smartphone } from "lucide-react";
 import { useState } from "react";
 
 const LOGO = "/clash-iq-logo.webp";
@@ -15,9 +15,9 @@ export default function Website() {
           <div className="mx-auto max-w-7xl px-5 py-16 sm:py-24">
             <div className="mx-auto max-w-4xl text-center">
               <div className="mx-auto mb-8 h-44 w-44 rounded-[2.5rem] border border-yellow-300/20 bg-black/30 p-3 shadow-[0_0_90px_rgba(250,190,40,.16)]"><img src={LOGO} alt="Clash IQ logo" className="h-full w-full rounded-[2rem] object-cover"/></div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-yellow-200"><Sparkles className="h-4 w-4"/> Built for serious Clash players</div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-300/25 bg-blue-400/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-blue-100"><Smartphone className="h-4 w-4"/> Android app</div><div className="mt-3 inline-flex items-center gap-2 rounded-full border border-yellow-400/20 bg-yellow-400/10 px-4 py-2 text-xs font-black uppercase tracking-[.18em] text-yellow-200"><Sparkles className="h-4 w-4"/> Built for serious Clash players</div>
               <h1 className="mt-6 text-5xl font-black tracking-tight sm:text-6xl lg:text-7xl">Clash IQ<span className="block text-yellow-300">Play smarter. War smarter.</span></h1>
-              <p className="mx-auto mt-7 max-w-3xl text-lg leading-8 text-white/60">Clash IQ brings your Clash of Clans data together in one powerful command center — with war intelligence, player statistics, AI analysis and planning tools for clans that want more from their data.</p>
+              <p className="mx-auto mt-7 max-w-3xl text-lg leading-8 text-white/60">Clash IQ is an Android app for Clash of Clans players and clans — bringing your game data together in one powerful command center — with war intelligence, player statistics, AI analysis and planning tools for clans that want more from their data.</p><div className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-white/55"><Smartphone className="h-4 w-4 text-blue-300"/> Available for Android phones and tablets</div>
             </div>
           </div>
         </section>
@@ -69,10 +69,10 @@ export default function Website() {
 
         <section id="download" className="mx-auto max-w-7xl scroll-mt-8 px-5 py-20">
           <div className="rounded-[2rem] border border-blue-400/20 bg-gradient-to-br from-blue-400/10 via-[#0a0e15] to-yellow-400/10 p-8 text-center sm:p-14">
-            <p className="text-xs font-black uppercase tracking-[.22em] text-blue-200/70">Android beta</p>
-            <h2 className="mt-3 text-3xl font-black sm:text-5xl">Download Clash IQ</h2>
+            <div className="mx-auto inline-flex items-center gap-2 rounded-full border border-blue-300/25 bg-blue-400/10 px-4 py-2 text-xs font-black uppercase tracking-[.2em] text-blue-100"><Smartphone className="h-4 w-4"/> Android app</div>
+            <h2 className="mt-4 text-3xl font-black sm:text-5xl">Download Clash IQ for Android</h2>
             <p className="mx-auto mt-4 max-w-2xl leading-7 text-white/50">Download the latest Android beta and join the testing program. The beta is updated regularly.</p>
-            <a href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing/releases/latest" target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-yellow-300 px-8 py-4 font-black text-black hover:bg-yellow-200"><Download className="h-5 w-5"/> Download Beta Test</a>
+            <a href="https://github.com/patrikkjellberg2-crypto/Clash-IQ2-testing/releases/latest" target="_blank" rel="noreferrer" className="mt-8 inline-flex items-center gap-2 rounded-full bg-yellow-300 px-8 py-4 font-black text-black hover:bg-yellow-200"><Download className="h-5 w-5"/> Download Android Beta</a>
           </div>
         </section>
       </main>
