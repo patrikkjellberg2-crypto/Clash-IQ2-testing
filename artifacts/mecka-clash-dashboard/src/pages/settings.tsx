@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'wouter';
 import {
   Activity,
-  ArrowLeft,
   Bell,
   Bot,
   Check,
@@ -27,24 +26,6 @@ import { notificationPermission, sendTestNotification } from '@/lib/notification
 
 function Toggle({ enabled, onClick }: { enabled: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={enabled}
-      className={
-        enabled
-          ? 'relative h-6 w-11 shrink-0 rounded-full border border-amber-300/30 bg-amber-400/80'
-          : 'relative h-6 w-11 shrink-0 rounded-full border border-white/10 bg-white/[0.06]'
-      }
-    >
-      <span
-        className={
-          enabled
-            ? 'absolute left-6 top-1 h-4 w-4 rounded-full bg-white shadow-md transition'
-            : 'absolute left-1 top-1 h-4 w-4 rounded-full bg-white shadow-md transition'
-        }
-      />
-    </button>
   );
 }
 
