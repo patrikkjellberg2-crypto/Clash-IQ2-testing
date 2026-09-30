@@ -243,12 +243,6 @@ export default function MyPlayerPage() {
           </article>
         </section>
 
-        <details className="group overflow-hidden rounded-2xl border border-white/10 bg-[#11151c]/90 shadow-xl">
-          <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-4 hover:bg-white/[.025] [&::-webkit-details-marker]:hidden">
-            <div><p className="text-[9px] font-black uppercase tracking-[.2em] text-amber-300/60">Deep player data</p><h2 className="mt-1 text-lg font-black">Combat & progression</h2><p className="mt-1 text-xs text-slate-500">Recent attacks, heroes, troops, profile and achievements.</p></div>
-            <span className="rounded-lg border border-amber-400/20 bg-amber-400/[.06] px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-amber-300 transition group-open:rotate-180">⌄</span>
-          </summary>
-          <div className="space-y-5 border-t border-white/[.06] p-4 md:p-5">
         <section className="rounded-2xl border border-white/10 bg-[#11151c]/90 p-5 shadow-xl">
           <SectionTitle icon={Swords} eyebrow="Combat log" title="Recent attacks" />
           {allAttacks.length ? (
@@ -320,9 +314,7 @@ export default function MyPlayerPage() {
         </section>
 
         {achievements.length > 0 && (
-            </div>
-        </details>
-        <section className="rounded-2xl border border-white/10 bg-[#11151c]/90 p-5 shadow-xl">
+          <section className="rounded-2xl border border-white/10 bg-[#11151c]/90 p-5 shadow-xl">
             <SectionTitle icon={Trophy} eyebrow="Progression" title="Achievements" />
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
               {achievements.slice(0, 18).map((a: AnyRecord, i: number) => (
