@@ -298,4 +298,5 @@ html.clashiq-compact .sidebar-nav {
   .clashiq-landscape-sidebar { display: flex !important; }
   .clashiq-landscape-mobile-trigger { display: none !important; }
   .clashiq-landscape-mobile-overlay { display: none !important; }
+  .clashiq-landscape-no-top-clearance { padding-top: 0 !important; }
 }
