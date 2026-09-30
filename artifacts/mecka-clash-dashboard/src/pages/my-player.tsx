@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
+import { AppSidebar } from "@/components/app-sidebar";
 import {
   Activity,
   ArrowLeft,
   BarChart3,
   Crown,
-  Menu,
   Crosshair,
   RefreshCw,
   Shield,
