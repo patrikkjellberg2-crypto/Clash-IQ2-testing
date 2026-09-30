@@ -16,7 +16,7 @@ export default function AdminPage(){
   return <div className="min-h-[100dvh] bg-[#07090d] text-white p-5 md:p-8">
     <main className="mx-auto max-w-[1200px] space-y-5">
       <div className="flex items-center justify-between">
-        <div><Link href="/" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.18em] text-amber-300"><ArrowLeft className="h-4 w-4"/>Command Center</Link><h1 className="mt-3 text-3xl font-black">Clash IQ Admin</h1><p className="mt-1 text-sm text-slate-500">AI usage, limits and safety controls</p></div>
+        <div><Link href="/" className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[.18em] text-amber-300"><ArrowLeft className="h-4 w-4"/>Back to Command Center</Link><h1 className="mt-3 text-3xl font-black">Clash IQ Admin</h1><p className="mt-1 text-sm text-slate-500">AI usage, limits and safety controls</p></div>
         <BrainCircuit className="h-8 w-8 text-amber-300"/>
       </div>
       <section className="rounded-2xl border border-white/10 bg-[#11151c]/90 p-5">
