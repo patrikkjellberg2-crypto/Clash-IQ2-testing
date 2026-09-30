@@ -56,7 +56,7 @@ function AppUpdateBanner() {
   const [update, setUpdate] = React.useState<{ latestVersion: string; releaseUrl: string; notes?: string } | null>(null);
 
   useEffect(() => {
-    const match = navigator.userAgent.match(/ClashIQ\\/([0-9]+(?:\\.[0-9]+){0,2})/i);
+    const match = navigator.userAgent.match(/ClashIQ\/([0-9]+(?:\.[0-9]+){0,2})/i);
     const currentVersion = match?.[1];
     if (!currentVersion) return;
 
