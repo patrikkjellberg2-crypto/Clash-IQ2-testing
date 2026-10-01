@@ -49,24 +49,77 @@ private fun ClashIqApp() {
     var tab by remember { mutableStateOf("Home") }
     var menuOpen by remember { mutableStateOf(false) }
     Surface(Modifier.fillMaxSize(), color = Night) {
-        Column(Modifier.fillMaxSize()) {
-            if (menuOpen) {
-                SideMenu(onClose = { menuOpen = false }, onSelect = { tab = it; menuOpen = false })
-            } else {
-                Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
-                    AppHeader(onMenu = { menuOpen = true })
-                    when (tab) {
-                        "Home" -> Dashboard(onNavigate = { tab = it })
-                        "War" -> FullFeatureScreen("War Center")
-                        "AI Coach" -> AiCoachPage()
-                        "Members" -> FullFeatureScreen("Members")
-                        "War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "Settings", "YouTube & Playlist", "Widget Preview" -> FullFeatureScreen(tab)
-                        else -> FullFeatureScreen("More tools") { tab = it }
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            val tabletLandscape = maxWidth >= 700.dp && maxWidth > maxHeight
+            if (tabletLandscape) {
+                Row(Modifier.fillMaxSize()) {
+                    TabletNavigationRail(selected = tab, onSelect = { tab = it }, modifier = Modifier.width(214.dp).fillMaxHeight())
+                    Column(Modifier.weight(1f).fillMaxHeight()) {
+                        AppHeader(onMenu = { menuOpen = !menuOpen })
+                        Box(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) {
+                            when (tab) {
+                                "Home" -> Dashboard(onNavigate = { tab = it })
+                                "War" -> FullFeatureScreen("War Center")
+                                "AI Coach" -> AiCoachPage()
+                                "Members" -> FullFeatureScreen("Members")
+                                "War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "Settings", "YouTube & Playlist", "Widget Preview" -> FullFeatureScreen(tab)
+                                else -> FullFeatureScreen("More tools") { tab = it }
+                            }
+                        }
                     }
                 }
-                BottomNavigation(tab) { tab = it }
+                if (menuOpen) {
+                    SideMenu(onClose = { menuOpen = false }, onSelect = { tab = it; menuOpen = false })
+                }
+            } else {
+                Column(Modifier.fillMaxSize()) {
+                    if (menuOpen) {
+                        SideMenu(onClose = { menuOpen = false }, onSelect = { tab = it; menuOpen = false })
+                    } else {
+                        Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                            AppHeader(onMenu = { menuOpen = true })
+                            when (tab) {
+                                "Home" -> Dashboard(onNavigate = { tab = it })
+                                "War" -> FullFeatureScreen("War Center")
+                                "AI Coach" -> AiCoachPage()
+                                "Members" -> FullFeatureScreen("Members")
+                                "War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "Settings", "YouTube & Playlist", "Widget Preview" -> FullFeatureScreen(tab)
+                                else -> FullFeatureScreen("More tools") { tab = it }
+                            }
+                        }
+                        BottomNavigation(tab) { tab = it }
+                    }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun TabletNavigationRail(selected: String, onSelect: (String) -> Unit, modifier: Modifier = Modifier) {
+    val destinations = listOf("Home", "War", "AI Coach", "War Planner", "Members", "Capital Raid", "War Log", "Progress Tracker", "More")
+    Column(modifier.background(Color(0xFF0B1018)).border(width = 1.dp, color = Color.White.copy(alpha = .06f)).padding(horizontal = 12.dp, vertical = 16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("♛", color = Gold, fontSize = 25.sp)
+            Spacer(Modifier.width(8.dp))
+            Text("Clash IQ", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Black)
+        }
+        Spacer(Modifier.height(24.dp))
+        destinations.forEach { item ->
+            val active = selected == item || (item == "More" && selected !in destinations)
+            Row(Modifier.fillMaxWidth().padding(vertical = 3.dp).clip(RoundedCornerShape(12.dp))
+                .background(if (active) Color(0xFF382D18) else Color.Transparent)
+                .clickable { onSelect(item) }.padding(horizontal = 12.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically) {
+                Text(when(item) { "Home" -> "⌂"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "◇" },
+                    color = if (active) Gold else TextMuted, fontSize = 17.sp)
+                Spacer(Modifier.width(11.dp))
+                Text(item, color = if (active) Gold else TextMuted, fontSize = 12.sp,
+                    fontWeight = if (active) FontWeight.Bold else FontWeight.Normal, maxLines = 1)
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        Text("BHABE DHEMONS", color = TextMuted, fontSize = 9.sp)
     }
 }
 
