@@ -342,3 +342,106 @@ html.clashiq-compact .sidebar-nav {
     left: 278px !important;
   }
 }
+
+
+/* Clash IQ October redesign — cinematic obsidian, warm gold, cleaner hierarchy */
+:root {
+  --background: 224 26% 5%;
+  --foreground: 42 22% 94%;
+  --card: 224 23% 8%;
+  --card-foreground: 42 22% 94%;
+  --card-border: 42 35% 18%;
+  --border: 220 17% 17%;
+  --primary: 43 92% 56%;
+  --primary-foreground: 224 30% 7%;
+  --secondary: 220 18% 13%;
+  --secondary-foreground: 42 20% 90%;
+  --muted: 220 18% 13%;
+  --muted-foreground: 220 10% 62%;
+  --accent: 43 92% 56%;
+  --accent-foreground: 224 30% 7%;
+  --input: 220 17% 20%;
+  --ring: 43 92% 56%;
+}
+body {
+  background:
+    radial-gradient(ellipse at 75% -10%, rgba(184,128,35,.12), transparent 38%),
+    #080a0f !important;
+  color: #f4f0e7;
+}
+.dashboard-grid {
+  background-color: #080a0f !important;
+  background-image:
+    radial-gradient(ellipse at 70% 0%, rgba(192,137,43,.10), transparent 34%),
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px) !important;
+  background-size: auto, 36px 36px, 36px 36px !important;
+}
+.app-sidebar {
+  background: linear-gradient(180deg,#111319 0%,#0b0d12 58%,#08090d 100%) !important;
+  border-right: 1px solid rgba(220,174,75,.17) !important;
+  box-shadow: 16px 0 48px rgba(0,0,0,.38) !important;
+}
+.coc-logo {
+  background:
+    radial-gradient(circle at 50% 24%,rgba(235,177,63,.18),transparent 54%),
+    linear-gradient(180deg,#171711,#0c0d10) !important;
+  border-bottom-color: rgba(226,178,69,.28) !important;
+}
+.coc-word { color:#f2c45b !important; text-shadow:0 2px 0 #704b19,0 8px 24px rgba(0,0,0,.8) !important; }
+.coc-sub { color:#d7b76b !important; }
+.sidebar-clan { border-bottom-color:rgba(255,255,255,.07) !important; }
+.clan-crest { border-color:#cfa84d !important; color:#f2d27e !important; background:linear-gradient(145deg,#49391b,#17191c) !important; box-shadow:0 0 18px rgba(207,168,77,.12) !important; }
+.sidebar-link { color:#a5a6a9 !important; border-radius:12px !important; }
+.sidebar-link:hover { background:rgba(255,255,255,.045) !important; color:#fff !important; }
+.sidebar-link.active {
+  color:#f9e8b6 !important;
+  background:linear-gradient(100deg,rgba(194,145,46,.22),rgba(194,145,46,.07)) !important;
+  border:1px solid rgba(222,179,83,.28) !important;
+  box-shadow:inset 3px 0 #d9ae4c,0 8px 24px rgba(0,0,0,.18) !important;
+}
+.sidebar-link.active svg { filter:none !important; color:#e7c46e !important; }
+.premium-card {
+  background:linear-gradient(145deg,rgba(22,24,29,.98),rgba(13,15,19,.98)) !important;
+  border:1px solid rgba(255,255,255,.075) !important;
+  border-radius:18px !important;
+  box-shadow:0 16px 42px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.035) !important;
+}
+.hero-banner {
+  background:
+    radial-gradient(ellipse at 78% 20%,rgba(213,164,65,.24),transparent 30%),
+    linear-gradient(115deg,#15171c 0%,#22201a 55%,#302316 100%) !important;
+  border:1px solid rgba(220,177,83,.19) !important;
+  border-radius:22px !important;
+}
+.section-kicker { color:#d2ae5b !important; letter-spacing:.2em !important; }
+.stat-glow {
+  background:linear-gradient(145deg,rgba(25,27,32,.96),rgba(14,16,20,.98)) !important;
+  border:1px solid rgba(255,255,255,.07) !important;
+  border-radius:16px !important;
+  box-shadow:0 12px 30px rgba(0,0,0,.22),inset 0 1px rgba(255,255,255,.035) !important;
+}
+.clashiq-overview .text-primary,
+.clashiq-overview .text-sky-300,
+.clashiq-overview .text-sky-400,
+.clashiq-overview .text-blue-300,
+.clashiq-overview .text-blue-400,
+.clashiq-overview .text-blue-500,
+.text-sky-200,.text-sky-300,.text-sky-400,.text-blue-300,.text-blue-400 {
+  color:#e6c36c !important;
+}
+.clashiq-overview .bg-primary,.clashiq-overview .bg-sky-400,
+.clashiq-overview .bg-blue-400,.clashiq-overview .bg-blue-500 {
+  background-color:#cda64c !important;
+}
+.clashiq-overview .border-sky-300,.clashiq-overview .border-sky-400,
+.clashiq-overview .border-blue-300,.clashiq-overview .border-blue-400,
+.clashiq-overview .border-blue-500 { border-color:rgba(213,174,82,.3) !important; }
+button,a,[role="button"] { -webkit-tap-highlight-color:transparent; }
+button:focus-visible,a:focus-visible,[role="button"]:focus-visible {
+  outline:2px solid #dfbb62 !important; outline-offset:3px;
+}
+@media (max-width:640px) {
+  .premium-card { border-radius:16px !important; }
+  .hero-banner { border-radius:18px !important; }
+}
