@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -476,6 +478,27 @@ private fun PlayerTagSetup(onComplete: @Composable () -> Unit) {
 @Composable
 private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
     var entered by remember { mutableStateOf(false) }
+    var logoVisible by remember { mutableStateOf(false) }
+    val transition = rememberInfiniteTransition(label = "logoGlow")
+    val glow by transition.animateFloat(
+        initialValue = 0.28f, targetValue = 0.72f,
+        animationSpec = infiniteRepeatable(tween(1700, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "glow"
+    )
+    val pulse by transition.animateFloat(
+        initialValue = 0.96f, targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(tween(2200, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "pulse"
+    )
+    val entrance by animateFloatAsState(
+        targetValue = if (logoVisible) 1f else 0.72f,
+        animationSpec = tween(900, easing = FastOutSlowInEasing),
+        label = "logoEntrance"
+    )
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(250)
+        logoVisible = true
+    }
     if (entered) {
         onContinue()
         return
@@ -498,11 +521,34 @@ private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
             }
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
-                    Modifier.size(if (compact) 170.dp else 220.dp).clip(CircleShape)
-                        .background(Brush.radialGradient(listOf(Color(0xFF49391D), Color(0xFF171A1E), Color.Transparent))),
+                    Modifier.size(if (compact) 170.dp else 220.dp)
+                        .graphicsLayer {
+                            scaleX = entrance * pulse
+                            scaleY = entrance * pulse
+                            alpha = entrance
+                        }
+                        .clip(CircleShape)
+                        .background(
+                            Brush.radialGradient(
+                                listOf(
+                                    Gold.copy(alpha = glow * 0.42f),
+                                    Color(0xFF49391D).copy(alpha = glow),
+                                    Color(0xFF171A1E),
+                                    Color.Transparent
+                                )
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text("♛", color = Gold, fontSize = if (compact) 104.sp else 132.sp, fontWeight = FontWeight.Black)
+                    Text(
+                        "♛",
+                        color = Gold.copy(alpha = 0.88f + glow * 0.12f),
+                        fontSize = if (compact) 104.sp else 132.sp,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier.graphicsLayer {
+                            shadowElevation = 18f * glow
+                        }
+                    )
                 }
                 Spacer(Modifier.height(18.dp))
                 Text("YOUR CLAN. YOUR STRATEGY.", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
