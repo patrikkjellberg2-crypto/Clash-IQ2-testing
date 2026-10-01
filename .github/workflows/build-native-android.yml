@@ -42,7 +42,7 @@ jobs:
       - name: Unpack icon assets
         run: |
           unzip -o clash-iq-assets.zip \
-            -d native-android/app/src/main
+            -d native-android/app/src/main/res
 
       - name: Build debug APK
         run: gradle -p native-android assembleDebug
