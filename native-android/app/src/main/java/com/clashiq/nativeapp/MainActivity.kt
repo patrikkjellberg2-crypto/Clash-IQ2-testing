@@ -3,6 +3,7 @@ package com.clashiq.nativeapp
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -97,7 +98,9 @@ private fun Dashboard() {
             Triple("▧", "War Planner", Pink), Triple("♜", "Capital Raid", Gold)
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            shortcuts.forEach { (icon, label, tint) -> Shortcut(icon, label, tint, Modifier.weight(1f)) }
+            shortcuts.forEach { (icon, label, tint) ->
+                Shortcut(icon, label, tint, Modifier.weight(1f)) { /* screen routing is added as each feature is implemented */ }
+            }
         }
         Spacer(Modifier.height(18.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
@@ -164,8 +167,8 @@ private fun StatTile(icon: String, value: String, label: String, modifier: Modif
 }
 
 @Composable
-private fun Shortcut(icon: String, label: String, tint: Color, modifier: Modifier) {
-    Column(modifier.height(76.dp).clip(RoundedCornerShape(15.dp)).background(Brush.verticalGradient(listOf(Card2, Card))).border(1.dp, tint.copy(alpha = .18f), RoundedCornerShape(15.dp)).padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+private fun Shortcut(icon: String, label: String, tint: Color, modifier: Modifier, onClick: () -> Unit) {
+    Column(modifier.clickable(onClick = onClick).height(76.dp).clip(RoundedCornerShape(15.dp)).background(Brush.verticalGradient(listOf(Card2, Card))).border(1.dp, tint.copy(alpha = .18f), RoundedCornerShape(15.dp)).padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
         Text(icon, color = tint, fontSize = 22.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(5.dp))
         Text(label, color = TextMain, fontSize = 9.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -243,7 +246,7 @@ private fun SideMenu(onClose: () -> Unit, onSelect: (String) -> Unit) {
         Spacer(Modifier.height(22.dp))
         listOf("Home", "War", "War Planner", "AI Coach", "Members", "Capital Raid", "War Log", "Progress Tracker", "Settings").forEach { item ->
             val destination = when (item) { "War Planner", "Capital Raid", "War Log", "Progress Tracker", "Settings" -> "More"; else -> item }
-            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).background(if (item == "Home") Color(0xFF382D18) else Card).border(if (item == "Home") 1.dp else 0.dp, GoldDim.copy(alpha = .7f), RoundedCornerShape(12.dp)).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).clickable { onSelect(destination) }.background(if (item == "Home") Color(0xFF382D18) else Card).border(if (item == "Home") 1.dp else 0.dp, GoldDim.copy(alpha = .7f), RoundedCornerShape(12.dp)).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(when (item) { "Home" -> "▦"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "◇" }, color = Gold, fontSize = 17.sp)
                 Spacer(Modifier.width(13.dp))
                 Text(item, color = if (item == "Home") Gold else TextMuted, fontSize = 13.sp, fontWeight = if (item == "Home") FontWeight.Bold else FontWeight.Normal)
@@ -260,7 +263,7 @@ private fun BottomNavigation(selected: String, onSelect: (String) -> Unit) {
     Row(Modifier.fillMaxWidth().background(Color(0xFF0B1018)).navigationBarsPadding().border(1.dp, Color.White.copy(alpha = .05f)).padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceAround) {
         listOf("Home", "War", "AI Coach", "Members", "More").forEach { item ->
             val active = selected == item
-            Column(Modifier.clip(RoundedCornerShape(11.dp)).background(if (active) Gold.copy(alpha = .08f) else Color.Transparent).padding(horizontal = 10.dp, vertical = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(Modifier.clip(RoundedCornerShape(11.dp)).clickable { onSelect(item) }.background(if (active) Gold.copy(alpha = .08f) else Color.Transparent).padding(horizontal = 10.dp, vertical = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(when (item) { "Home" -> "⌂"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "•••" }, color = if (active) Gold else TextMuted, fontSize = 17.sp)
                 Text(item, color = if (active) Gold else TextMuted, fontSize = 8.sp, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal)
             }
