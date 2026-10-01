@@ -58,7 +58,7 @@ private fun ClashIqApp() {
                     when (tab) {
                         "Home" -> Dashboard()
                         "War" -> FeaturePage("WAR CENTER", "Live war overview", "⚔", "War data will be connected to your clan feed.")
-                        "AI Coach" -> FeaturePage("AI COACH", "Clan and opponent analysis", "✦", "Your AI strategist will appear here.")
+                        "AI Coach" -> AiCoachPage()
                         "Members" -> FeaturePage("CLAN MEMBERS", "Roster and performance", "♟", "Member cards and statistics will appear here.")
                         else -> FeaturePage("MORE TOOLS", "Your clan command center", "☷", "Planner, Capital Raid, War Log and Settings.")
                     }
