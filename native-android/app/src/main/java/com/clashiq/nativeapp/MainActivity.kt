@@ -138,48 +138,88 @@ private fun AppHeader(onMenu: () -> Unit) {
 
 @Composable
 private fun Dashboard(onNavigate: (String) -> Unit) {
-    Column(Modifier.padding(horizontal = 14.dp)) {
-        ClanBanner()
-        Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            StatTile("🏆", "5 234", "Trophies", Modifier.weight(1f), Gold)
-            StatTile("♟", "48/50", "Members", Modifier.weight(1f), TextMain)
-            StatTile("✦", "Crystal I", "CWL League", Modifier.weight(1f), Pink)
-        }
-        Spacer(Modifier.height(12.dp))
-        val shortcuts = listOf(
-            Triple("⚔", "War", Gold), Triple("✦", "AI Coach", Blue),
-            Triple("▧", "War Planner", Pink), Triple("♜", "Capital Raid", Gold)
-        )
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            shortcuts.forEach { (icon, label, tint) ->
-                Shortcut(icon, label, tint, Modifier.weight(1f)) { onNavigate(label) }
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        val wide = maxWidth >= 620.dp
+        if (wide) {
+            Row(Modifier.fillMaxWidth().padding(horizontal = 18.dp), horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(Modifier.weight(1.15f)) {
+                    ClanBanner()
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        StatTile("🏆", "5 234", "Trophies", Modifier.weight(1f), Gold)
+                        StatTile("♟", "48/50", "Members", Modifier.weight(1f), TextMain)
+                        StatTile("✦", "Crystal I", "CWL League", Modifier.weight(1f), Pink)
+                    }
+                    Spacer(Modifier.height(12.dp))
+                    val shortcuts = listOf(Triple("⚔", "War", Gold), Triple("✦", "AI Coach", Blue), Triple("▧", "War Planner", Pink), Triple("♜", "Capital Raid", Gold))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        shortcuts.forEach { (icon, label, tint) ->
+                            Shortcut(icon, label, tint, Modifier.weight(1f)) { onNavigate(label) }
+                        }
+                    }
+                }
+                Column(Modifier.weight(1f)) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Recent War", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.weight(1f))
+                        Text("View all  →", color = Blue, fontSize = 11.sp, modifier = Modifier.clickable { onNavigate("War Log") })
+                    }
+                    Spacer(Modifier.height(9.dp))
+                    RecentWarCard()
+                    Spacer(Modifier.height(18.dp))
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text("Clan intelligence", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                        Spacer(Modifier.weight(1f))
+                        Text("Overview", color = TextMuted, fontSize = 10.sp, modifier = Modifier.clickable { onNavigate("Clan Overview") })
+                    }
+                    Spacer(Modifier.height(9.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        MiniPanel("WAR RECORD", "186", "Wins", Green, Modifier.weight(1f))
+                        MiniPanel("WAR RECORD", "92", "Losses", Color(0xFFFF6B66), Modifier.weight(1f))
+                        MiniPanel("WIN RATE", "67%", "All-time", Blue, Modifier.weight(1f))
+                    }
+                }
+            }
+        } else {
+            Column(Modifier.padding(horizontal = 14.dp)) {
+                ClanBanner()
+                Spacer(Modifier.height(10.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StatTile("🏆", "5 234", "Trophies", Modifier.weight(1f), Gold)
+                    StatTile("♟", "48/50", "Members", Modifier.weight(1f), TextMain)
+                    StatTile("✦", "Crystal I", "CWL League", Modifier.weight(1f), Pink)
+                }
+                Spacer(Modifier.height(12.dp))
+                val shortcuts = listOf(Triple("⚔", "War", Gold), Triple("✦", "AI Coach", Blue), Triple("▧", "War Planner", Pink), Triple("♜", "Capital Raid", Gold))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    shortcuts.forEach { (icon, label, tint) ->
+                        Shortcut(icon, label, tint, Modifier.weight(1f)) { onNavigate(label) }
+                    }
+                }
+                Spacer(Modifier.height(18.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Recent War", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.weight(1f))
+                    Text("View all  →", color = Blue, fontSize = 11.sp, modifier = Modifier.clickable { onNavigate("War Log") })
+                }
+                Spacer(Modifier.height(9.dp))
+                RecentWarCard()
+                Spacer(Modifier.height(16.dp))
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text("Clan intelligence", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+                    Spacer(Modifier.weight(1f))
+                    Text("Overview", color = TextMuted, fontSize = 10.sp, modifier = Modifier.clickable { onNavigate("Clan Overview") })
+                }
+                Spacer(Modifier.height(9.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MiniPanel("WAR RECORD", "186", "Wins", Green, Modifier.weight(1f))
+                    MiniPanel("WAR RECORD", "92", "Losses", Color(0xFFFF6B66), Modifier.weight(1f))
+                    MiniPanel("WIN RATE", "67%", "All-time", Blue, Modifier.weight(1f))
+                }
             }
         }
-        Spacer(Modifier.height(18.dp))
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Recent War", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.weight(1f))
-            Text("View all  →", color = Blue, fontSize = 11.sp, modifier = Modifier.clickable { onNavigate("War Log") })
-        }
-        Spacer(Modifier.height(9.dp))
-        RecentWarCard()
-        Spacer(Modifier.height(16.dp))
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            Text("Clan intelligence", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.weight(1f))
-            Text("Overview", color = TextMuted, fontSize = 10.sp, modifier = Modifier.clickable { onNavigate("Clan Overview") })
-        }
-        Spacer(Modifier.height(9.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            MiniPanel("WAR RECORD", "186", "Wins", Green, Modifier.weight(1f))
-            MiniPanel("WAR RECORD", "92", "Losses", Color(0xFFFF6B66), Modifier.weight(1f))
-            MiniPanel("WIN RATE", "67%", "All-time", Blue, Modifier.weight(1f))
-        }
-        Spacer(Modifier.height(20.dp))
     }
 }
-
 @Composable
 private fun ClanBanner() {
     Box(
