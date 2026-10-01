@@ -46,6 +46,9 @@ fun FullFeatureScreen(page: String, onNavigate: (String) -> Unit = {}) {
             "Progress Tracker" -> ProgressScreenContent()
             "Members" -> MembersScreenContent()
             "Settings" -> SettingsScreenContent()
+            "YouTube" -> YouTubeScreenContent()
+            "Clan Playlist" -> PlaylistScreenContent()
+            "Widget Preview" -> WidgetScreenContent()
             else -> MoreScreenContent(onNavigate)
         }
         Spacer(Modifier.height(20.dp))
@@ -228,7 +231,7 @@ private fun SettingsScreenContent() {
 
 @Composable
 private fun MoreScreenContent(onNavigate: (String) -> Unit) {
-    listOf("War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "Settings").forEach { name ->
+    listOf("War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "YouTube", "Clan Playlist", "Widget Preview", "Settings").forEach { name ->
         Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(15.dp)).background(FeatureCard).clickable { onNavigate(name) }.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
             Text("✦", color = FeatureGold, fontSize = 20.sp)
             Spacer(Modifier.width(12.dp))
@@ -254,4 +257,72 @@ private fun FeatureAction(label: String) {
     Box(Modifier.fillMaxWidth().clip(RoundedCornerShape(13.dp)).background(Brush.horizontalGradient(listOf(Color(0xFF9E742D), FeatureGold))).clickable { }.padding(vertical = 14.dp), contentAlignment = Alignment.Center) {
         Text(label + "  ›", color = FeatureBg, fontSize = 12.sp, fontWeight = FontWeight.Black)
     }
+}
+
+
+@Composable
+private fun YouTubeScreenContent() {
+    FeatureHero("CLAN MEDIA", "Watch strategy videos and keep your clan content together", "▶", Color(0xFFFF5757))
+    Spacer(Modifier.height(12.dp))
+    FeatureRow("Featured strategy", "Example video · Attack planning", "▶", Color(0xFFFF5757))
+    Spacer(Modifier.height(8.dp))
+    FeatureRow("Recent uploads", "Videos from your selected channels", "›", Color(0xFFFF5757))
+    Spacer(Modifier.height(14.dp))
+    Text("VIDEO PLAYER PREVIEW", color = FeatureGold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+    Spacer(Modifier.height(8.dp))
+    Box(Modifier.fillMaxWidth().height(180.dp).clip(RoundedCornerShape(18.dp))
+        .background(Brush.linearGradient(listOf(Color(0xFF29364A), Color(0xFF121722))))
+        .border(1.dp, Color(0xFFFF5757).copy(alpha = .35f), RoundedCornerShape(18.dp)), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text("▶", color = Color(0xFFFF5757), fontSize = 38.sp)
+            Spacer(Modifier.height(8.dp))
+            Text("YouTube integration preview", color = FeatureWhite, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text("Playback and account linking to be connected", color = FeatureMuted, fontSize = 10.sp)
+        }
+    }
+}
+
+@Composable
+private fun PlaylistScreenContent() {
+    FeatureHero("CLAN SOUNDTRACK", "A shared playlist for your clan", "♫", Color(0xFF53D18B))
+    Spacer(Modifier.height(12.dp))
+    listOf("War preparation mix" to "12 tracks · Example playlist", "Focus and farming" to "18 tracks · Example playlist", "Clan favorites" to "24 tracks · Example playlist").forEachIndexed { i, item ->
+        FeatureRow(item.first, item.second, if (i == 0) "▶" else "♫", Color(0xFF53D18B))
+        Spacer(Modifier.height(8.dp))
+    }
+    Spacer(Modifier.height(8.dp))
+    FeatureAction("Open clan playlist")
+    Spacer(Modifier.height(8.dp))
+    Text("Preview only. Playlist provider and shared controls are not connected yet.", color = FeatureMuted, fontSize = 10.sp)
+}
+
+@Composable
+private fun WidgetScreenContent() {
+    FeatureHero("AT A GLANCE", "A home-screen widget for your clan status", "▦", FeatureBlue)
+    Spacer(Modifier.height(12.dp))
+    Text("WIDGET PREVIEW", color = FeatureGold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+    Spacer(Modifier.height(8.dp))
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp))
+        .background(Brush.verticalGradient(listOf(Color(0xFF202D40), Color(0xFF111722))))
+        .border(1.dp, FeatureGold.copy(alpha = .45f), RoundedCornerShape(22.dp)).padding(16.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("♜", color = FeatureGold, fontSize = 25.sp)
+            Spacer(Modifier.width(9.dp))
+            Column(Modifier.weight(1f)) {
+                Text("BHABE DHEMONS", color = FeatureWhite, fontSize = 12.sp, fontWeight = FontWeight.Black)
+                Text("Clan status · Example data", color = FeatureMuted, fontSize = 9.sp)
+            }
+            Text("✦", color = FeatureGold, fontSize = 18.sp)
+        }
+        Spacer(Modifier.height(15.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FeatureMetric("42–38", "WAR SCORE", FeatureGold, Modifier.weight(1f))
+            FeatureMetric("21/30", "ATTACKS", FeatureBlue, Modifier.weight(1f))
+            FeatureMetric("48/50", "MEMBERS", FeatureGreen, Modifier.weight(1f))
+        }
+        Spacer(Modifier.height(12.dp))
+        Text("Updated just now · Widget appearance concept", color = FeatureMuted, fontSize = 9.sp)
+    }
+    Spacer(Modifier.height(10.dp))
+    Text("This is a visual preview, not an installed Android home-screen widget yet.", color = FeatureMuted, fontSize = 10.sp)
 }
