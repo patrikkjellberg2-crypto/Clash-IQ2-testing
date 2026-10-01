@@ -57,10 +57,11 @@ private fun ClashIqApp() {
                     AppHeader(onMenu = { menuOpen = true })
                     when (tab) {
                         "Home" -> Dashboard()
-                        "War" -> FeaturePage("WAR CENTER", "Live war overview", "⚔", "War data will be connected to your clan feed.")
+                        "War" -> FullFeatureScreen("War Center")
                         "AI Coach" -> AiCoachPage()
-                        "Members" -> FeaturePage("CLAN MEMBERS", "Roster and performance", "♟", "Member cards and statistics will appear here.")
-                        else -> FeaturePage("MORE TOOLS", "Your clan command center", "☷", "Planner, Capital Raid, War Log and Settings.")
+                        "Members" -> FullFeatureScreen("Members")
+                        "War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "Settings" -> FullFeatureScreen(tab)
+                        else -> FullFeatureScreen("More tools") { tab = it }
                     }
                 }
                 BottomNavigation(tab) { tab = it }
@@ -245,7 +246,7 @@ private fun SideMenu(onClose: () -> Unit, onSelect: (String) -> Unit) {
         }
         Spacer(Modifier.height(22.dp))
         listOf("Home", "War", "War Planner", "AI Coach", "Members", "Capital Raid", "War Log", "Progress Tracker", "Settings").forEach { item ->
-            val destination = when (item) { "War Planner", "Capital Raid", "War Log", "Progress Tracker", "Settings" -> "More"; else -> item }
+            val destination = item
             Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).clickable { onSelect(destination) }.background(if (item == "Home") Color(0xFF382D18) else Card).border(if (item == "Home") 1.dp else 0.dp, GoldDim.copy(alpha = .7f), RoundedCornerShape(12.dp)).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(when (item) { "Home" -> "▦"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "◇" }, color = Gold, fontSize = 17.sp)
                 Spacer(Modifier.width(13.dp))
