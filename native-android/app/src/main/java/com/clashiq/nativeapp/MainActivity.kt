@@ -56,7 +56,7 @@ private fun ClashIqApp() {
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                     AppHeader(onMenu = { menuOpen = true })
                     when (tab) {
-                        "Home" -> Dashboard()
+                        "Home" -> Dashboard(onNavigate = { tab = it })
                         "War" -> FullFeatureScreen("War Center")
                         "AI Coach" -> AiCoachPage()
                         "Members" -> FullFeatureScreen("Members")
@@ -84,7 +84,7 @@ private fun AppHeader(onMenu: () -> Unit) {
 }
 
 @Composable
-private fun Dashboard() {
+private fun Dashboard(onNavigate: (String) -> Unit) {
     Column(Modifier.padding(horizontal = 14.dp)) {
         ClanBanner()
         Spacer(Modifier.height(10.dp))
@@ -100,14 +100,14 @@ private fun Dashboard() {
         )
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             shortcuts.forEach { (icon, label, tint) ->
-                Shortcut(icon, label, tint, Modifier.weight(1f)) { /* screen routing is added as each feature is implemented */ }
+                Shortcut(icon, label, tint, Modifier.weight(1f)) { onNavigate(label) }
             }
         }
         Spacer(Modifier.height(18.dp))
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Recent War", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.weight(1f))
-            Text("View all  →", color = Blue, fontSize = 11.sp)
+            Text("View all  →", color = Blue, fontSize = 11.sp, modifier = Modifier.clickable { onNavigate("War Log") })
         }
         Spacer(Modifier.height(9.dp))
         RecentWarCard()
@@ -115,7 +115,7 @@ private fun Dashboard() {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text("Clan intelligence", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.weight(1f))
-            Text("Overview", color = TextMuted, fontSize = 10.sp)
+            Text("Overview", color = TextMuted, fontSize = 10.sp, modifier = Modifier.clickable { onNavigate("Clan Overview") })
         }
         Spacer(Modifier.height(9.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
