@@ -41,7 +41,18 @@ private val Pink = Color(0xFFE77AD0)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { WelcomeScreen { GoogleLoginScreen { PlayerTagSetup { ClashIqApp() } } } } }
+        setContent { MaterialTheme { ClashIqRoot() } }
+    }
+}
+
+@Composable
+private fun ClashIqRoot() {
+    var screen by remember { mutableStateOf("welcome") }
+    when (screen) {
+        "welcome" -> WelcomeScreen { screen = "login" }
+        "login" -> GoogleLoginScreen { screen = "player" }
+        "player" -> PlayerTagSetup { screen = "app" }
+        else -> ClashIqApp()
     }
 }
 
