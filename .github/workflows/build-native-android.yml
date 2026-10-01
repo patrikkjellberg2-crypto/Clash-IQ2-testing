@@ -34,11 +34,15 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Verify icon archive
+        run: |
+          test -f clash-iq-assets.zip
+          unzip -l clash-iq-assets.zip
+
       - name: Unpack icon assets
         run: |
-          mkdir -p native-android/app/src/main/res
           unzip -o clash-iq-assets.zip \
-            -d native-android/app/src/main/res
+            -d native-android/app/src/main
 
       - name: Build debug APK
         run: gradle -p native-android assembleDebug
