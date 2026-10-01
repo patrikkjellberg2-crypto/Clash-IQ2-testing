@@ -1,6 +1,7 @@
 package com.clashiq.nativeapp
 
 import android.os.Bundle
+import android.content.Context
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.clickable
@@ -396,7 +397,9 @@ private fun BottomNavigation(selected: String, onSelect: (String) -> Unit) {
 
 @Composable
 private fun PlayerTagSetup(onComplete: @Composable () -> Unit) {
-    var tag by remember { mutableStateOf("") }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val prefs = remember { context.getSharedPreferences("clash_iq_setup", Context.MODE_PRIVATE) }
+    var tag by remember { mutableStateOf(prefs.getString("player_tag", "") ?: "") }
     var showHelp by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf(false) }
     var completed by remember { mutableStateOf(false) }
@@ -430,7 +433,7 @@ private fun PlayerTagSetup(onComplete: @Composable () -> Unit) {
             Spacer(Modifier.height(18.dp))
             Button(onClick={
                 val normalized=tag.trim().uppercase().replace("O","0")
-                if (normalized.matches(Regex("#[0289PYLQGRJCUV]{3,15}"))) completed=true else error=true
+                if (normalized.matches(Regex("#[0289PYLQGRJCUV]{3,15}"))) { prefs.edit().putString("player_tag", normalized).apply(); tag=normalized; completed=true } else error=true
             }, modifier=Modifier.fillMaxWidth().height(52.dp), shape=RoundedCornerShape(14.dp),
                 colors=ButtonDefaults.buttonColors(containerColor=Gold, contentColor=Night)) {
                 Text("CONTINUE", fontWeight=FontWeight.Black, letterSpacing=1.sp)
