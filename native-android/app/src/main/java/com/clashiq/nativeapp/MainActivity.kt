@@ -60,7 +60,7 @@ private fun ClashIqApp() {
                         "War" -> FullFeatureScreen("War Center")
                         "AI Coach" -> AiCoachPage()
                         "Members" -> FullFeatureScreen("Members")
-                        "War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "Settings" -> FullFeatureScreen(tab)
+                        "War Planner", "Clan Overview", "Capital Raid", "War Log", "Progress Tracker", "Settings", "YouTube", "Clan Playlist", "Widget Preview" -> FullFeatureScreen(tab)
                         else -> FullFeatureScreen("More tools") { tab = it }
                     }
                 }
