@@ -237,7 +237,7 @@ private fun CoachPreview(onClick: () -> Unit) {
         }
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
-            Text("MECKA AI COACH", color = Blue, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+            Text("CLASH-IQ COACH", color = Blue, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
             Spacer(Modifier.height(4.dp))
             Text("Get tactical advice for your next war", color = TextMain, fontSize = 12.sp, fontWeight = FontWeight.Bold)
             Spacer(Modifier.height(3.dp))
