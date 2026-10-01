@@ -6,13 +6,14 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,254 +25,244 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-private val Ink = Color(0xFF080A0E)
-private val Panel = Color(0xFF12161D)
-private val PanelRaised = Color(0xFF1A2029)
-private val Gold = Color(0xFFE8B84D)
-private val GoldSoft = Color(0xFF9B7835)
-private val White = Color(0xFFF4F2ED)
-private val Muted = Color(0xFF89919D)
-private val Green = Color(0xFF6CC69A)
-private val Red = Color(0xFFE47770)
+private val Night = Color(0xFF070A10)
+private val Card = Color(0xFF111722)
+private val Card2 = Color(0xFF182231)
+private val Gold = Color(0xFFFFC54D)
+private val GoldDim = Color(0xFF9E742D)
+private val TextMain = Color(0xFFF7F4EC)
+private val TextMuted = Color(0xFF8D98A8)
+private val Blue = Color(0xFF48B9F4)
+private val Green = Color(0xFF45D17B)
+private val Pink = Color(0xFFE77AD0)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { ClashIqHome() } }
+        setContent { MaterialTheme { ClashIqApp() } }
     }
 }
 
 @Composable
-private fun ClashIqHome() {
-    var selectedTab by remember { mutableStateOf("Home") }
-    Surface(Modifier.fillMaxSize(), color = Ink) {
+private fun ClashIqApp() {
+    var tab by remember { mutableStateOf("Home") }
+    var menuOpen by remember { mutableStateOf(false) }
+    Surface(Modifier.fillMaxSize(), color = Night) {
         Column(Modifier.fillMaxSize()) {
-            Column(
-                Modifier.weight(1f).verticalScroll(rememberScrollState())
-                    .background(Brush.verticalGradient(listOf(Color(0xFF171B22), Ink)))
-                    .padding(horizontal = 18.dp)
-            ) {
-                Spacer(Modifier.height(18.dp))
-                Header()
-                Spacer(Modifier.height(24.dp))
-                ClanHero()
-                Spacer(Modifier.height(16.dp))
-                SectionHeading("CLAN INTELLIGENCE", "Live overview")
-                Spacer(Modifier.height(10.dp))
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                    MetricCard("MEMBERS", "48", "/ 50", Modifier.weight(1f))
-                    MetricCard("CLAN LEVEL", "23", "XP  ·  82%", Modifier.weight(1f))
-                    MetricCard("WAR LEAGUE", "Master", "League II", Modifier.weight(1f))
+            if (menuOpen) {
+                SideMenu(onClose = { menuOpen = false }, onSelect = { tab = it; menuOpen = false })
+            } else {
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                    AppHeader(onMenu = { menuOpen = true })
+                    when (tab) {
+                        "Home" -> Dashboard()
+                        "War" -> FeaturePage("WAR CENTER", "Live war overview", "⚔", "War data will be connected to your clan feed.")
+                        "AI Coach" -> FeaturePage("AI COACH", "Clan and opponent analysis", "✦", "Your AI strategist will appear here.")
+                        "Members" -> FeaturePage("CLAN MEMBERS", "Roster and performance", "♟", "Member cards and statistics will appear here.")
+                        else -> FeaturePage("MORE TOOLS", "Your clan command center", "☷", "Planner, Capital Raid, War Log and Settings.")
+                    }
                 }
-                Spacer(Modifier.height(22.dp))
-                SectionHeading("WAR CENTER", "Open battle view  ↗")
-                Spacer(Modifier.height(10.dp))
-                WarCard()
-                Spacer(Modifier.height(22.dp))
-                SectionHeading("RECENT PERFORMANCE", "Last 5 wars")
-                Spacer(Modifier.height(10.dp))
-                PerformanceCard()
-                Spacer(Modifier.height(22.dp))
-                SectionHeading("CAPITAL RAID", "Season overview")
-                Spacer(Modifier.height(10.dp))
-                CapitalCard()
-                Spacer(Modifier.height(24.dp))
+                BottomNavigation(tab) { tab = it }
             }
-            BottomBar(selectedTab) { selectedTab = it }
         }
     }
 }
 
 @Composable
-private fun Header() {
-    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            Modifier.size(43.dp).clip(RoundedCornerShape(13.dp))
-                .background(Brush.linearGradient(listOf(Color(0xFF3B3020), Color(0xFF17140F))))
-                .border(1.dp, GoldSoft.copy(alpha = .65f), RoundedCornerShape(13.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text("IQ", color = Gold, fontSize = 18.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-        }
-        Spacer(Modifier.width(11.dp))
-        Column(verticalArrangement = Arrangement.spacedBy((-2).dp)) {
-            Text("CLASH", color = White, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 3.sp)
-            Text("IQ", color = Gold, fontSize = 23.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-        }
+private fun AppHeader(onMenu: () -> Unit) {
+    Row(Modifier.fillMaxWidth().padding(start = 18.dp, end = 18.dp, top = 14.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text("♛", color = Gold, fontSize = 27.sp)
+        Spacer(Modifier.width(8.dp))
+        Text("Clash IQ", color = TextMain, fontSize = 20.sp, fontWeight = FontWeight.Black)
         Spacer(Modifier.weight(1f))
-        Box(
-            Modifier.clip(CircleShape).background(PanelRaised).border(1.dp, Color.White.copy(alpha = .07f), CircleShape).padding(horizontal = 12.dp, vertical = 9.dp)
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                Box(Modifier.size(6.dp).clip(CircleShape).background(Green))
-                Text("CONNECTED", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            }
-        }
+        Text("✦", color = Gold, fontSize = 18.sp)
+        Spacer(Modifier.width(16.dp))
+        TextButton(onClick = onMenu, contentPadding = PaddingValues(0.dp)) { Text("☷", color = Gold, fontSize = 24.sp) }
     }
 }
 
 @Composable
-private fun ClanHero() {
-    Column(
-        Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp))
-            .background(Brush.linearGradient(listOf(Color(0xFF29251D), Color(0xFF171A20), Color(0xFF11151B))))
-            .border(1.dp, Gold.copy(alpha = .22f), RoundedCornerShape(24.dp))
-            .padding(18.dp)
-    ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                Modifier.size(58.dp).clip(RoundedCornerShape(17.dp))
-                    .background(Brush.linearGradient(listOf(Color(0xFF514027), Color(0xFF211D17))))
-                    .border(1.dp, Gold.copy(alpha = .4f), RoundedCornerShape(17.dp)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("⚔", fontSize = 27.sp, color = Gold)
-            }
-            Spacer(Modifier.width(13.dp))
-            Column(Modifier.weight(1f)) {
-                Text("YOUR ACTIVE CLAN", color = Gold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp)
-                Spacer(Modifier.height(5.dp))
-                Text("Barber Demons", color = White, fontSize = 20.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("#2Q0Q82C9R", color = Muted, fontSize = 11.sp)
-            }
-            Text("↗", color = Gold, fontSize = 20.sp, fontWeight = FontWeight.Medium)
-        }
-        Spacer(Modifier.height(18.dp))
-        Box(Modifier.fillMaxWidth().height(1.dp).background(Color.White.copy(alpha = .08f)))
-        Spacer(Modifier.height(13.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Column {
-                Text("CLAN STATUS", color = Muted, fontSize = 9.sp, letterSpacing = 1.2.sp)
-                Spacer(Modifier.height(4.dp))
-                Text("Ready for battle", color = White, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
-            }
-            Text("VIEW CLAN  →", color = Gold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-        }
-    }
-}
-
-@Composable
-private fun SectionHeading(title: String, action: String) {
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-        Column {
-            Text(title, color = Gold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp)
-            Spacer(Modifier.height(4.dp))
-            Text(action, color = White, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-        }
-        Text("•••", color = Muted, fontSize = 13.sp)
-    }
-}
-
-@Composable
-private fun MetricCard(label: String, value: String, detail: String, modifier: Modifier = Modifier) {
-    Column(
-        modifier.clip(RoundedCornerShape(17.dp)).background(Panel)
-            .border(1.dp, Color.White.copy(alpha = .045f), RoundedCornerShape(17.dp)).padding(11.dp)
-    ) {
-        Text(label, color = Muted, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = .7.sp, maxLines = 1)
-        Spacer(Modifier.height(9.dp))
-        Text(value, color = White, fontSize = 17.sp, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(3.dp))
-        Text(detail, color = Gold, fontSize = 9.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
-    }
-}
-
-@Composable
-private fun WarCard() {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(21.dp)).background(Panel).border(1.dp, Color.White.copy(alpha = .05f), RoundedCornerShape(21.dp)).padding(16.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-                Box(Modifier.size(7.dp).clip(CircleShape).background(Green))
-                Text("WAR IN PROGRESS", color = Green, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.1.sp)
-            }
-            Text("PREPARATION", color = Muted, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = .8.sp)
-        }
-        Spacer(Modifier.height(17.dp))
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
-            WarSide("OUR CLAN", "Barber Demons", "12", true)
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("VS", color = Gold, fontSize = 16.sp, fontWeight = FontWeight.Black, letterSpacing = 1.sp)
-                Text("5v5", color = Muted, fontSize = 9.sp)
-            }
-            WarSide("OPPONENT", "Enemy clan", "8", false)
-        }
-        Spacer(Modifier.height(16.dp))
-        Box(Modifier.fillMaxWidth().height(5.dp).clip(CircleShape).background(PanelRaised)) {
-            Box(Modifier.fillMaxWidth(.6f).fillMaxHeight().clip(CircleShape).background(Brush.horizontalGradient(listOf(GoldSoft, Gold))))
+private fun Dashboard() {
+    Column(Modifier.padding(horizontal = 14.dp)) {
+        ClanBanner()
+        Spacer(Modifier.height(10.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            StatTile("🏆", "5 234", "Trophies", Modifier.weight(1f), Gold)
+            StatTile("♟", "48/50", "Members", Modifier.weight(1f), TextMain)
+            StatTile("✦", "Crystal I", "CWL League", Modifier.weight(1f), Pink)
         }
         Spacer(Modifier.height(12.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("Preparation phase", color = Muted, fontSize = 10.sp)
-            Text("Details  →", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        val shortcuts = listOf(
+            Triple("⚔", "War", Gold), Triple("✦", "AI Coach", Blue),
+            Triple("▧", "War Planner", Pink), Triple("♜", "Capital Raid", Gold)
+        )
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            shortcuts.forEach { (icon, label, tint) -> Shortcut(icon, label, tint, Modifier.weight(1f)) }
         }
-    }
-}
-
-@Composable
-private fun WarSide(label: String, name: String, score: String, ours: Boolean) {
-    Column(Modifier.width(118.dp), horizontalAlignment = if (ours) Alignment.Start else Alignment.End) {
-        Text(label, color = Muted, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = .8.sp)
-        Spacer(Modifier.height(5.dp))
-        Text(name, color = White, fontSize = 11.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        Spacer(Modifier.height(4.dp))
-        Text(score, color = if (ours) Gold else White, fontSize = 24.sp, fontWeight = FontWeight.Black)
-    }
-}
-
-@Composable
-private fun PerformanceCard() {
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(19.dp)).background(Panel).padding(15.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-            Text("WAR RECORD", color = Muted, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
-            Text("4W  ·  1L", color = White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-        }
-        Spacer(Modifier.height(13.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            listOf(true, true, false, true, true).forEach { won ->
-                Box(Modifier.weight(1f).height(7.dp).clip(CircleShape).background(if (won) Green else Red))
-            }
+        Spacer(Modifier.height(18.dp))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Recent War", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
+            Text("View all  →", color = Blue, fontSize = 11.sp)
         }
         Spacer(Modifier.height(9.dp))
-        Text("Recent results", color = Muted, fontSize = 10.sp)
+        RecentWarCard()
+        Spacer(Modifier.height(16.dp))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text("Clan intelligence", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.weight(1f))
+            Text("Overview", color = TextMuted, fontSize = 10.sp)
+        }
+        Spacer(Modifier.height(9.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            MiniPanel("WAR RECORD", "186", "Wins", Green, Modifier.weight(1f))
+            MiniPanel("WAR RECORD", "92", "Losses", Color(0xFFFF6B66), Modifier.weight(1f))
+            MiniPanel("WIN RATE", "67%", "All-time", Blue, Modifier.weight(1f))
+        }
+        Spacer(Modifier.height(20.dp))
     }
 }
 
 @Composable
-private fun CapitalCard() {
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(19.dp)).background(Panel).padding(15.dp), verticalAlignment = Alignment.CenterVertically) {
-        Box(Modifier.size(44.dp).clip(RoundedCornerShape(13.dp)).background(Color(0xFF28231A)), contentAlignment = Alignment.Center) {
-            Text("✦", color = Gold, fontSize = 23.sp)
-        }
-        Spacer(Modifier.width(12.dp))
-        Column(Modifier.weight(1f)) {
-            Text("CAPITAL CONTRIBUTION", color = Muted, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = .8.sp)
-            Spacer(Modifier.height(5.dp))
-            Text("Raid weekend", color = White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
-            Text("Season data will appear here", color = Muted, fontSize = 10.sp)
-        }
-        Text("→", color = Gold, fontSize = 19.sp)
-    }
-}
-
-@Composable
-private fun BottomBar(selected: String, onSelect: (String) -> Unit) {
-    Row(
-        Modifier.fillMaxWidth().background(Color(0xFF0D1015)).border(width = 1.dp, color = Color.White.copy(alpha = .06f)).navigationBarsPadding().padding(horizontal = 10.dp, vertical = 9.dp),
-        horizontalArrangement = Arrangement.SpaceAround,
-        verticalAlignment = Alignment.CenterVertically
+private fun ClanBanner() {
+    Box(
+        Modifier.fillMaxWidth().height(154.dp).clip(RoundedCornerShape(20.dp))
+            .background(Brush.verticalGradient(listOf(Color(0xFF344056), Color(0xFF1A2638), Color(0xFF101722))))
+            .border(1.dp, GoldDim.copy(alpha = .7f), RoundedCornerShape(20.dp))
     ) {
-        listOf("Home", "War", "Planner", "Coach", "Profile").forEach { tab ->
-            val active = selected == tab
-            Column(
-                Modifier.clip(RoundedCornerShape(12.dp)).background(if (active) Gold.copy(alpha = .09f) else Color.Transparent)
-                    .padding(horizontal = 10.dp, vertical = 7.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    when (tab) { "Home" -> "⌂"; "War" -> "⚔"; "Planner" -> "▦"; "Coach" -> "✧"; else -> "◉" },
-                    color = if (active) Gold else Muted, fontSize = 17.sp, fontWeight = FontWeight.Bold
-                )
-                Text(tab, color = if (active) Gold else Muted, fontSize = 8.sp, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal)
+        // Atmospheric layered shapes stand in until the approved barbarian artwork is added.
+        Box(Modifier.fillMaxWidth().height(70.dp).align(Alignment.TopCenter).background(Brush.horizontalGradient(listOf(Color.Transparent, Gold.copy(alpha = .16f), Color.Transparent))))
+        Column(Modifier.align(Alignment.CenterStart).padding(15.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(Modifier.size(45.dp).clip(RoundedCornerShape(13.dp)).background(Brush.linearGradient(listOf(Color(0xFF8E2834), Color(0xFF39151D)))).border(1.dp, Gold, RoundedCornerShape(13.dp)), contentAlignment = Alignment.Center) {
+                    Text("♜", color = Gold, fontSize = 24.sp)
+                }
+                Spacer(Modifier.width(10.dp))
+                Column {
+                    Text("BHABE DHEMONS", color = TextMain, fontSize = 14.sp, fontWeight = FontWeight.Black, letterSpacing = .4.sp)
+                    Text("#2Q0Q82C9R", color = TextMuted, fontSize = 10.sp)
+                }
+            }
+            Spacer(Modifier.height(18.dp))
+            Text("YOUR CLAN. YOUR WAR. YOUR IQ.", color = Gold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+        }
+        Box(Modifier.align(Alignment.CenterEnd).padding(end = 17.dp).size(38.dp).clip(RoundedCornerShape(12.dp)).background(Color.Black.copy(alpha = .32f)), contentAlignment = Alignment.Center) {
+            Text("⌄", color = TextMain, fontSize = 20.sp)
+        }
+    }
+}
+
+@Composable
+private fun StatTile(icon: String, value: String, label: String, modifier: Modifier, tint: Color) {
+    Column(modifier.clip(RoundedCornerShape(15.dp)).background(Card).border(1.dp, Color.White.copy(alpha = .055f), RoundedCornerShape(15.dp)).padding(vertical = 12.dp, horizontal = 7.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(icon, color = tint, fontSize = 17.sp)
+        Spacer(Modifier.height(5.dp))
+        Text(value, color = TextMain, fontSize = 13.sp, fontWeight = FontWeight.Black, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Spacer(Modifier.height(3.dp))
+        Text(label, color = TextMuted, fontSize = 9.sp, maxLines = 1)
+    }
+}
+
+@Composable
+private fun Shortcut(icon: String, label: String, tint: Color, modifier: Modifier) {
+    Column(modifier.height(76.dp).clip(RoundedCornerShape(15.dp)).background(Brush.verticalGradient(listOf(Card2, Card))).border(1.dp, tint.copy(alpha = .18f), RoundedCornerShape(15.dp)).padding(8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Text(icon, color = tint, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        Spacer(Modifier.height(5.dp))
+        Text(label, color = TextMain, fontSize = 9.sp, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+@Composable
+private fun RecentWarCard() {
+    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(17.dp)).background(Card).border(1.dp, Color.White.copy(alpha = .06f), RoundedCornerShape(17.dp)).padding(13.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("♜", color = Gold, fontSize = 22.sp)
+                Spacer(Modifier.width(7.dp))
+                Column {
+                    Text("BHABE DHEMONS", color = TextMain, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                    Text("Recent clan war", color = TextMuted, fontSize = 9.sp)
+                }
+            }
+            Text("VICTORY", color = Green, fontSize = 9.sp, fontWeight = FontWeight.Black)
+        }
+        Spacer(Modifier.height(11.dp))
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+            Text("42", color = TextMain, fontSize = 25.sp, fontWeight = FontWeight.Black)
+            Spacer(Modifier.width(10.dp))
+            Text("★", color = Gold, fontSize = 14.sp)
+            Spacer(Modifier.width(10.dp))
+            Text("38", color = TextMain, fontSize = 25.sp, fontWeight = FontWeight.Black)
+        }
+        Spacer(Modifier.height(9.dp))
+        Box(Modifier.fillMaxWidth().height(5.dp).clip(CircleShape).background(Color(0xFF743B3A))) {
+            Box(Modifier.fillMaxWidth(.53f).fillMaxHeight().clip(CircleShape).background(Brush.horizontalGradient(listOf(GoldDim, Gold))))
+        }
+    }
+}
+
+@Composable
+private fun MiniPanel(title: String, value: String, label: String, tint: Color, modifier: Modifier) {
+    Column(modifier.clip(RoundedCornerShape(14.dp)).background(Card).padding(11.dp)) {
+        Text(title, color = TextMuted, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = .5.sp)
+        Spacer(Modifier.height(7.dp))
+        Text(value, color = tint, fontSize = 20.sp, fontWeight = FontWeight.Black)
+        Text(label, color = TextMuted, fontSize = 9.sp)
+    }
+}
+
+@Composable
+private fun FeaturePage(kicker: String, title: String, symbol: String, note: String) {
+    Column(Modifier.fillMaxWidth().padding(18.dp)) {
+        Text(kicker, color = Gold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+        Spacer(Modifier.height(5.dp))
+        Text(title, color = TextMain, fontSize = 23.sp, fontWeight = FontWeight.Black)
+        Spacer(Modifier.height(18.dp))
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(Brush.verticalGradient(listOf(Card2, Card))).border(1.dp, GoldDim.copy(alpha = .4f), RoundedCornerShape(22.dp)).padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(symbol, color = Gold, fontSize = 42.sp)
+            Spacer(Modifier.height(14.dp))
+            Text(title, color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(7.dp))
+            Text(note, color = TextMuted, fontSize = 12.sp)
+        }
+    }
+}
+
+@Composable
+private fun SideMenu(onClose: () -> Unit, onSelect: (String) -> Unit) {
+    Column(Modifier.fillMaxSize().background(Night).padding(18.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("♛", color = Gold, fontSize = 26.sp)
+            Spacer(Modifier.width(9.dp))
+            Column(Modifier.weight(1f)) {
+                Text("Clash IQ", color = TextMain, fontSize = 18.sp, fontWeight = FontWeight.Black)
+                Text("Premium", color = TextMuted, fontSize = 10.sp)
+            }
+            TextButton(onClick = onClose) { Text("×", color = TextMuted, fontSize = 25.sp) }
+        }
+        Spacer(Modifier.height(22.dp))
+        listOf("Home", "War", "War Planner", "AI Coach", "Members", "Capital Raid", "War Log", "Progress Tracker", "Settings").forEach { item ->
+            val destination = when (item) { "War Planner", "Capital Raid", "War Log", "Progress Tracker", "Settings" -> "More"; else -> item }
+            Row(Modifier.fillMaxWidth().padding(vertical = 4.dp).clip(RoundedCornerShape(12.dp)).background(if (item == "Home") Color(0xFF382D18) else Card).border(if (item == "Home") 1.dp else 0.dp, GoldDim.copy(alpha = .7f), RoundedCornerShape(12.dp)).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(when (item) { "Home" -> "▦"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "◇" }, color = Gold, fontSize = 17.sp)
+                Spacer(Modifier.width(13.dp))
+                Text(item, color = if (item == "Home") Gold else TextMuted, fontSize = 13.sp, fontWeight = if (item == "Home") FontWeight.Bold else FontWeight.Normal)
+                Spacer(Modifier.weight(1f))
+            }
+        }
+        Spacer(Modifier.weight(1f))
+        Text("BHABE DHEMONS  ·  #2Q0Q82C9R", color = TextMuted, fontSize = 10.sp)
+    }
+}
+
+@Composable
+private fun BottomNavigation(selected: String, onSelect: (String) -> Unit) {
+    Row(Modifier.fillMaxWidth().background(Color(0xFF0B1018)).navigationBarsPadding().border(1.dp, Color.White.copy(alpha = .05f)).padding(vertical = 8.dp), horizontalArrangement = Arrangement.SpaceAround) {
+        listOf("Home", "War", "AI Coach", "Members", "More").forEach { item ->
+            val active = selected == item
+            Column(Modifier.clip(RoundedCornerShape(11.dp)).background(if (active) Gold.copy(alpha = .08f) else Color.Transparent).padding(horizontal = 10.dp, vertical = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(when (item) { "Home" -> "⌂"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "•••" }, color = if (active) Gold else TextMuted, fontSize = 17.sp)
+                Text(item, color = if (active) Gold else TextMuted, fontSize = 8.sp, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal)
             }
         }
     }
