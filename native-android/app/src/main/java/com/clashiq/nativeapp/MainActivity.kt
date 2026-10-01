@@ -40,7 +40,7 @@ private val Pink = Color(0xFFE77AD0)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { ClashIqApp() } }
+        setContent { MaterialTheme { WelcomeScreen { ClashIqApp() } } }
     }
 }
 
@@ -387,6 +387,64 @@ private fun BottomNavigation(selected: String, onSelect: (String) -> Unit) {
             Column(Modifier.clip(RoundedCornerShape(11.dp)).clickable { onSelect(item) }.background(if (active) Gold.copy(alpha = .08f) else Color.Transparent).padding(horizontal = 10.dp, vertical = 5.dp), horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(when (item) { "Home" -> "⌂"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "•••" }, color = if (active) Gold else TextMuted, fontSize = 17.sp)
                 Text(item, color = if (active) Gold else TextMuted, fontSize = 8.sp, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal)
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
+    var entered by remember { mutableStateOf(false) }
+    if (entered) {
+        onContinue()
+        return
+    }
+    BoxWithConstraints(
+        Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF182231), Night, Color(0xFF05070B))))
+    ) {
+        val compact = maxHeight < 700.dp
+        Column(
+            Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().padding(horizontal = 28.dp, vertical = if (compact) 18.dp else 30.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("♛", color = Gold, fontSize = 25.sp)
+                Spacer(Modifier.width(9.dp))
+                Text("CLASH IQ", color = TextMain, fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                Spacer(Modifier.weight(1f))
+                Text("BETA", color = GoldDim, fontSize = 9.sp, fontWeight = FontWeight.Bold)
+            }
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    Modifier.size(if (compact) 170.dp else 220.dp).clip(CircleShape)
+                        .background(Brush.radialGradient(listOf(Color(0xFF49391D), Color(0xFF171A1E), Color.Transparent))),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text("♛", color = Gold, fontSize = if (compact) 104.sp else 132.sp, fontWeight = FontWeight.Black)
+                }
+                Spacer(Modifier.height(18.dp))
+                Text("YOUR CLAN. YOUR STRATEGY.", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 2.sp)
+                Spacer(Modifier.height(10.dp))
+                Text("Command the battlefield.", color = TextMain, fontSize = if (compact) 27.sp else 32.sp, fontWeight = FontWeight.Black, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                Spacer(Modifier.height(12.dp))
+                Text(
+                    "War intelligence, smart planning and AI-powered insights. Everything your clan needs, in one place.",
+                    color = TextMuted, fontSize = 13.sp, lineHeight = 20.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+            }
+            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                Button(
+                    onClick = { entered = true },
+                    modifier = Modifier.fillMaxWidth().height(54.dp),
+                    shape = RoundedCornerShape(15.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Night)
+                ) {
+                    Text("GET STARTED", fontWeight = FontWeight.Black, letterSpacing = 1.sp)
+                }
+                Spacer(Modifier.height(14.dp))
+                Text("CLASH IQ  ·  CLAN INTELLIGENCE", color = TextMuted, fontSize = 9.sp, letterSpacing = 1.3.sp)
             }
         }
     }
