@@ -41,7 +41,7 @@ private val Pink = Color(0xFFE77AD0)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { WelcomeScreen { PlayerTagSetup { ClashIqApp() } } } }
+        setContent { MaterialTheme { WelcomeScreen { GoogleLoginScreen { PlayerTagSetup { ClashIqApp() } } } } }
     }
 }
 
