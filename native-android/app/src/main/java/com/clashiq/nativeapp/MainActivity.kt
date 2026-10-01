@@ -166,6 +166,8 @@ private fun Dashboard(onNavigate: (String) -> Unit) {
                     }
                     Spacer(Modifier.height(9.dp))
                     RecentWarCard()
+                    Spacer(Modifier.height(12.dp))
+                    CoachPreview { onNavigate("AI Coach") }
                     Spacer(Modifier.height(18.dp))
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text("Clan intelligence", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
@@ -204,6 +206,8 @@ private fun Dashboard(onNavigate: (String) -> Unit) {
                 }
                 Spacer(Modifier.height(9.dp))
                 RecentWarCard()
+                Spacer(Modifier.height(12.dp))
+                CoachPreview { onNavigate("AI Coach") }
                 Spacer(Modifier.height(16.dp))
                 Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     Text("Clan intelligence", color = TextMain, fontSize = 17.sp, fontWeight = FontWeight.Bold)
@@ -220,6 +224,29 @@ private fun Dashboard(onNavigate: (String) -> Unit) {
         }
     }
 }
+@Composable
+private fun CoachPreview(onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp))
+        .background(Brush.horizontalGradient(listOf(Color(0xFF1A2435), Color(0xFF10151F))))
+        .border(1.dp, Blue.copy(alpha = .28f), RoundedCornerShape(18.dp))
+        .clickable(onClick = onClick).padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(48.dp).clip(RoundedCornerShape(15.dp))
+            .background(Brush.radialGradient(listOf(Color(0xFF31527C), Color(0xFF17243A)))),
+            contentAlignment = Alignment.Center) {
+            Text("✦", color = Blue, fontSize = 27.sp, fontWeight = FontWeight.Black)
+        }
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text("MECKA AI COACH", color = Blue, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
+            Spacer(Modifier.height(4.dp))
+            Text("Get tactical advice for your next war", color = TextMain, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(3.dp))
+            Text("Clan insights · Opponent analysis", color = TextMuted, fontSize = 9.sp)
+        }
+        Text("→", color = Gold, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
 @Composable
 private fun ClanBanner() {
     Box(
