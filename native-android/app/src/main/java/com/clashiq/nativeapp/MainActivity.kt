@@ -40,7 +40,7 @@ private val Pink = Color(0xFFE77AD0)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { MaterialTheme { WelcomeScreen { ClashIqApp() } } }
+        setContent { MaterialTheme { WelcomeScreen { PlayerTagSetup { ClashIqApp() } } } }
     }
 }
 
@@ -392,6 +392,72 @@ private fun BottomNavigation(selected: String, onSelect: (String) -> Unit) {
     }
 }
 
+
+
+@Composable
+private fun PlayerTagSetup(onComplete: @Composable () -> Unit) {
+    var tag by remember { mutableStateOf("") }
+    var showHelp by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf(false) }
+    var completed by remember { mutableStateOf(false) }
+    if (completed) { onComplete(); return }
+    Box(Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(Color(0xFF182231), Night, Color(0xFF05070B)))).padding(22.dp), contentAlignment = Alignment.Center) {
+        Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(24.dp)).background(Card).border(1.dp, GoldDim.copy(alpha=.55f), RoundedCornerShape(24.dp)).padding(22.dp)) {
+            Text("PLAYER SETUP", color=Gold, fontSize=10.sp, fontWeight=FontWeight.Bold, letterSpacing=2.sp)
+            Spacer(Modifier.height(10.dp))
+            Text("Connect your player", color=TextMain, fontSize=25.sp, fontWeight=FontWeight.Black)
+            Spacer(Modifier.height(8.dp))
+            Text("Enter your Clash of Clans Player Tag to personalize Clash IQ with your player and clan data.", color=TextMuted, fontSize=13.sp, lineHeight=19.sp)
+            Spacer(Modifier.height(22.dp))
+            Row(verticalAlignment=Alignment.CenterVertically) {
+                Text("PLAYER TAG", color=TextMain, fontSize=10.sp, fontWeight=FontWeight.Bold, letterSpacing=1.sp)
+                Spacer(Modifier.width(8.dp))
+                Box(Modifier.size(22.dp).clip(CircleShape).border(1.dp, GoldDim, CircleShape).clickable { showHelp=true }, contentAlignment=Alignment.Center) {
+                    Text("i", color=Gold, fontSize=13.sp, fontWeight=FontWeight.Bold)
+                }
+            }
+            Spacer(Modifier.height(8.dp))
+            OutlinedTextField(value=tag, onValueChange={ tag=it; error=false }, modifier=Modifier.fillMaxWidth(),
+                placeholder={ Text("#XXXXXXXX", color=TextMuted) }, singleLine=true,
+                shape=RoundedCornerShape(14.dp), colors=OutlinedTextFieldDefaults.colors(
+                    focusedTextColor=TextMain, unfocusedTextColor=TextMain,
+                    focusedBorderColor=Gold, unfocusedBorderColor=Color.White.copy(alpha=.14f),
+                    cursorColor=Gold, focusedPlaceholderColor=TextMuted, unfocusedPlaceholderColor=TextMuted))
+            if (error) {
+                Spacer(Modifier.height(5.dp))
+                Text("Enter a valid Player Tag starting with #.", color=Color(0xFFFF7770), fontSize=11.sp)
+            }
+            Spacer(Modifier.height(18.dp))
+            Button(onClick={
+                val normalized=tag.trim().uppercase().replace("O","0")
+                if (normalized.matches(Regex("#[0289PYLQGRJCUV]{3,15}"))) completed=true else error=true
+            }, modifier=Modifier.fillMaxWidth().height(52.dp), shape=RoundedCornerShape(14.dp),
+                colors=ButtonDefaults.buttonColors(containerColor=Gold, contentColor=Night)) {
+                Text("CONTINUE", fontWeight=FontWeight.Black, letterSpacing=1.sp)
+            }
+            Spacer(Modifier.height(12.dp))
+            Text("You can change this later in Settings.", color=TextMuted, fontSize=10.sp, textAlign=androidx.compose.ui.text.style.TextAlign.Center, modifier=Modifier.fillMaxWidth())
+        }
+    }
+    if (showHelp) {
+        AlertDialog(onDismissRequest={showHelp=false}, containerColor=Color(0xFF151D29),
+            title={ Text("Find your Player Tag", color=TextMain, fontWeight=FontWeight.Bold) },
+            text={ Column {
+                listOf("1","2","3").forEachIndexed { index, n ->
+                    Row(Modifier.padding(vertical=7.dp), verticalAlignment=Alignment.Top) {
+                        Box(Modifier.size(27.dp).clip(CircleShape).background(Color(0xFF382D18)), contentAlignment=Alignment.Center) {
+                            Text(n, color=Gold, fontSize=12.sp, fontWeight=FontWeight.Bold)
+                        }
+                        Spacer(Modifier.width(10.dp))
+                        Text(listOf("Open Clash of Clans and tap your player profile.","Your Player Tag appears beneath your player name. It starts with #.","Copy the tag and paste it into the field in Clash IQ.")[index], color=TextMuted, fontSize=12.sp, lineHeight=17.sp)
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                Text("Example: #P0LYQGRJ", color=Gold, fontSize=12.sp, fontWeight=FontWeight.Bold)
+            } },
+            confirmButton={ TextButton(onClick={showHelp=false}) { Text("GOT IT", color=Gold, fontWeight=FontWeight.Bold) } })
+    }
+}
 
 @Composable
 private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
