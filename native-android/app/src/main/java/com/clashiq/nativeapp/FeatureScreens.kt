@@ -89,45 +89,90 @@ private fun FeatureRow(title: String, detail: String, metric: String, accent: Co
 
 @Composable
 private fun WarScreenContent() {
-    FeatureHero("LIVE WAR", "Battle overview · Preparation and attack status", "⚔", Color(0xFFFF7C9A))
-    Spacer(Modifier.height(11.dp))
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FeatureMetric("42", "OUR STARS", FeatureGold, Modifier.weight(1f))
-        FeatureMetric("38", "ENEMY STARS", FeatureWhite, Modifier.weight(1f))
-        FeatureMetric("21/30", "ATTACKS", FeatureGreen, Modifier.weight(1f))
-    }
-    Spacer(Modifier.height(12.dp))
-    Text("ATTACK LINEUP", color = FeatureGold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
-    Spacer(Modifier.height(8.dp))
-    listOf("Mecka" to "100%", "KingPatrik" to "100%", "DarkRider" to "83%", "Shadow" to "67%").forEach {
-        FeatureRow(it.first, "Attack performance", it.second, FeatureGreen)
-        Spacer(Modifier.height(7.dp))
-    }
-}
-
-@Composable
-private fun PlannerScreenContent() {
-    FeatureHero("TACTICAL MAP", "Plan targets and coordinate clan attacks", "▧", FeatureBlue)
-    Spacer(Modifier.height(12.dp))
-    Box(Modifier.fillMaxWidth().height(210.dp).clip(RoundedCornerShape(19.dp))
-        .background(Brush.radialGradient(listOf(Color(0xFF625333), Color(0xFF29364A), Color(0xFF121722))))
-        .border(1.dp, FeatureGold.copy(alpha = .35f), RoundedCornerShape(19.dp)), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(145.dp).clip(RoundedCornerShape(23.dp)).background(Color(0xFF5C654B)).border(2.dp, FeatureGold, RoundedCornerShape(23.dp)), contentAlignment = Alignment.Center) {
-            Text("⌂", color = Color(0xFFE3D9B4), fontSize = 68.sp)
-        }
-        listOf("1", "2", "3", "4").forEachIndexed { index, value ->
-            Box(Modifier.offset(x = listOf((-78).dp, 75.dp, (-72).dp, 78.dp)[index], y = listOf((-65).dp, (-58).dp, 61.dp, 62.dp)[index])
-                .size(27.dp).clip(CircleShape).background(if (index == 2) FeatureGold else FeatureBlue), contentAlignment = Alignment.Center) {
-                Text(value, color = FeatureBg, fontSize = 11.sp, fontWeight = FontWeight.Black)
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        if (maxWidth >= 620.dp) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Column(Modifier.weight(1f)) {
+                    FeatureHero("LIVE WAR", "Battle overview · Preparation and attack status", "⚔", Color(0xFFFF7C9A))
+                    Spacer(Modifier.height(11.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FeatureMetric("42", "OUR STARS", FeatureGold, Modifier.weight(1f))
+                        FeatureMetric("38", "ENEMY STARS", FeatureWhite, Modifier.weight(1f))
+                        FeatureMetric("21/30", "ATTACKS", FeatureGreen, Modifier.weight(1f))
+                    }
+                }
+                Column(Modifier.weight(1f)) {
+                    Text("ATTACK LINEUP", color = FeatureGold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+                    Spacer(Modifier.height(8.dp))
+                    listOf("Mecka" to "100%", "KingPatrik" to "100%", "DarkRider" to "83%", "Shadow" to "67%").forEach {
+                        FeatureRow(it.first, "Attack performance", it.second, FeatureGreen)
+                        Spacer(Modifier.height(7.dp))
+                    }
+                }
+            }
+        } else {
+            Column {
+                FeatureHero("LIVE WAR", "Battle overview · Preparation and attack status", "⚔", Color(0xFFFF7C9A))
+                Spacer(Modifier.height(11.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FeatureMetric("42", "OUR STARS", FeatureGold, Modifier.weight(1f))
+                    FeatureMetric("38", "ENEMY STARS", FeatureWhite, Modifier.weight(1f))
+                    FeatureMetric("21/30", "ATTACKS", FeatureGreen, Modifier.weight(1f))
+                }
+                Spacer(Modifier.height(12.dp))
+                Text("ATTACK LINEUP", color = FeatureGold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.4.sp)
+                Spacer(Modifier.height(8.dp))
+                listOf("Mecka" to "100%", "KingPatrik" to "100%", "DarkRider" to "83%", "Shadow" to "67%").forEach {
+                    FeatureRow(it.first, "Attack performance", it.second, FeatureGreen)
+                    Spacer(Modifier.height(7.dp))
+                }
             }
         }
     }
-    Spacer(Modifier.height(12.dp))
-    FeatureRow("Target #3 · TH16", "Enemy base · Assigned for review", "VIEW")
-    Spacer(Modifier.height(10.dp))
-    FeatureAction("Generate AI Plan")
 }
-
+@Composable
+private fun PlannerScreenContent() {
+    BoxWithConstraints(Modifier.fillMaxWidth()) {
+        if (maxWidth >= 620.dp) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Column(Modifier.weight(1.15f)) {
+                    FeatureHero("TACTICAL MAP", "Plan targets and coordinate clan attacks", "▧", FeatureBlue)
+                    Spacer(Modifier.height(12.dp))
+                    Box(Modifier.fillMaxWidth().height(270.dp).clip(RoundedCornerShape(19.dp))
+                        .background(Brush.radialGradient(listOf(Color(0xFF625333), Color(0xFF29364A), Color(0xFF121722))))
+                        .border(1.dp, FeatureGold.copy(alpha = .35f), RoundedCornerShape(19.dp)), contentAlignment = Alignment.Center) {
+                        Box(Modifier.size(160.dp).clip(RoundedCornerShape(23.dp)).background(Color(0xFF5C654B)).border(2.dp, FeatureGold, RoundedCornerShape(23.dp)), contentAlignment = Alignment.Center) { Text("⌂", color = Color(0xFFE3D9B4), fontSize = 68.sp) }
+                        listOf("1", "2", "3", "4").forEachIndexed { index, value ->
+                            Box(Modifier.offset(x = listOf((-88).dp, 88.dp, (-82).dp, 84.dp)[index], y = listOf((-83).dp, (-72).dp, 72.dp, 75.dp)[index]).size(27.dp).clip(CircleShape).background(if (index == 2) FeatureGold else FeatureBlue), contentAlignment = Alignment.Center) { Text(value, color = FeatureBg, fontSize = 11.sp, fontWeight = FontWeight.Black) }
+                        }
+                    }
+                }
+                Column(Modifier.weight(1f)) {
+                    Text("ASSIGNED TARGETS", color = FeatureGold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
+                    Spacer(Modifier.height(10.dp))
+                    FeatureRow("Target #3 · TH16", "Enemy base · Assigned for review", "VIEW")
+                    Spacer(Modifier.height(10.dp))
+                    FeatureAction("Generate AI Plan")
+                }
+            }
+        } else {
+            Column {
+                FeatureHero("TACTICAL MAP", "Plan targets and coordinate clan attacks", "▧", FeatureBlue)
+                Spacer(Modifier.height(12.dp))
+                Box(Modifier.fillMaxWidth().height(210.dp).clip(RoundedCornerShape(19.dp)).background(Brush.radialGradient(listOf(Color(0xFF625333), Color(0xFF29364A), Color(0xFF121722)))).border(1.dp, FeatureGold.copy(alpha = .35f), RoundedCornerShape(19.dp)), contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(145.dp).clip(RoundedCornerShape(23.dp)).background(Color(0xFF5C654B)).border(2.dp, FeatureGold, RoundedCornerShape(23.dp)), contentAlignment = Alignment.Center) { Text("⌂", color = Color(0xFFE3D9B4), fontSize = 68.sp) }
+                    listOf("1", "2", "3", "4").forEachIndexed { index, value ->
+                        Box(Modifier.offset(x = listOf((-78).dp, 75.dp, (-72).dp, 78.dp)[index], y = listOf((-65).dp, (-58).dp, 61.dp, 62.dp)[index]).size(27.dp).clip(CircleShape).background(if (index == 2) FeatureGold else FeatureBlue), contentAlignment = Alignment.Center) { Text(value, color = FeatureBg, fontSize = 11.sp, fontWeight = FontWeight.Black) }
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+                FeatureRow("Target #3 · TH16", "Enemy base · Assigned for review", "VIEW")
+                Spacer(Modifier.height(10.dp))
+                FeatureAction("Generate AI Plan")
+            }
+        }
+    }
+}
 @Composable
 private fun ClanScreenContent() {
     FeatureHero("BHABE DHEMONS", "#2Q0Q82C9R · Clan overview and performance", "♜")
@@ -351,3 +396,5 @@ private fun WidgetScreenContent() {
     Spacer(Modifier.height(10.dp))
     Text("This is a visual preview, not an installed Android home-screen widget yet.", color = FeatureMuted, fontSize = 10.sp)
 }
+
+
