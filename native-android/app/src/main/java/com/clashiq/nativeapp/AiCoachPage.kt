@@ -3,9 +3,7 @@ package com.clashiq.nativeapp
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -23,6 +21,7 @@ private const val COACH_URL = "https://clash-iq-builder-base-test.onrender.com/a
 @Composable
 fun AiCoachPage() {
     var mode by remember { mutableStateOf("clan") }
+    var clanTag by remember { mutableStateOf("#2Q0Q82C9R") }
     var question by remember { mutableStateOf("Give me the three most important things we should do next.") }
     var answer by remember { mutableStateOf("") }
     var error by remember { mutableStateOf("") }
@@ -40,6 +39,16 @@ fun AiCoachPage() {
         }
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(
+            value = clanTag, onValueChange = { clanTag = it }, modifier = Modifier.fillMaxWidth(),
+            label = { Text("Clan tag") }, singleLine = true,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White, unfocusedTextColor = Color.White,
+                focusedBorderColor = Color(0xFFFFC54D), unfocusedBorderColor = Color(0xFF394454),
+                focusedLabelColor = Color(0xFFFFC54D), unfocusedLabelColor = Color(0xFF8D98A8)
+            )
+        )
+        Spacer(Modifier.height(10.dp))
+        OutlinedTextField(
             value = question, onValueChange = { question = it }, modifier = Modifier.fillMaxWidth(),
             label = { Text("What should the coach analyze?") }, minLines = 3,
             colors = OutlinedTextFieldDefaults.colors(
@@ -50,10 +59,11 @@ fun AiCoachPage() {
         )
         Spacer(Modifier.height(10.dp))
         Button(
-            enabled = !loading && question.isNotBlank(),
+            enabled = !loading && question.isNotBlank() && clanTag.isNotBlank(),
             onClick = {
                 loading = true; error = ""; answer = ""
                 val selectedMode = mode
+                val selectedTag = clanTag.trim().let { if (it.startsWith("#")) it else "#$it" }
                 val prompt = question.trim()
                 thread {
                     var resultAnswer = ""
@@ -69,7 +79,7 @@ fun AiCoachPage() {
                             setRequestProperty("X-ClashIQ-Client-ID", "clashiq-android")
                         }
                         try {
-                            val payload = JSONObject().put("clanTag", "#2Q0Q82C9R")
+                            val payload = JSONObject().put("clanTag", selectedTag)
                                 .put("mode", selectedMode).put("question", prompt).toString()
                             connection.outputStream.use { it.write(payload.toByteArray(Charsets.UTF_8)) }
                             val status = connection.responseCode
