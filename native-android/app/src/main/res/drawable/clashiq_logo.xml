@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Deep black luxury background -->
+    <path android:fillColor="#070A10"
+        android:pathData="M13,2 L95,2 Q106,2 106,13 L106,95 Q106,106 95,106 L13,106 Q2,106 2,95 L2,13 Q2,2 13,2 Z"/>
+
+    <!-- Main gold frame -->
+    <path android:fillColor="#F6C447"
+        android:pathData="M14,5 L94,5 Q103,5 103,14 L103,94 Q103,103 94,103 L14,103 Q5,103 5,94 L5,14 Q5,5 14,5 Z"/>
+
+    <!-- Inner dark cutout -->
+    <path android:fillColor="#080B12"
+        android:pathData="M15,8 L93,8 Q100,8 100,15 L100,93 Q100,100 93,100 L15,100 Q8,100 8,93 L8,15 Q8,8 15,8 Z"/>
+
+    <!-- Fine inner gold line -->
+    <path android:fillColor="#B87912"
+        android:pathData="M16,10 L92,10 Q98,10 98,16 L98,92 Q98,98 92,98 L16,98 Q10,98 10,92 L10,16 Q10,10 16,10 Z"/>
+
+    <!-- Inner dark surface -->
+    <path android:fillColor="#090C14"
+        android:pathData="M17,12 L91,12 Q96,12 96,17 L96,91 Q96,96 91,96 L17,96 Q12,96 12,91 L12,17 Q12,12 17,12 Z"/>
+
+    <!-- Crown shadow -->
+    <path android:fillColor="#7A4C08"
+        android:pathData="M34,37 L44,25 L54,32 L64,25 L74,37 L74,44 L34,44 Z"/>
+
+    <!-- Crown -->
+    <path android:fillColor="#F6C447"
+        android:pathData="M35,36 L44,24 L54,31 L64,24 L73,36 L73,42 L35,42 Z"/>
+
+    <!-- Crown highlight -->
+    <path android:fillColor="#FFE7A0"
+        android:pathData="M44,25 L54,32 L54,39 L36,39 L36,36 Z"/>
+
+    <!-- Crown base -->
+    <path android:fillColor="#C98A18"
+        android:pathData="M35,42 L73,42 L73,46 L35,46 Z"/>
+
+    <!-- Crown jewel -->
+    <path android:fillColor="#FFE28A"
+        android:pathData="M54,20 A3,3 0,1 0,54,26 A3,3 0,1 0,54,20"/>
+
+    <!-- IQ shadow -->
+    <path android:fillColor="#704607"
+        android:pathData="M29,59 L36,59 L36,87 L29,87 Z
+                         M44,59 L60,59 Q71,59 71,73 Q71,87 60,87 L44,87 Q38,87 38,81 L38,65 Q38,59 44,59 Z
+                         M58,76 L74,88 L68,88 L54,78 Z"/>
+
+    <!-- I -->
+    <path android:fillColor="#F6C447"
+        android:pathData="M30,57 L37,57 L37,85 L30,85 Z"/>
+
+    <!-- Q -->
+    <path android:fillColor="#F6C447"
+        android:pathData="M45,57 L60,57 Q70,57 70,71 Q70,85 60,85 L45,85 Q38,85 38,79 L38,63 Q38,57 45,57 Z
+                         M45,63 L45,79 L59,79 Q64,79 64,71 Q64,63 59,63 Z"/>
+
+    <!-- Q tail -->
+    <path android:fillColor="#F6C447"
+        android:pathData="M57,76 L74,88 L68,88 L54,78 Z"/>
+
+    <!-- Small gold glint -->
+    <path android:fillColor="#FFE8A4"
+        android:pathData="M30,57 L37,57 L37,60 L30,60 Z"/>
+</vector>
