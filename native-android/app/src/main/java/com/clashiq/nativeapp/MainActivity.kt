@@ -617,6 +617,7 @@ private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
                                     listOf(Gold.copy(alpha = glow), Color(0xFF8A5A16).copy(alpha = glow * .48f), Color.Transparent)
                                 )
                             )
+                    )
                     Image(
                         painter = painterResource(R.drawable.clashiq_logo),
                         contentDescription = "Clash IQ logo",
