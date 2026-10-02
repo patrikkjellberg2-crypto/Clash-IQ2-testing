@@ -271,13 +271,6 @@ private fun ClanBanner() {
             .background(Color(0xFF111722))
             .border(1.dp, GoldDim.copy(alpha = .7f), RoundedCornerShape(20.dp))
     ) {
-        Image(
-            painter = painterResource(R.drawable.clash_iq_welcome_hero),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            alpha = .62f
-        )
         Box(
             Modifier.fillMaxSize().background(
                 Brush.horizontalGradient(
@@ -505,12 +498,6 @@ private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
     }
     BoxWithConstraints(Modifier.fillMaxSize().background(Color(0xFF050609))) {
         val compact = maxHeight < 700.dp
-        Image(
-            painter = painterResource(R.drawable.clash_iq_welcome_hero),
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop
-        )
         Box(Modifier.fillMaxSize().background(
             Brush.verticalGradient(
                 0f to Color(0xFF050609).copy(alpha = .12f),
