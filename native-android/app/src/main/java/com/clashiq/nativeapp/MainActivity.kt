@@ -3,6 +3,7 @@ package com.clashiq.nativeapp
 import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -161,6 +163,7 @@ private fun Dashboard(onNavigate: (String) -> Unit) {
                         StatTile("🏆", "5 234", "Trophies", Modifier.weight(1f), Gold)
                         StatTile("♟", "48/50", "Members", Modifier.weight(1f), TextMain)
                         StatTile("✦", "Crystal I", "CWL League", Modifier.weight(1f), Pink)
+                    }
                     Spacer(Modifier.height(12.dp))
                     val shortcuts = listOf(Triple("⚔", "War", Gold), Triple("✦", "AI Coach", Blue), Triple("▧", "War Planner", Pink), Triple("♜", "Capital Raid", Gold))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -276,6 +279,7 @@ private fun ClanBanner() {
                 Column {
                     Text("BHABE DHEMONS", color = TextMain, fontSize = 14.sp, fontWeight = FontWeight.Black, letterSpacing = .4.sp)
                     Text("#2Q0Q82C9R", color = TextMuted, fontSize = 10.sp)
+                }
             }
             Spacer(Modifier.height(18.dp))
             Text("YOUR CLAN. YOUR WAR. YOUR IQ.", color = Gold, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.3.sp)
@@ -398,8 +402,9 @@ private fun BottomNavigation(selected: String, onSelect: (String) -> Unit) {
                 Text(when (item) { "Home" -> "⌂"; "War" -> "⚔"; "AI Coach" -> "✦"; "Members" -> "♟"; else -> "•••" }, color = if (active) Gold else TextMuted, fontSize = 17.sp)
                 Text(item, color = if (active) Gold else TextMuted, fontSize = 8.sp, fontWeight = if (active) FontWeight.Bold else FontWeight.Normal)
             }
+        }
+    }
 }
-
 
 @Composable
 private fun PlayerTagSetup(onComplete: @Composable () -> Unit) {
@@ -579,3 +584,5 @@ private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
                 Text("POWERED BY CLASH IQ AI", color = TextMuted, fontSize = 9.sp, letterSpacing = 1.4.sp)
             }
         }
+    }
+}
