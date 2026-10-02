@@ -52,8 +52,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 private fun ClashIqRoot() {
-    var screen by remember { mutableStateOf("welcome") }
+    var screen by remember { mutableStateOf("intro") }
     when (screen) {
+        "intro" -> IntroAnimationScreen { screen = "welcome" }
         "welcome" -> WelcomeScreen { screen = "login" }
         "login" -> GoogleLoginScreen { screen = "player" }
         "player" -> PlayerTagSetup { screen = "app" }
@@ -480,6 +481,70 @@ private fun PlayerTagSetup(onComplete: @Composable () -> Unit) {
                 Text("Example: #P0LYQGRJ", color=Gold, fontSize=12.sp, fontWeight=FontWeight.Bold)
             } },
             confirmButton={ TextButton(onClick={showHelp=false}) { Text("GOT IT", color=Gold, fontWeight=FontWeight.Bold) } })
+    }
+}
+
+@Composable
+private fun IntroAnimationScreen(onFinished: () -> Unit) {
+    var revealed by remember { mutableStateOf(false) }
+    val transition = rememberInfiniteTransition(label = "introPulse")
+    val glow by transition.animateFloat(
+        initialValue = .12f,
+        targetValue = .42f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1100, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "introGlow"
+    )
+    val scale by animateFloatAsState(
+        targetValue = if (revealed) 1f else .55f,
+        animationSpec = tween(1050, easing = FastOutSlowInEasing),
+        label = "introScale"
+    )
+    val alpha by animateFloatAsState(
+        targetValue = if (revealed) 1f else 0f,
+        animationSpec = tween(900, easing = FastOutSlowInEasing),
+        label = "introAlpha"
+    )
+    LaunchedEffect(Unit) {
+        revealed = true
+        kotlinx.coroutines.delay(2400)
+        onFinished()
+    }
+    Box(
+        Modifier.fillMaxSize().background(
+            Brush.verticalGradient(listOf(Color(0xFF111827), Night, Color(0xFF030406)))
+        ),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            Modifier.size(320.dp).background(
+                Brush.radialGradient(
+                    listOf(Gold.copy(alpha = glow), Color(0xFF8A5A16).copy(alpha = glow * .35f), Color.Transparent),
+                    shape = CircleShape
+                )
+            )
+        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Image(
+                painter = painterResource(R.drawable.clashiq_logo),
+                contentDescription = "Clash IQ logo",
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.size(190.dp).graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                    this.alpha = alpha
+                }
+            )
+            Spacer(Modifier.height(18.dp))
+            Text("CLASH IQ", color = TextMain, fontSize = 30.sp, fontWeight = FontWeight.Black,
+                letterSpacing = 3.sp, modifier = Modifier.graphicsLayer { this.alpha = alpha })
+            Spacer(Modifier.height(9.dp))
+            Text("PLAN  ·  ANALYZE  ·  EVOLVE", color = Gold, fontSize = 9.sp,
+                fontWeight = FontWeight.Bold, letterSpacing = 2.sp,
+                modifier = Modifier.graphicsLayer { this.alpha = alpha })
+        }
     }
 }
 
