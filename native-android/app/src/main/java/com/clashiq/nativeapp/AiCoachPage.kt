@@ -41,12 +41,12 @@ fun AiCoachPage() {
                 .clip(RoundedCornerShape(22.dp))
                 .border(1.dp, Color(0xFF48B9F4).copy(alpha = .35f), RoundedCornerShape(22.dp))
         ) {
-            Image(
-                painter = painterResource(R.drawable.clash_iq_welcome_hero),
-                contentDescription = null,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop,
-                alpha = .72f
+            Box(
+                Modifier.fillMaxSize().background(
+                    androidx.compose.ui.graphics.Brush.radialGradient(
+                        listOf(Color(0xFF25476A).copy(alpha = .62f), Color(0xFF101722), Color(0xFF08111B))
+                    )
+                )
             )
             Box(
                 Modifier.fillMaxSize().background(
