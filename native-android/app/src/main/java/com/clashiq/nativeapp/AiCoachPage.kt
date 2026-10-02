@@ -1,5 +1,6 @@
 package com.clashiq.nativeapp
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,8 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -31,7 +34,35 @@ fun AiCoachPage() {
         Text("CLASH IQ / COMMAND CENTER", color = Color(0xFFFFC54D), fontSize = 10.sp, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(5.dp))
         Text("AI Coach", color = Color(0xFFF7F4EC), fontSize = 26.sp, fontWeight = FontWeight.Black)
-        Spacer(Modifier.height(14.dp))
+        Spacer(Modifier.height(10.dp))
+        Box(
+            Modifier.fillMaxWidth().height(185.dp)
+                .clip(RoundedCornerShape(22.dp))
+                .border(1.dp, Color(0xFF48B9F4).copy(alpha = .35f), RoundedCornerShape(22.dp))
+        ) {
+            Image(
+                painter = painterResource(R.drawable.clash_iq_welcome_hero),
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop,
+                alpha = .72f
+            )
+            Box(
+                Modifier.fillMaxSize().background(
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        listOf(Color(0xFF08111B).copy(alpha = .18f), Color(0xFF08111B).copy(alpha = .78f))
+                    )
+                )
+            )
+            Column(Modifier.fillMaxSize().padding(16.dp)) {
+                Text("AI-POWERED COMMAND", color = Color(0xFF48B9F4), fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.5.sp)
+                Spacer(Modifier.weight(1f))
+                Text("READ THE WAR BEFORE YOU ATTACK.", color = Color(0xFFF7F4EC), fontSize = 18.sp, fontWeight = FontWeight.Black)
+                Spacer(Modifier.height(4.dp))
+                Text("Clan intelligence, opponent reads and tactical recommendations.", color = Color(0xFFB8C0CC), fontSize = 10.sp)
+            }
+        }
+        Spacer(Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf("clan" to "Clan", "opponent" to "Opponent", "question" to "Ask").forEach { (value, label) ->
                 FilterChip(selected = mode == value, onClick = { mode = value }, label = { Text(label) })

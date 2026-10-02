@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +24,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -265,9 +268,23 @@ private fun CoachPreview(onClick: () -> Unit) {
 private fun ClanBanner() {
     Box(
         Modifier.fillMaxWidth().height(154.dp).clip(RoundedCornerShape(20.dp))
-            .background(Brush.verticalGradient(listOf(Color(0xFF344056), Color(0xFF1A2638), Color(0xFF101722))))
+            .background(Color(0xFF111722))
             .border(1.dp, GoldDim.copy(alpha = .7f), RoundedCornerShape(20.dp))
     ) {
+        Image(
+            painter = painterResource(R.drawable.clash_iq_welcome_hero),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            alpha = .62f
+        )
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.horizontalGradient(
+                    listOf(Color(0xFF070A10).copy(alpha = .12f), Color(0xFF070A10).copy(alpha = .52f))
+                )
+            )
+        )
         // Atmospheric layered shapes stand in until the approved barbarian artwork is added.
         Box(Modifier.fillMaxWidth().height(70.dp).align(Alignment.TopCenter).background(Brush.horizontalGradient(listOf(Color.Transparent, Gold.copy(alpha = .16f), Color.Transparent))))
         Column(Modifier.align(Alignment.CenterStart).padding(15.dp)) {
@@ -502,12 +519,22 @@ private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
         return
     }
     BoxWithConstraints(
-        Modifier.fillMaxSize().background(
-            Brush.verticalGradient(
-                listOf(Color(0xFF172233), Color(0xFF0A101A), Color(0xFF05070B), Color(0xFF080A0D))
+        Modifier.fillMaxSize().background(Color(0xFF05070B))
+    ) {
+        Image(
+            painter = painterResource(R.drawable.clash_iq_welcome_hero),
+            contentDescription = null,
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop,
+            alpha = .74f
+        )
+        Box(
+            Modifier.fillMaxSize().background(
+                Brush.verticalGradient(
+                    listOf(Color.Transparent, Color(0xFF05070B).copy(alpha = .18f), Color(0xFF05070B).copy(alpha = .88f))
+                )
             )
         )
-    ) {
         val compact = maxHeight < 700.dp
         Box(Modifier.fillMaxSize().background(
             Brush.radialGradient(
