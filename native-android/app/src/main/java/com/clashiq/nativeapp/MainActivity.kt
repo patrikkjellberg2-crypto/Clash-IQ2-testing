@@ -521,8 +521,8 @@ private fun IntroAnimationScreen(onFinished: () -> Unit) {
         Box(
             Modifier.size(320.dp).background(
                 Brush.radialGradient(
-                    listOf(Gold.copy(alpha = glow), Color(0xFF8A5A16).copy(alpha = glow * .35f), Color.Transparent),
-                    shape = CircleShape
+                    colors = listOf(Gold.copy(alpha = glow), Color(0xFF8A5A16).copy(alpha = glow * .35f), Color.Transparent),
+                    radius = 320f
                 )
             )
         )
