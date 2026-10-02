@@ -1,4 +1,8 @@
+package com.clashiq.nativeapp
+
 import android.content.Context
+import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.compose.animation.core.*
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.clickable
@@ -33,6 +37,10 @@ private val TextMuted = Color(0xFF8D98A8)
 private val Blue = Color(0xFF48B9F4)
 private val Green = Color(0xFF45D17B)
 private val Pink = Color(0xFFE77AD0)
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         setContent { MaterialTheme { ClashIqRoot() } }
     }
 }
