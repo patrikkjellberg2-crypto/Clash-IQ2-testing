@@ -542,6 +542,42 @@ private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
                 Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                var logoRevealed by remember { mutableStateOf(false) }
+                val logoScale by animateFloatAsState(
+                    targetValue = if (logoRevealed) 1f else .72f,
+                    animationSpec = tween(900, delayMillis = 120, easing = FastOutSlowInEasing),
+                    label = "logoScale"
+                )
+                val logoAlpha by animateFloatAsState(
+                    targetValue = if (logoRevealed) 1f else 0f,
+                    animationSpec = tween(850, delayMillis = 120),
+                    label = "logoAlpha"
+                )
+                LaunchedEffect(Unit) { logoRevealed = true }
+                Box(
+                    Modifier.size(if (compact) 154.dp else 190.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Box(
+                        Modifier.fillMaxSize(.94f).clip(CircleShape)
+                            .background(
+                                Brush.radialGradient(
+                                    listOf(Gold.copy(alpha = glow), Color(0xFF8A5A16).copy(alpha = glow * .48f), Color.Transparent)
+                                )
+                            )
+                    )
+                    Image(
+                        painter = painterResource(R.drawable.clashiq_logo),
+                        contentDescription = "Clash IQ logo",
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize(.78f).graphicsLayer {
+                            scaleX = logoScale
+                            scaleY = logoScale
+                            alpha = logoAlpha
+                        }
+                    )
+                }
+                Spacer(Modifier.height(10.dp))
                 Text(
                     "CLASH IQ",
                     color = TextMain,
