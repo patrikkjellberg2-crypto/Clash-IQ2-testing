@@ -493,122 +493,118 @@ private fun PlayerTagSetup(onComplete: @Composable () -> Unit) {
 @Composable
 private fun WelcomeScreen(onContinue: @Composable () -> Unit) {
     var entered by remember { mutableStateOf(false) }
-    var logoVisible by remember { mutableStateOf(false) }
-    val transition = rememberInfiniteTransition(label = "welcomeEmblem")
-    val glow by transition.animateFloat(
-        initialValue = 0.24f, targetValue = 0.62f,
-        animationSpec = infiniteRepeatable(tween(1900, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "emblemGlow"
+    val pulseTransition = rememberInfiniteTransition(label = "welcomeGlow")
+    val glow by pulseTransition.animateFloat(
+        initialValue = .12f, targetValue = .30f,
+        animationSpec = infiniteRepeatable(tween(2200, easing = FastOutSlowInEasing), RepeatMode.Reverse),
+        label = "welcomeGlowAlpha"
     )
-    val pulse by transition.animateFloat(
-        initialValue = 0.985f, targetValue = 1.025f,
-        animationSpec = infiniteRepeatable(tween(2600, easing = FastOutSlowInEasing), RepeatMode.Reverse),
-        label = "emblemPulse"
-    )
-    val entrance by animateFloatAsState(
-        targetValue = if (logoVisible) 1f else 0.78f,
-        animationSpec = tween(950, easing = FastOutSlowInEasing),
-        label = "emblemEntrance"
-    )
-    LaunchedEffect(Unit) {
-        kotlinx.coroutines.delay(180)
-        logoVisible = true
-    }
     if (entered) {
         onContinue()
         return
     }
-    BoxWithConstraints(
-        Modifier.fillMaxSize().background(Color(0xFF05070B))
-    ) {
+    BoxWithConstraints(Modifier.fillMaxSize().background(Color(0xFF050609))) {
+        val compact = maxHeight < 700.dp
         Image(
             painter = painterResource(R.drawable.clash_iq_welcome_hero),
             contentDescription = null,
             modifier = Modifier.fillMaxSize(),
-            contentScale = ContentScale.Crop,
-            alpha = .74f
+            contentScale = ContentScale.Crop
         )
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.verticalGradient(
-                    listOf(Color.Transparent, Color(0xFF05070B).copy(alpha = .18f), Color(0xFF05070B).copy(alpha = .88f))
-                )
+        Box(Modifier.fillMaxSize().background(
+            Brush.verticalGradient(
+                0f to Color(0xFF050609).copy(alpha = .12f),
+                .38f to Color(0xFF050609).copy(alpha = .08f),
+                .68f to Color(0xFF050609).copy(alpha = .64f),
+                1f to Color(0xFF050609).copy(alpha = .98f)
             )
-        )
-        val compact = maxHeight < 700.dp
+        ))
         Box(Modifier.fillMaxSize().background(
             Brush.radialGradient(
-                colors = listOf(Color(0xFF6D4A1C).copy(alpha = .19f), Color.Transparent),
-                radius = maxWidth.value * 1.1f
+                colors = listOf(Color(0xFFFFB52E).copy(alpha = glow), Color.Transparent),
+                radius = maxWidth.value * 1.05f
             )
         ))
         Column(
             Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()
-                .padding(horizontal = if (compact) 22.dp else 30.dp, vertical = if (compact) 14.dp else 22.dp),
+                .padding(horizontal = 24.dp, vertical = if (compact) 12.dp else 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("♛", color = Gold, fontSize = 24.sp)
-                Spacer(Modifier.width(9.dp))
-                Text("CLASH IQ", color = TextMain, fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
+                Text("♛", color = Gold, fontSize = 23.sp)
+                Spacer(Modifier.width(8.dp))
+                Text("CLASH IQ", color = TextMain, fontSize = 14.sp, fontWeight = FontWeight.Black, letterSpacing = 2.2.sp)
                 Spacer(Modifier.weight(1f))
-                Text("BETA", color = GoldDim, fontSize = 9.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.sp)
+                Text("COMMAND CENTER", color = Gold, fontSize = 8.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
             }
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                Box(
-                    Modifier.size(if (compact) 190.dp else 250.dp)
-                        .graphicsLayer {
-                            scaleX = entrance * pulse
-                            scaleY = entrance * pulse
-                            alpha = entrance
-                        },
-                    contentAlignment = Alignment.Center
+            Column(
+                Modifier.fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    "CLASH IQ",
+                    color = TextMain,
+                    fontSize = if (compact) 39.sp else 48.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.5.sp
+                )
+                Spacer(Modifier.height(5.dp))
+                Text(
+                    "PLAN  ·  ANALYZE  ·  EVOLVE",
+                    color = Gold,
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 2.2.sp
+                )
+                Spacer(Modifier.height(if (compact) 22.dp else 30.dp))
+                Text(
+                    "TAKE YOUR CLAN\nTO THE NEXT LEVEL",
+                    color = TextMain,
+                    fontSize = if (compact) 22.sp else 27.sp,
+                    lineHeight = if (compact) 29.sp else 35.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 1.4.sp,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+                Spacer(Modifier.height(if (compact) 18.dp else 25.dp))
+                Row(
+                    Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(9.dp)
                 ) {
-                    Box(
-                        Modifier.fillMaxSize(.96f).clip(CircleShape).background(
-                            Brush.radialGradient(
-                                listOf(Gold.copy(alpha = glow * .34f), Color(0xFF4B3518).copy(alpha = glow * .45f), Color.Transparent)
-                            )
-                        )
-                    )
-                    Box(
-                        Modifier.size(if (compact) 132.dp else 164.dp)
-                            .clip(RoundedCornerShape(if (compact) 28.dp else 34.dp))
-                            .background(Brush.verticalGradient(listOf(Color(0xFF18202C), Color(0xFF080B11))))
-                            .border(2.dp, Gold.copy(alpha = .85f), RoundedCornerShape(if (compact) 28.dp else 34.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-                            Text("♛", color = Gold, fontSize = if (compact) 28.sp else 34.sp, lineHeight = 34.sp)
-                            Text("IQ", color = Gold, fontSize = if (compact) 58.sp else 72.sp, fontWeight = FontWeight.Black, letterSpacing = (-2).sp, lineHeight = if (compact) 62.sp else 76.sp)
+                    listOf("⚔" to "WAR\nPLANNER", "✦" to "AI\nCOACH", "♜" to "CLAN\nANALYTICS").forEach { item ->
+                        Column(
+                            Modifier.weight(1f)
+                                .clip(RoundedCornerShape(15.dp))
+                                .background(Color(0xFF090B10).copy(alpha = .72f))
+                                .border(1.dp, Gold.copy(alpha = .26f), RoundedCornerShape(15.dp))
+                                .padding(vertical = if (compact) 12.dp else 16.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(item.first, color = Gold, fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                            Spacer(Modifier.height(7.dp))
+                            Text(item.second, color = TextMain, fontSize = 9.sp, lineHeight = 12.sp, fontWeight = FontWeight.Bold, letterSpacing = .8.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                         }
                     }
                 }
-                Spacer(Modifier.height(if (compact) 6.dp else 10.dp))
-                Text("CLASH IQ", color = TextMain, fontSize = if (compact) 29.sp else 36.sp, fontWeight = FontWeight.Black, letterSpacing = 2.sp)
-                Spacer(Modifier.height(12.dp))
-                Text("YOUR CLAN. YOUR WAR. YOUR IQ.", color = Gold, fontSize = 10.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.8.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Spacer(Modifier.height(15.dp))
-                Text("Command the battlefield.", color = TextMain, fontSize = if (compact) 23.sp else 29.sp, fontWeight = FontWeight.Black, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
-                Spacer(Modifier.height(10.dp))
-                Text(
-                    "War intelligence, smart planning and AI-powered insights. Everything your clan needs, in one place.",
-                    color = TextMuted, fontSize = 12.sp, lineHeight = 18.sp, textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    modifier = Modifier.widthIn(max = 520.dp)
-                )
             }
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                 Button(
                     onClick = { entered = true },
-                    modifier = Modifier.fillMaxWidth().height(if (compact) 54.dp else 60.dp),
-                    shape = RoundedCornerShape(15.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Gold, contentColor = Night)
+                    modifier = Modifier.fillMaxWidth().height(if (compact) 56.dp else 62.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Gold,
+                        contentColor = Color(0xFF171006)
+                    ),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 8.dp, pressedElevation = 2.dp)
                 ) {
-                    Text("GET STARTED  ›", fontWeight = FontWeight.Black, letterSpacing = 1.sp, fontSize = 14.sp)
+                    Text("GET STARTED", fontSize = 15.sp, fontWeight = FontWeight.Black, letterSpacing = 1.2.sp)
+                    Spacer(Modifier.width(12.dp))
+                    Text("›", fontSize = 25.sp, fontWeight = FontWeight.Bold)
                 }
-                Spacer(Modifier.height(14.dp))
-                Text("POWERED BY CLASH IQ AI", color = TextMuted, fontSize = 9.sp, letterSpacing = 1.4.sp)
+                Spacer(Modifier.height(12.dp))
+                Text("POWERED BY CLASH IQ AI", color = TextMuted, fontSize = 8.sp, letterSpacing = 1.5.sp)
             }
         }
     }
